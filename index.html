@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Spark Project</title>
+    <meta name="description" content="Spark Project — A next-generation digital project.">
+    <meta name="theme-color" content="#09090f">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Background -->
+    <div class="background">
+        <div class="grid"></div>
+        <div class="glow glow-one"></div>
+        <div class="glow glow-two"></div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loader">
+        <div class="loader-logo">S</div>
+        <div class="loader-text">SPARK</div>
+        <div class="loader-line">
+            <span></span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <header class="navbar">
+        <a href="#home" class="logo">
+            <span class="logo-icon">S</span>
+            <span>SPARK</span>
+        </a>
+
+        <nav id="navMenu">
+            <a href="#home" class="active">Home</a>
+            <a href="#demo">Demo</a>
+            <a href="#shop">Shop</a>
+            <a href="#about">About</a>
+        </nav>
+
+        <button class="nav-button" onclick="scrollToSection('shop')">
+            Shop Now
+        </button>
+
+        <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+            ☰
+        </button>
+    </header>
+
+    <main>
+
+        <!-- HERO -->
+        <section id="home" class="hero section">
+
+            <div class="hero-content reveal">
+
+                <div class="badge">
+                    <span class="status-dot"></span>
+                    SPARK PROJECT · DEMO
+                </div>
+
+                <h1>
+                    Turn ideas into
+                    <span class="gradient-text">Spark.</span>
+                </h1>
+
+                <p>
+                    A simple demo project built to evolve into something
+                    much bigger. This is only the beginning.
+                </p>
+
+                <div class="hero-buttons">
+                    <button class="primary-button" onclick="scrollToSection('shop')">
+                        Explore Shop
+                        <span>→</span>
+                    </button>
+
+                    <button class="secondary-button" onclick="scrollToSection('demo')">
+                        View Demo
+                    </button>
+                </div>
+
+                <div class="hero-stats">
+                    <div>
+                        <strong>01</strong>
+                        <span>Project</span>
+                    </div>
+
+                    <div>
+                        <strong>∞</strong>
+                        <span>Possibilities</span>
+                    </div>
+
+                    <div>
+                        <strong>₹1</strong>
+                        <span>Demo Item</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="hero-visual reveal">
+
+                <div class="orbit orbit-one"></div>
+                <div class="orbit orbit-two"></div>
+
+                <div class="spark-core">
+                    <div class="core-ring"></div>
+                    <span>S</span>
+                </div>
+
+                <div class="floating-card card-one">
+                    <span>⚡</span>
+                    <div>
+                        <small>STATUS</small>
+                        <strong>ONLINE</strong>
+                    </div>
+                </div>
+
+                <div class="floating-card card-two">
+                    <span>✦</span>
+                    <div>
+                        <small>VERSION</small>
+                        <strong>DEMO 1.0</strong>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="scroll-indicator">
+                <span></span>
+                Scroll to explore
+            </div>
+
+        </section>
+
+
+        <!-- DEMO -->
+        <section id="demo" class="section demo-section">
+
+            <div class="section-heading reveal">
+                <span class="section-label">01 · DEMO</span>
+
+                <h2>
+                    Small project.
+                    <span>Big potential.</span>
+                </h2>
+
+                <p>
+                    Everything here is currently a demo. The architecture
+                    is designed so Spark can grow into a much larger project.
+                </p>
+            </div>
+
+            <div class="feature-grid">
+
+                <article class="feature-card reveal">
+                    <div class="feature-icon">⚡</div>
+                    <span class="feature-number">01</span>
+                    <h3>Fast</h3>
+                    <p>
+                        Lightweight frontend with smooth animations
+                        and a responsive experience.
+                    </p>
+                </article>
+
+                <article class="feature-card reveal">
+                    <div class="feature-icon">◈</div>
+                    <span class="feature-number">02</span>
+                    <h3>Flexible</h3>
+                    <p>
+                        Built as a foundation that can be expanded
+                        with new products and features.
+                    </p>
+                </article>
+
+                <article class="feature-card reveal">
+                    <div class="feature-icon">⌁</div>
+                    <span class="feature-number">03</span>
+                    <h3>Scalable</h3>
+                    <p>
+                        Future versions can include accounts,
+                        orders, payments and much more.
+                    </p>
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- SHOP -->
+        <section id="shop" class="section shop-section">
+
+            <div class="section-heading reveal">
+                <span class="section-label">02 · SHOP</span>
+
+                <h2>
+                    Welcome to the
+                    <span>Spark Store.</span>
+                </h2>
+
+                <p>
+                    This is a demo product for the current version.
+                </p>
+            </div>
+
+            <div class="shop-container">
+
+                <div class="product-visual reveal">
+
+                    <div class="product-glow"></div>
+
+                    <div class="product-icon">
+                        <span>✦</span>
+                    </div>
+
+                    <div class="product-orbit"></div>
+
+                    <div class="product-particles">
+                        <i></i>
+                        <i></i>
+                        <i></i>
+                        <i></i>
+                    </div>
+
+                </div>
+
+                <div class="product-info reveal">
+
+                    <div class="product-tag">
+                        DEMO PRODUCT
+                    </div>
+
+                    <h3>Spark</h3>
+
+                    <p class="product-description">
+                        The first item in the Spark Project store.
+                        This product is currently available only
+                        as a demonstration.
+                    </p>
+
+                    <div class="price">
+                        <span>₹</span>1
+                        <small>INR</small>
+                    </div>
+
+                    <div class="quantity-box">
+                        <span>Quantity</span>
+
+                        <div class="quantity-controls">
+                            <button onclick="changeQuantity(-1)">−</button>
+
+                            <span id="quantity">1</span>
+
+                            <button onclick="changeQuantity(1)">+</button>
+                        </div>
+                    </div>
+
+                    <div class="total-box">
+                        <span>Total</span>
+                        <strong id="total">₹1</strong>
+                    </div>
+
+                    <button class="buy-button" onclick="openCheckout()">
+                        <span>Buy Spark</span>
+                        <span>→</span>
+                    </button>
+
+                    <p class="demo-note">
+                        ⚡ Demo checkout · No real payment is processed
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ABOUT -->
+        <section id="about" class="section about-section">
+
+            <div class="about-content reveal">
+
+                <span class="section-label">03 · ABOUT</span>
+
+                <h2>
+                    This is just
+                    <span>the beginning.</span>
+                </h2>
+
+                <p>
+                    Spark Project is currently a simple experimental
+                    platform. The goal is to build a strong foundation
+                    first and gradually add real products, accounts,
+                    payments, automation and other systems.
+                </p>
+
+                <div class="about-line"></div>
+
+                <div class="about-points">
+                    <div>
+                        <span>01</span>
+                        <p>Build the foundation</p>
+                    </div>
+
+                    <div>
+                        <span>02</span>
+                        <p>Add real functionality</p>
+                    </div>
+
+                    <div>
+                        <span>03</span>
+                        <p>Take Spark to the next level</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="about-visual reveal">
+                <div class="big-spark">
+                    <span>S</span>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer>
+
+        <div class="footer-main">
+
+            <div class="footer-brand">
+                <a href="#home" class="logo">
+                    <span class="logo-icon">S</span>
+                    <span>SPARK</span>
+                </a>
+
+                <p>
+                    A project with unlimited possibilities.
+                </p>
+            </div>
+
+            <div class="footer-links">
+                <div>
+                    <h4>Explore</h4>
+                    <a href="#home">Home</a>
+                    <a href="#demo">Demo</a>
+                    <a href="#shop">Shop</a>
+                    <a href="#about">About</a>
+                </div>
+
+                <div>
+                    <h4>Project</h4>
+                    <span>Demo Version</span>
+                    <span>Version 1.0</span>
+                    <span>India</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="footer-bottom">
+            <span>© 2026 Spark Project. All rights reserved.</span>
+            <span>Built with ⚡ Spark</span>
+        </div>
+
+    </footer>
+
+
+    <!-- CHECKOUT MODAL -->
+    <div class="modal-overlay" id="checkoutModal">
+
+        <div class="checkout-modal">
+
+            <button class="modal-close" onclick="closeCheckout()">×</button>
+
+            <div class="checkout-icon">
+                ⚡
+            </div>
+
+            <span class="section-label">DEMO CHECKOUT</span>
+
+            <h2>Confirm Order</h2>
+
+            <p>
+                You are purchasing the demo Spark item.
+            </p>
+
+            <div class="checkout-summary">
+                <div>
+                    <span>Product</span>
+                    <strong>Spark</strong>
+                </div>
+
+                <div>
+                    <span>Quantity</span>
+                    <strong id="checkoutQuantity">1</strong>
+                </div>
+
+                <div>
+                    <span>Total</span>
+                    <strong id="checkoutTotal">₹1</strong>
+                </div>
+            </div>
+
+            <button class="confirm-button" onclick="demoPayment()">
+                Continue to Payment
+                <span>→</span>
+            </button>
+
+            <small>
+                Demo mode — no money will be charged.
+            </small>
+
+        </div>
+
+    </div>
+
+
+    <!-- SUCCESS MODAL -->
+    <div class="modal-overlay" id="successModal">
+
+        <div class="success-modal">
+
+            <div class="success-icon">✓</div>
+
+            <h2>Demo Approved!</h2>
+
+            <p>
+                Your demo order has been successfully approved.
+            </p>
+
+            <div class="success-order">
+                <span>Order ID</span>
+                <strong id="orderId">SPK-DEMO</strong>
+            </div>
+
+            <button class="confirm-button" onclick="closeSuccess()">
+                Done
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>

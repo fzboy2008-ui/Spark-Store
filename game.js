@@ -1,5 +1,5 @@
 /* ==========================================================
-   GAME SWITCHER & AUTO-RESIZE CONTROLLER
+   ARCADE MASTER ENGINE & TAB SWITCHER
 ========================================================== */
 const gameSelectors = document.querySelectorAll(".game-selector-btn");
 const arcadeViews = document.querySelectorAll(".arcade-view");
@@ -29,10 +29,39 @@ if (gameSelectors.length) {
   });
 }
 
+// Global Blast Particles Array for Impact FX
+class BlastParticle {
+  constructor(x, y, color) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.radius = Math.random() * 3 + 2;
+    this.vx = (Math.random() - 0.5) * 8;
+    this.vy = (Math.random() - 0.5) * 8;
+    this.alpha = 1;
+    this.decay = Math.random() * 0.03 + 0.02;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.alpha -= this.decay;
+  }
+  draw(ctx) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, this.alpha);
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
 /* ==========================================================
-   1. FLAPPY BIRD (BLUE & RED PILLARS)
+   GAME 1: FLAPPY PHOENIX (PROCEDURAL ANIMATED BIRD)
 ========================================================== */
 let flappyActive = false, fBirdY = 200, fBirdV = 0, fPipes = [], fScore = 0, fAnimId = null;
+let birdWingAngle = 0, birdExhaust = [];
 const fCanvas = document.getElementById("flappyCanvas");
 
 function startFlappyGame() {
@@ -40,9 +69,10 @@ function startFlappyGame() {
   fitActiveGameCanvas();
 
   fBirdY = fCanvas.height / 2;
-  fBirdV = -5.2;
+  fBirdV = -5;
   fPipes = [];
   fScore = 0;
+  birdExhaust = [];
   flappyActive = true;
 
   document.getElementById("flappyScore").innerText = "0";
@@ -54,8 +84,15 @@ function startFlappyGame() {
 }
 
 function flapWing() {
-  if (flappyActive) fBirdV = -5.8;
-  else startFlappyGame();
+  if (flappyActive) {
+    fBirdV = -6.2;
+    // Wing thrust bursts
+    for (let i = 0; i < 6; i++) {
+      birdExhaust.push(new BlastParticle(70, fBirdY, "#00d4ff"));
+    }
+  } else {
+    startFlappyGame();
+  }
 }
 
 fCanvas?.addEventListener("pointerdown", (e) => { e.preventDefault(); flapWing(); });
@@ -66,48 +103,100 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
+function drawAnimatedPhoenix(ctx, x, y, angle, wingCycle) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+
+  // Flaming Tail Particles
+  ctx.fillStyle = "#ff003c";
+  ctx.beginPath();
+  ctx.moveTo(-18, 0);
+  ctx.lineTo(-32, -6 + Math.sin(wingCycle) * 4);
+  ctx.lineTo(-32, 6 - Math.sin(wingCycle) * 4);
+  ctx.closePath();
+  ctx.fill();
+
+  // Torso / Core Body (Cyan Luminescent Bird)
+  ctx.fillStyle = "#00d4ff";
+  ctx.shadowColor = "#00d4ff";
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 18, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Animated Wing
+  const wingY = Math.sin(wingCycle) * 14;
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.moveTo(-4, 0);
+  ctx.lineTo(6, wingY);
+  ctx.lineTo(14, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // Glowing Eye
+  ctx.fillStyle = "#ff003c";
+  ctx.beginPath();
+  ctx.arc(8, -3, 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Sharp Plasma Beak
+  ctx.fillStyle = "#ffbe0b";
+  ctx.beginPath();
+  ctx.moveTo(16, -2);
+  ctx.lineTo(26, 1);
+  ctx.lineTo(16, 4);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
 function loopFlappy() {
   if (!flappyActive) return;
   const ctx = fCanvas.getContext("2d");
   ctx.clearRect(0, 0, fCanvas.width, fCanvas.height);
 
-  const currentSpeed = 3.0 + Math.min(fScore * 0.16, 4.5);
-  document.getElementById("flappyDiff").innerText = `${(currentSpeed / 3.0).toFixed(1)}x`;
+  const speed = 3.2 + Math.min(fScore * 0.16, 5.0);
+  document.getElementById("flappyDiff").innerText = `${(speed / 3.2).toFixed(1)}x`;
 
   fBirdV += 0.32;
   fBirdY += fBirdV;
+  birdWingAngle += 0.25;
 
-  // Blue Core Bird with Red Engine Trail
-  ctx.fillStyle = "#00d4ff";
-  ctx.shadowColor = "#00d4ff";
-  ctx.shadowBlur = 10;
-  ctx.beginPath();
-  ctx.arc(80, fBirdY, 15, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.shadowBlur = 0;
+  // Exhaust Update
+  birdExhaust.forEach((p, idx) => {
+    p.update();
+    p.draw(ctx);
+    if (p.alpha <= 0) birdExhaust.splice(idx, 1);
+  });
 
-  // Spawn Red & Blue Gate Pillars
-  if (fPipes.length === 0 || fPipes[fPipes.length - 1].x < fCanvas.width - 210) {
-    const gap = Math.max(115 - fScore * 1.5, 85);
+  // Render Bird
+  const pitchAngle = Math.min(Math.max(fBirdV * 0.06, -0.6), 0.7);
+  drawAnimatedPhoenix(ctx, 80, fBirdY, pitchAngle, birdWingAngle);
+
+  // Gates Generation
+  if (fPipes.length === 0 || fPipes[fPipes.length - 1].x < fCanvas.width - 220) {
+    const gap = Math.max(120 - fScore * 1.5, 90);
     const topH = Math.random() * (fCanvas.height - gap - 100) + 40;
     fPipes.push({ x: fCanvas.width, top: topH, bottom: topH + gap, passed: false });
   }
 
   for (let i = 0; i < fPipes.length; i++) {
     let p = fPipes[i];
-    p.x -= currentSpeed;
+    p.x -= speed;
 
-    // Top Pillar: Neon Red
+    // Laser Boundary Pillars
     ctx.fillStyle = "#ff003c";
     ctx.fillRect(p.x, 0, 48, p.top);
-
-    // Bottom Pillar: Neon Blue
     ctx.fillStyle = "#00d4ff";
     ctx.fillRect(p.x, p.bottom, 48, fCanvas.height - p.bottom);
 
-    // Collision Check
-    if (80 + 15 > p.x && 80 - 15 < p.x + 48) {
-      if (fBirdY - 15 < p.top || fBirdY + 15 > p.bottom) {
+    // Collision Check with hitbox padding
+    if (80 + 16 > p.x && 80 - 16 < p.x + 48) {
+      if (fBirdY - 10 < p.top || fBirdY + 10 > p.bottom) {
         return endFlappy();
       }
     }
@@ -128,119 +217,177 @@ function loopFlappy() {
 function endFlappy() {
   flappyActive = false;
   const o = document.getElementById("flappyOverlay");
-  o.innerHTML = `<h3>ENERGY SEVERED</h3><p>Score: <strong>${fScore}</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startFlappyGame()">Flight Again</button>`;
+  o.innerHTML = `<h3>ENERGY SEVERED</h3><p>Cleared Gateways: <strong>${fScore}</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startFlappyGame()">Flight Again</button>`;
   o.classList.add("active");
 }
 
 /* ==========================================================
-   2. DINO RUNNER (RED BARRIERS + ADAPTIVE VELOCITY)
+   GAME 2: NEON SHINOBI RUNNER (DOUBLE JUMP + PARTICLES)
 ========================================================== */
-let dinoActive = false, dinoY = 0, dinoV = 0, dinoObs = [], dScore = 0, dAnimId = null;
-const dCanvas = document.getElementById("dinoCanvas");
+let runnerActive = false, rY = 0, rV = 0, rJumpsLeft = 2, rObs = [], rScore = 0, rAnimId = null;
+let runCycle = 0, runnerDust = [];
+const rCanvas = document.getElementById("runnerCanvas");
 
-function startDinoGame() {
-  if (!dCanvas) return;
+function startRunnerGame() {
+  if (!rCanvas) return;
   fitActiveGameCanvas();
 
-  dinoY = 0; dinoV = 0; dinoObs = []; dScore = 0; dinoActive = true;
-  document.getElementById("dinoScore").innerText = "0m";
-  document.getElementById("dinoOverlay").classList.remove("active");
+  rY = 0; rV = 0; rJumpsLeft = 2; rObs = []; rScore = 0; runnerDust = [];
+  runnerActive = true;
+  document.getElementById("runnerScore").innerText = "0m";
+  document.getElementById("jumpStatus").innerText = "DOUBLE READY";
+  document.getElementById("runnerOverlay").classList.remove("active");
 
-  cancelAnimationFrame(dAnimId);
-  loopDino();
+  cancelAnimationFrame(rAnimId);
+  loopRunner();
 }
 
-function jumpDinoAction() {
-  if (dinoActive && dinoY === 0) dinoV = 10.8;
-  else if (!dinoActive) startDinoGame();
+function runnerJumpAction() {
+  if (!runnerActive) return startRunnerGame();
+  if (rJumpsLeft > 0) {
+    rV = 11;
+    rJumpsLeft--;
+    document.getElementById("jumpStatus").innerText = rJumpsLeft === 1 ? "1 JUMP LEFT" : "DEPLETED";
+    for (let i = 0; i < 8; i++) {
+      runnerDust.push(new BlastParticle(70, rCanvas.height - 40 - rY, "#00d4ff"));
+    }
+  }
 }
 
-dCanvas?.addEventListener("pointerdown", (e) => { e.preventDefault(); jumpDinoAction(); });
+rCanvas?.addEventListener("pointerdown", (e) => { e.preventDefault(); runnerJumpAction(); });
 window.addEventListener("keydown", (e) => {
-  if (e.code === "Space" && document.getElementById("dinoView")?.classList.contains("active")) {
+  if (e.code === "Space" && document.getElementById("runnerView")?.classList.contains("active")) {
     e.preventDefault();
-    jumpDinoAction();
+    runnerJumpAction();
   }
 });
 
-function loopDino() {
-  if (!dinoActive) return;
-  const ctx = dCanvas.getContext("2d");
-  ctx.clearRect(0, 0, dCanvas.width, dCanvas.height);
+function drawAnimatedShinobi(ctx, x, y, cycle, inAir) {
+  ctx.save();
+  ctx.translate(x, y);
 
-  const groundY = dCanvas.height - 40;
-  const currentSpeed = 5.2 + Math.min((dScore / 40) * 0.45, 6.5);
-  document.getElementById("dinoSpeedDisplay").innerText = `${(currentSpeed / 5.2).toFixed(1)}x`;
-
-  dinoY += dinoV;
-  if (dinoY > 0) dinoV -= 0.5; else { dinoY = 0; dinoV = 0; }
-
-  // Ground Line
-  ctx.strokeStyle = "rgba(0, 212, 255, 0.4)";
-  ctx.lineWidth = 2;
+  // Scarf / Cyber Trail
+  ctx.strokeStyle = "#ff003c";
+  ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(0, groundY);
-  ctx.lineTo(dCanvas.width, groundY);
+  ctx.moveTo(-10, -22);
+  ctx.quadraticCurveTo(-26, -22 + Math.sin(cycle) * 6, -38, -18);
   ctx.stroke();
 
-  // Dino (Blue Neon Core)
+  // Torso
   ctx.fillStyle = "#00d4ff";
-  ctx.shadowColor = "#00d4ff";
-  ctx.shadowBlur = 8;
-  ctx.fillRect(60, groundY - dinoY - 36, 36, 36);
-  ctx.shadowBlur = 0;
+  ctx.fillRect(-8, -26, 16, 20);
 
-  // Spawn Red Barriers
-  if (dinoObs.length === 0 || dinoObs[dinoObs.length - 1].x < dCanvas.width - (220 - Math.min(dScore / 10, 70))) {
+  // Cyber Visor / Head
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(0, -32, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ff003c";
+  ctx.fillRect(-2, -34, 8, 3); // Glow visor
+
+  // Running Limbs
+  ctx.strokeStyle = "#00d4ff";
+  ctx.lineWidth = 3.5;
+  if (!inAir) {
+    const leg1 = Math.sin(cycle) * 12;
+    const leg2 = -Math.sin(cycle) * 12;
+    ctx.beginPath(); ctx.moveTo(-4, -6); ctx.lineTo(-8, 6 + leg1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(4, -6); ctx.lineTo(8, 6 + leg2); ctx.stroke();
+  } else {
+    // Tucked Ninja Jump
+    ctx.beginPath(); ctx.moveTo(-4, -6); ctx.lineTo(-12, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(4, -6); ctx.lineTo(12, 0); ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function loopRunner() {
+  if (!runnerActive) return;
+  const ctx = rCanvas.getContext("2d");
+  ctx.clearRect(0, 0, rCanvas.width, rCanvas.height);
+
+  const groundY = rCanvas.height - 40;
+  const speed = 5.6 + Math.min((rScore / 40) * 0.45, 6.5);
+
+  rY += rV;
+  if (rY > 0) {
+    rV -= 0.52;
+  } else {
+    rY = 0; rV = 0; rJumpsLeft = 2;
+    document.getElementById("jumpStatus").innerText = "DOUBLE READY";
+  }
+
+  runCycle += 0.25;
+
+  // Render Neon Ground
+  ctx.strokeStyle = "rgba(0, 212, 255, 0.4)";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(rCanvas.width, groundY); ctx.stroke();
+
+  // Dust FX
+  runnerDust.forEach((d, idx) => {
+    d.update();
+    d.draw(ctx);
+    if (d.alpha <= 0) runnerDust.splice(idx, 1);
+  });
+
+  // Render Shinobi
+  drawAnimatedShinobi(ctx, 70, groundY - rY, runCycle, rY > 0);
+
+  // Spawning Spikes/Barriers
+  if (rObs.length === 0 || rObs[rObs.length - 1].x < rCanvas.width - 240) {
     if (Math.random() < 0.6) {
-      dinoObs.push({ x: dCanvas.width, w: 24, h: Math.random() * 26 + 28 });
+      rObs.push({ x: rCanvas.width, w: 22, h: Math.random() * 28 + 26 });
     }
   }
 
-  for (let i = 0; i < dinoObs.length; i++) {
-    let o = dinoObs[i];
-    o.x -= currentSpeed;
+  for (let i = 0; i < rObs.length; i++) {
+    let o = rObs[i];
+    o.x -= speed;
 
     ctx.fillStyle = "#ff003c";
-    ctx.shadowColor = "#ff003c";
-    ctx.shadowBlur = 6;
     ctx.fillRect(o.x, groundY - o.h, o.w, o.h);
-    ctx.shadowBlur = 0;
 
-    if (60 + 36 > o.x && 60 < o.x + o.w && dinoY < o.h) {
-      dinoActive = false;
-      const ov = document.getElementById("dinoOverlay");
-      ov.innerHTML = `<h3>GRID COLLISION</h3><p>Distance: <strong>${Math.floor(dScore / 4)}m</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startDinoGame()">Run Again</button>`;
+    // Collision Check
+    if (70 + 10 > o.x && 70 - 10 < o.x + o.w && rY < o.h) {
+      runnerActive = false;
+      const ov = document.getElementById("runnerOverlay");
+      ov.innerHTML = `<h3>SHINOBI FALLEN</h3><p>Distance Cleared: <strong>${Math.floor(rScore / 4)}m</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startRunnerGame()">Run Again</button>`;
       ov.classList.add("active");
       return;
     }
   }
 
-  dScore++;
-  document.getElementById("dinoScore").innerText = `${Math.floor(dScore / 4)}m`;
-  dinoObs = dinoObs.filter((o) => o.x > -40);
-  dAnimId = requestAnimationFrame(loopDino);
+  rScore++;
+  document.getElementById("runnerScore").innerText = `${Math.floor(rScore / 4)}m`;
+  rObs = rObs.filter((o) => o.x > -40);
+  rAnimId = requestAnimationFrame(loopRunner);
 }
 
 /* ==========================================================
-   3. SPACE SHIP (AUTO-LASER & WEAPON PROGRESSION)
+   GAME 3: VOID STRIKER ULTRA (AUTO-FIRE + ABILITY STREAK)
 ========================================================== */
-let spaceActive = false, shipX = 200, spaceBullets = [], spaceEnemies = [], sScore = 0, sAnimId = null;
-let lastAutoShot = 0;
+let spaceActive = false, sShipX = 200, sBullets = [], sEnemies = [], sScore = 0, sStreak = 0;
+let sAnimId = null, sBlastFx = [], lastShotTime = 0;
 const sCanvas = document.getElementById("spaceCanvas");
 
 function startSpaceGame() {
   if (!sCanvas) return;
   fitActiveGameCanvas();
 
-  shipX = sCanvas.width / 2;
-  spaceBullets = [];
-  spaceEnemies = [];
+  sShipX = sCanvas.width / 2;
+  sBullets = [];
+  sEnemies = [];
+  sBlastFx = [];
   sScore = 0;
+  sStreak = 0;
   spaceActive = true;
 
   document.getElementById("spaceScore").innerText = "0";
-  document.getElementById("laserLevel").innerText = "LEVEL 1 (SINGLE)";
+  document.getElementById("spaceCombo").innerText = "x0";
+  document.getElementById("abilityMeter").innerText = "NORMAL";
   document.getElementById("spaceOverlay").classList.remove("active");
 
   cancelAnimationFrame(sAnimId);
@@ -249,7 +396,7 @@ function startSpaceGame() {
 
 function updateShipPos(clientX) {
   const rect = sCanvas.getBoundingClientRect();
-  shipX = Math.max(25, Math.min(sCanvas.width - 25, clientX - rect.left));
+  sShipX = Math.max(25, Math.min(sCanvas.width - 25, clientX - rect.left));
 }
 
 sCanvas?.addEventListener("pointermove", (e) => updateShipPos(e.clientX));
@@ -264,67 +411,64 @@ function loopSpace() {
   ctx.clearRect(0, 0, sCanvas.width, sCanvas.height);
 
   const now = Date.now();
-  // Auto-Laser Firing (Every 200ms)
-  if (now - lastAutoShot > 200) {
-    lastAutoShot = now;
-    if (sScore >= 300) {
-      document.getElementById("laserLevel").innerText = "LEVEL 4 (QUAD PLASMA)";
-      spaceBullets.push({ x: shipX - 16, y: sCanvas.height - 45, vx: -1.2, color: "#ff003c" });
-      spaceBullets.push({ x: shipX - 6, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
-      spaceBullets.push({ x: shipX + 6, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
-      spaceBullets.push({ x: shipX + 16, y: sCanvas.height - 45, vx: 1.2, color: "#ff003c" });
-    } else if (sScore >= 180) {
-      document.getElementById("laserLevel").innerText = "LEVEL 3 (TRIPLE)";
-      spaceBullets.push({ x: shipX - 12, y: sCanvas.height - 45, vx: -1.4, color: "#ff003c" });
-      spaceBullets.push({ x: shipX, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
-      spaceBullets.push({ x: shipX + 12, y: sCanvas.height - 45, vx: 1.4, color: "#ff003c" });
-    } else if (sScore >= 80) {
-      document.getElementById("laserLevel").innerText = "LEVEL 2 (DUAL TWIN)";
-      spaceBullets.push({ x: shipX - 8, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
-      spaceBullets.push({ x: shipX + 8, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
+  // Auto-Laser Firing Loop
+  const fireRate = sStreak >= 15 ? 130 : 210; // Overdrive fire rate
+  if (now - lastShotTime > fireRate) {
+    lastShotTime = now;
+    if (sStreak >= 15) {
+      document.getElementById("abilityMeter").innerText = "OVERDRIVE ⚡";
+      sBullets.push({ x: sShipX - 16, y: sCanvas.height - 45, vx: -1.2, color: "#ff003c" });
+      sBullets.push({ x: sShipX - 6, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
+      sBullets.push({ x: sShipX + 6, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
+      sBullets.push({ x: sShipX + 16, y: sCanvas.height - 45, vx: 1.2, color: "#ff003c" });
+    } else if (sStreak >= 8) {
+      document.getElementById("abilityMeter").innerText = "TRIPLE SPREAD";
+      sBullets.push({ x: sShipX - 12, y: sCanvas.height - 45, vx: -1.4, color: "#ff003c" });
+      sBullets.push({ x: sShipX, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
+      sBullets.push({ x: sShipX + 12, y: sCanvas.height - 45, vx: 1.4, color: "#ff003c" });
     } else {
-      document.getElementById("laserLevel").innerText = "LEVEL 1 (SINGLE)";
-      spaceBullets.push({ x: shipX, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
+      document.getElementById("abilityMeter").innerText = "DUAL BEAM";
+      sBullets.push({ x: sShipX - 8, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
+      sBullets.push({ x: sShipX + 8, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
     }
   }
 
-  // Draw Player Ship (Blue fighter with Red wings)
+  // Draw Fighter Jet
   ctx.fillStyle = "#00d4ff";
   ctx.beginPath();
-  ctx.moveTo(shipX, sCanvas.height - 48);
-  ctx.lineTo(shipX - 18, sCanvas.height - 12);
-  ctx.lineTo(shipX + 18, sCanvas.height - 12);
+  ctx.moveTo(sShipX, sCanvas.height - 48);
+  ctx.lineTo(sShipX - 20, sCanvas.height - 12);
+  ctx.lineTo(sShipX + 20, sCanvas.height - 12);
   ctx.fill();
 
-  ctx.fillStyle = "#ff003c";
-  ctx.fillRect(shipX - 22, sCanvas.height - 20, 6, 12);
-  ctx.fillRect(shipX + 16, sCanvas.height - 20, 6, 12);
-
-  // Bullets
-  spaceBullets.forEach((b) => {
-    b.y -= 9;
-    b.x += (b.vx || 0);
+  // Lasers
+  sBullets.forEach((b) => {
+    b.y -= 10;
+    b.x += b.vx;
     ctx.fillStyle = b.color;
-    ctx.shadowColor = b.color;
-    ctx.shadowBlur = 8;
-    ctx.fillRect(b.x - 2, b.y, 4, 14);
+    ctx.fillRect(b.x - 2, b.y, 4, 15);
   });
-  ctx.shadowBlur = 0;
 
   // Spawn Enemy Ships
-  const spawnRate = 0.038 + Math.min(sScore * 0.0002, 0.05);
-  if (Math.random() < spawnRate) {
-    spaceEnemies.push({
+  if (Math.random() < 0.038 + Math.min(sScore * 0.0002, 0.04)) {
+    sEnemies.push({
       x: Math.random() * (sCanvas.width - 40) + 20,
       y: -20,
       r: 15,
-      speed: 2.5 + Math.min(sScore * 0.008, 3.8)
+      speed: 2.6 + Math.min(sScore * 0.008, 3.8)
     });
   }
 
-  // Collisions
-  for (let eIdx = spaceEnemies.length - 1; eIdx >= 0; eIdx--) {
-    let en = spaceEnemies[eIdx];
+  // Particle Explosions
+  sBlastFx.forEach((p, idx) => {
+    p.update();
+    p.draw(ctx);
+    if (p.alpha <= 0) sBlastFx.splice(idx, 1);
+  });
+
+  // Enemies Update
+  for (let eIdx = sEnemies.length - 1; eIdx >= 0; eIdx--) {
+    let en = sEnemies[eIdx];
     en.y += en.speed;
 
     ctx.fillStyle = "#ff003c";
@@ -332,250 +476,248 @@ function loopSpace() {
     ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
     ctx.fill();
 
-    spaceBullets.forEach((b, bIdx) => {
-      if (Math.hypot(b.x - en.x, b.y - en.y) < en.r + 4) {
-        spaceEnemies.splice(eIdx, 1);
-        spaceBullets.splice(bIdx, 1);
+    // Hit Detection
+    sBullets.forEach((b, bIdx) => {
+      if (Math.hypot(b.x - en.x, b.y - en.y) < en.r + 5) {
+        for (let k = 0; k < 12; k++) {
+          sBlastFx.push(new BlastParticle(en.x, en.y, "#ff003c"));
+        }
+        sEnemies.splice(eIdx, 1);
+        sBullets.splice(bIdx, 1);
         sScore += 10;
+        sStreak++;
         document.getElementById("spaceScore").innerText = sScore;
+        document.getElementById("spaceCombo").innerText = `x${sStreak}`;
       }
     });
 
+    // Enemy Escaped! Streak Reset Penalty
     if (en.y > sCanvas.height) {
-      spaceActive = false;
-      const ov = document.getElementById("spaceOverlay");
-      ov.innerHTML = `<h3>BASE INFILTRATED</h3><p>Destroyed Ships: <strong>${sScore / 10}</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startSpaceGame()">Launch Again</button>`;
-      ov.classList.add("active");
-      return;
+      sEnemies.splice(eIdx, 1);
+      sStreak = 0; // Ability reset when enemy escapes
+      document.getElementById("spaceCombo").innerText = "x0 (RESET!)";
+      document.getElementById("abilityMeter").innerText = "NORMAL";
     }
   }
 
-  spaceBullets = spaceBullets.filter((b) => b.y > -20);
+  sBullets = sBullets.filter((b) => b.y > -20);
   sAnimId = requestAnimationFrame(loopSpace);
 }
 
 /* ==========================================================
-   4. TOWER JUMP (NEON BLUE & RED LEDGES)
+   GAME 4: CYBER BLADE SLASH (INTERACTIVE SWIPE & PARTICLES)
 ========================================================== */
-let towerActive = false, tPlayer = { x: 200, y: 250, vx: 0, vy: -7 };
-let tBlocks = [], tAltitude = 0, tAnimId = null;
-const tCanvas = document.getElementById("towerCanvas");
+let bladeActive = false, bladeScore = 0, bladeTargets = [], bladeTrail = [], bAnimId = null;
+const bCanvas = document.getElementById("bladeCanvas");
 
-function startTowerGame() {
-  if (!tCanvas) return;
+function startBladeGame() {
+  if (!bCanvas) return;
   fitActiveGameCanvas();
 
-  tPlayer = { x: tCanvas.width / 2, y: tCanvas.height - 40, vx: 0, vy: -8 };
-  tBlocks = [];
-  tAltitude = 0;
-  towerActive = true;
+  bladeScore = 0;
+  bladeTargets = [];
+  bladeTrail = [];
+  bladeActive = true;
 
-  for (let i = 0; i < 8; i++) {
-    tBlocks.push({
-      x: Math.random() * (tCanvas.width - 80),
-      y: tCanvas.height - i * 55,
-      w: 80,
-      h: 12,
-      color: i % 2 === 0 ? "#00d4ff" : "#ff003c"
-    });
-  }
+  document.getElementById("bladeScore").innerText = "0";
+  document.getElementById("bladeOverlay").classList.remove("active");
 
-  document.getElementById("towerHeight").innerText = "0m";
-  document.getElementById("towerOverlay").classList.remove("active");
-
-  cancelAnimationFrame(tAnimId);
-  loopTower();
+  cancelAnimationFrame(bAnimId);
+  loopBlade();
 }
 
-function setTowerMove(dir) { tPlayer.vx = dir * 5.4; }
-window.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowLeft" || e.key === "a") setTowerMove(-1);
-  if (e.key === "ArrowRight" || e.key === "d") setTowerMove(1);
-});
-window.addEventListener("keyup", () => { setTowerMove(0); });
+function handleBladeSwipe(clientX, clientY) {
+  const rect = bCanvas.getBoundingClientRect();
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  bladeTrail.push({ x, y, alpha: 1 });
 
-function loopTower() {
-  if (!towerActive) return;
-  const ctx = tCanvas.getContext("2d");
-  ctx.clearRect(0, 0, tCanvas.width, tCanvas.height);
-
-  tPlayer.vy += 0.26;
-  tPlayer.x += tPlayer.vx;
-  tPlayer.y += tPlayer.vy;
-
-  if (tPlayer.x < 0) tPlayer.x = tCanvas.width;
-  if (tPlayer.x > tCanvas.width) tPlayer.x = 0;
-
-  const currentBlockW = Math.max(80 - Math.floor(tAltitude / 30), 45);
-
-  tBlocks.forEach((b) => {
-    if (
-      tPlayer.vy > 0 &&
-      tPlayer.x > b.x &&
-      tPlayer.x < b.x + b.w &&
-      tPlayer.y + 14 >= b.y &&
-      tPlayer.y + 14 <= b.y + 16
-    ) {
-      tPlayer.vy = -8.4;
-      tAltitude += 10;
-      document.getElementById("towerHeight").innerText = `${tAltitude}m`;
-    }
-  });
-
-  if (tPlayer.y < 160) {
-    tPlayer.y = 160;
-    tBlocks.forEach((b) => {
-      b.y += 4.5;
-      if (b.y > tCanvas.height) {
-        b.y = 0;
-        b.w = currentBlockW;
-        b.x = Math.random() * (tCanvas.width - b.w);
+  // Slice Target Check
+  for (let i = bladeTargets.length - 1; i >= 0; i--) {
+    let t = bladeTargets[i];
+    if (Math.hypot(t.x - x, t.y - y) < t.r) {
+      for (let k = 0; k < 14; k++) {
+        bladeTrail.push(new BlastParticle(t.x, t.y, t.color));
       }
+      bladeTargets.splice(i, 1);
+      bladeScore++;
+      document.getElementById("bladeScore").innerText = bladeScore;
+    }
+  }
+}
+
+bCanvas?.addEventListener("pointermove", (e) => {
+  if (bladeActive) handleBladeSwipe(e.clientX, e.clientY);
+});
+
+function loopBlade() {
+  if (!bladeActive) return;
+  const ctx = bCanvas.getContext("2d");
+  ctx.clearRect(0, 0, bCanvas.width, bCanvas.height);
+
+  // Spawn Launching Quantum Cores
+  if (Math.random() < 0.04) {
+    bladeTargets.push({
+      x: Math.random() * (bCanvas.width - 80) + 40,
+      y: bCanvas.height + 20,
+      vx: (Math.random() - 0.5) * 4,
+      vy: -(Math.random() * 4 + 11),
+      r: 22,
+      color: Math.random() > 0.5 ? "#00d4ff" : "#ff003c"
     });
   }
 
-  // Draw Blocks
-  tBlocks.forEach((b) => {
-    ctx.fillStyle = b.color;
-    ctx.fillRect(b.x, b.y, b.w, b.h);
-  });
+  // Update Targets
+  for (let i = bladeTargets.length - 1; i >= 0; i--) {
+    let t = bladeTargets[i];
+    t.x += t.vx;
+    t.y += t.vy;
+    t.vy += 0.28; // Gravity
 
-  // Draw Core
-  ctx.fillStyle = "#ffffff";
-  ctx.shadowColor = "#00d4ff";
-  ctx.shadowBlur = 10;
-  ctx.fillRect(tPlayer.x - 9, tPlayer.y, 18, 18);
-  ctx.shadowBlur = 0;
+    ctx.fillStyle = t.color;
+    ctx.shadowColor = t.color;
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, t.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
 
-  if (tPlayer.y > tCanvas.height) {
-    towerActive = false;
-    const ov = document.getElementById("towerOverlay");
-    ov.innerHTML = `<h3>MATRIX DROP</h3><p>Altitude: <strong>${tAltitude}m</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startTowerGame()">Climb Again</button>`;
-    ov.classList.add("active");
-    return;
+    if (t.y > bCanvas.height + 60 && t.vy > 0) {
+      bladeTargets.splice(i, 1);
+    }
   }
 
-  tAnimId = requestAnimationFrame(loopTower);
+  // Draw Glowing Katana Trail
+  if (bladeTrail.length > 1) {
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    for (let i = 0; i < bladeTrail.length; i++) {
+      let pt = bladeTrail[i];
+      if (i === 0) ctx.moveTo(pt.x, pt.y);
+      else ctx.lineTo(pt.x, pt.y);
+      pt.alpha -= 0.04;
+    }
+    ctx.stroke();
+  }
+  bladeTrail = bladeTrail.filter((pt) => pt.alpha > 0);
+
+  bAnimId = requestAnimationFrame(loopBlade);
 }
 
 /* ==========================================================
-   5. CYBER SNAKE (BLUE BODY + RED ORBS)
+   GAME 5: QUANTUM ORBIT SHIELD (360-DEGREE ROTATING DEFENSE)
 ========================================================== */
-let snakeActive = false, snake = [], food = { x: 0, y: 0 }, snakeDir = 'RIGHT';
-let snakeScore = 0, snakeInterval = null;
-const snCanvas = document.getElementById("snakeCanvas");
-const GRID_SIZE = 16;
+let orbitActive = false, orbitScore = 0, coreHp = 100, shieldAngle = 0, incomingLasers = [], oAnimId = null;
+const oCanvas = document.getElementById("orbitCanvas");
 
-function startSnakeGame() {
-  if (!snCanvas) return;
+function startOrbitGame() {
+  if (!oCanvas) return;
   fitActiveGameCanvas();
 
-  snake = [
-    { x: 5 * GRID_SIZE, y: 5 * GRID_SIZE },
-    { x: 4 * GRID_SIZE, y: 5 * GRID_SIZE },
-    { x: 3 * GRID_SIZE, y: 5 * GRID_SIZE }
-  ];
-  snakeDir = 'RIGHT';
-  snakeScore = 0;
-  snakeActive = true;
+  orbitScore = 0;
+  coreHp = 100;
+  incomingLasers = [];
+  shieldAngle = 0;
+  orbitActive = true;
 
-  document.getElementById("snakeScore").innerText = "0";
-  document.getElementById("snakeSpeedVal").innerText = "1.0x";
-  document.getElementById("snakeOverlay").classList.remove("active");
+  document.getElementById("orbitScore").innerText = "0";
+  document.getElementById("coreHealth").innerText = "100%";
+  document.getElementById("orbitOverlay").classList.remove("active");
 
-  spawnFood();
-  clearInterval(snakeInterval);
-  runSnakeLoop(120);
+  cancelAnimationFrame(oAnimId);
+  loopOrbit();
 }
 
-function spawnFood() {
-  const cols = Math.floor(snCanvas.width / GRID_SIZE) - 2;
-  const rows = Math.floor(snCanvas.height / GRID_SIZE) - 2;
-  food = {
-    x: Math.floor(Math.random() * cols + 1) * GRID_SIZE,
-    y: Math.floor(Math.random() * rows + 1) * GRID_SIZE
-  };
-}
-
-function turnSnake(d) {
-  if (d === 'UP' && snakeDir !== 'DOWN') snakeDir = 'UP';
-  if (d === 'DOWN' && snakeDir !== 'UP') snakeDir = 'DOWN';
-  if (d === 'LEFT' && snakeDir !== 'RIGHT') snakeDir = 'LEFT';
-  if (d === 'RIGHT' && snakeDir !== 'LEFT') snakeDir = 'RIGHT';
-}
-
-window.addEventListener("keydown", (e) => {
-  if (!document.getElementById("snakeView")?.classList.contains("active")) return;
-  if (e.key === "ArrowUp" || e.key === "w") turnSnake('UP');
-  if (e.key === "ArrowDown" || e.key === "s") turnSnake('DOWN');
-  if (e.key === "ArrowLeft" || e.key === "a") turnSnake('LEFT');
-  if (e.key === "ArrowRight" || e.key === "d") turnSnake('RIGHT');
+oCanvas?.addEventListener("pointermove", (e) => {
+  const rect = oCanvas.getBoundingClientRect();
+  const cx = oCanvas.width / 2;
+  const cy = oCanvas.height / 2;
+  shieldAngle = Math.atan2(e.clientY - rect.top - cy, e.clientX - rect.left - cx);
 });
 
-function runSnakeLoop(speed) {
-  snakeInterval = setInterval(() => {
-    if (!snakeActive) return;
+function loopOrbit() {
+  if (!orbitActive) return;
+  const ctx = oCanvas.getContext("2d");
+  ctx.clearRect(0, 0, oCanvas.width, oCanvas.height);
 
-    let head = { ...snake[0] };
-    if (snakeDir === 'RIGHT') head.x += GRID_SIZE;
-    if (snakeDir === 'LEFT') head.x -= GRID_SIZE;
-    if (snakeDir === 'UP') head.y -= GRID_SIZE;
-    if (snakeDir === 'DOWN') head.y += GRID_SIZE;
+  const cx = oCanvas.width / 2;
+  const cy = oCanvas.height / 2;
 
-    // Boundary Collisions
-    if (head.x < 0 || head.x >= snCanvas.width || head.y < 0 || head.y >= snCanvas.height) {
-      return endSnake();
-    }
-
-    // Body Collisions
-    for (let segment of snake) {
-      if (head.x === segment.x && head.y === segment.y) {
-        return endSnake();
-      }
-    }
-
-    snake.unshift(head);
-
-    if (head.x === food.x && head.y === food.y) {
-      snakeScore++;
-      document.getElementById("snakeScore").innerText = snakeScore;
-      spawnFood();
-      if (snakeScore % 3 === 0 && speed > 50) {
-        clearInterval(snakeInterval);
-        const newSpeed = Math.max(120 - snakeScore * 4, 45);
-        document.getElementById("snakeSpeedVal").innerText = `${(120 / newSpeed).toFixed(1)}x`;
-        runSnakeLoop(newSpeed);
-      }
-    } else {
-      snake.pop();
-    }
-
-    renderSnake();
-  }, speed);
-}
-
-function renderSnake() {
-  const ctx = snCanvas.getContext("2d");
-  ctx.clearRect(0, 0, snCanvas.width, snCanvas.height);
-
-  // Red Energy Orb
-  ctx.fillStyle = "#ff003c";
-  ctx.shadowColor = "#ff003c";
-  ctx.shadowBlur = 10;
-  ctx.fillRect(food.x, food.y, GRID_SIZE - 2, GRID_SIZE - 2);
-
-  // Blue Neon Snake
+  // Central Vulnerable Core
+  ctx.fillStyle = "#00d4ff";
+  ctx.shadowColor = "#00d4ff";
+  ctx.shadowBlur = 16;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 24, 0, Math.PI * 2);
+  ctx.fill();
   ctx.shadowBlur = 0;
-  snake.forEach((seg, idx) => {
-    ctx.fillStyle = idx === 0 ? "#ffffff" : "#00d4ff";
-    ctx.fillRect(seg.x, seg.y, GRID_SIZE - 2, GRID_SIZE - 2);
-  });
-}
 
-function endSnake() {
-  snakeActive = false;
-  clearInterval(snakeInterval);
-  const ov = document.getElementById("snakeOverlay");
-  ov.innerHTML = `<h3>ENERGY SEVERED</h3><p>Orbs Collected: <strong>${snakeScore}</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startSnakeGame()">Slither Again</button>`;
-  ov.classList.add("active");
+  // Rotating Arc Shield (Blue-Red Beam)
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 6;
+  ctx.shadowColor = "#00d4ff";
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 58, shieldAngle - 0.6, shieldAngle + 0.6);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Spawn Incoming Lasers from screen edge
+  if (Math.random() < 0.045) {
+    const ang = Math.random() * Math.PI * 2;
+    const dist = Math.hypot(cx, cy) + 40;
+    incomingLasers.push({
+      x: cx + Math.cos(ang) * dist,
+      y: cy + Math.sin(ang) * dist,
+      targetAngle: ang,
+      speed: 3.2 + Math.min(orbitScore * 0.1, 4.0)
+    });
+  }
+
+  // Update & Check Deflections
+  for (let i = incomingLasers.length - 1; i >= 0; i--) {
+    let l = incomingLasers[i];
+    const angleToCore = Math.atan2(cy - l.y, cx - l.x);
+    l.x += Math.cos(angleToCore) * l.speed;
+    l.y += Math.sin(angleToCore) * l.speed;
+
+    ctx.fillStyle = "#ff003c";
+    ctx.beginPath();
+    ctx.arc(l.x, l.y, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    const distToCore = Math.hypot(cx - l.x, cy - l.y);
+
+    // Shield Deflection Check
+    if (distToCore <= 62 && distToCore >= 52) {
+      const hitAngle = Math.atan2(l.y - cy, l.x - cx);
+      let diff = Math.abs(shieldAngle - hitAngle);
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      diff = Math.abs(diff);
+
+      if (diff < 0.6) {
+        incomingLasers.splice(i, 1);
+        orbitScore++;
+        document.getElementById("orbitScore").innerText = orbitScore;
+        continue;
+      }
+    }
+
+    // Core Hit
+    if (distToCore < 24) {
+      incomingLasers.splice(i, 1);
+      coreHp -= 20;
+      document.getElementById("coreHealth").innerText = `${coreHp}%`;
+      if (coreHp <= 0) {
+        orbitActive = false;
+        const ov = document.getElementById("orbitOverlay");
+        ov.innerHTML = `<h3>CORE COMPROMISED</h3><p>Lasers Deflected: <strong>${orbitScore}</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startOrbitGame()">Reactivate</button>`;
+        ov.classList.add("active");
+        return;
+      }
+    }
+  }
+
+  oAnimId = requestAnimationFrame(loopOrbit);
 }

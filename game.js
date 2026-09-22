@@ -1,12 +1,13 @@
 /* ==========================================================
-   ROBUST CANVAS SETUP & OVERLAY HELPERS
+   CANVAS SETUP & RESIZE HELPER
 ========================================================== */
 function setupCanvas(canvas) {
   if (!canvas) return;
   const parent = canvas.parentElement;
   let w = parent ? parent.clientWidth : 800;
   let h = parent ? parent.clientHeight : 460;
-  canvas.width = w; canvas.height = h;
+  canvas.width = w > 0 ? w : 800;
+  canvas.height = h > 0 ? h : 460;
 }
 
 function hideOverlay(id) {
@@ -23,7 +24,7 @@ function showOverlay(id, title, desc, btnText, callbackName) {
 }
 
 /* ==========================================================
-   TIER 1P VS 2P CONTROLS & TABS
+   TIER SELECTOR (1P VS 2P)
 ========================================================== */
 function switchPlayerTier(tier) {
   document.querySelectorAll(".tier-card").forEach(c => c.classList.remove("active"));
@@ -55,7 +56,7 @@ document.querySelectorAll(".game-selector-btn").forEach((btn) => {
 });
 
 /* ==========================================================
-   ONLINE AUTO-MATCHMAKING QUEUE (NO ROOM CODES NEEDED)
+   ONLINE AUTO-QUEUE MATCHMAKING
 ========================================================== */
 let multiplayerMode = "offline";
 let peer = null;
@@ -74,40 +75,33 @@ function findMatch() {
   const status = document.getElementById("netStatusText");
   const btn = document.getElementById("queueBtn");
   btn.disabled = true;
-  status.innerText = "SEARCHING QUEUE...";
+  status.innerText = "SCANNING PLAYERS...";
 
   peer = new Peer();
-  peer.on('open', (id) => {
-    // Attempt to connect to a specific open queue slot
-    tryConnectToQueue(1);
-  });
+  peer.on('open', () => tryConnectToQueue(1));
 }
 
 function tryConnectToQueue(slotIndex) {
   const status = document.getElementById("netStatusText");
-  if (slotIndex > 5) {
-    // If no active hosts found, become the host of Slot 1
+  if (slotIndex > 4) {
     hostQueueMatch();
     return;
   }
-
-  status.innerText = `SCANNING LOBBY ${slotIndex}...`;
+  status.innerText = `CONNECTING TO LOBBY ${slotIndex}...`;
   const targetId = QUEUE_ROOM_BASE + slotIndex;
-  
   let conn = peer.connect(targetId);
   let timeout = setTimeout(() => {
     conn.close();
     tryConnectToQueue(slotIndex + 1);
-  }, 2000); // Wait 2s per slot
+  }, 1800);
 
   conn.on('open', () => {
     clearTimeout(timeout);
-    myPlayerIndex = 2; // Joined someone else
+    myPlayerIndex = 2;
     netConn = conn;
-    status.innerText = "MATCH FOUND! PLAYING AS P2";
+    status.innerText = "MATCH FOUND! PLAYING AS P2 (BLACK)";
     setupNetListeners();
   });
-
   conn.on('error', () => {
     clearTimeout(timeout);
     tryConnectToQueue(slotIndex + 1);
@@ -116,29 +110,23 @@ function tryConnectToQueue(slotIndex) {
 
 function hostQueueMatch() {
   const status = document.getElementById("netStatusText");
-  peer.destroy(); // Destroy random peer
-  
-  // Re-initialize as the host of Slot 1 (or random fallback)
-  const hostId = QUEUE_ROOM_BASE + "1";
-  peer = new Peer(hostId);
-  
+  if (peer) peer.destroy();
+  peer = new Peer(QUEUE_ROOM_BASE + "1");
+
   peer.on('open', () => {
-    status.innerText = "WAITING IN QUEUE...";
+    status.innerText = "HOSTING MATCH... WAITING FOR P2";
     myPlayerIndex = 1;
   });
-
   peer.on('connection', (conn) => {
     netConn = conn;
-    status.innerText = "OPPONENT JOINED! PLAYING AS P1";
+    status.innerText = "OPPONENT CONNECTED! YOU ARE P1 (WHITE)";
     setupNetListeners();
     sendNetData({ type: "SYNC_START" });
   });
-
-  peer.on('error', (err) => {
-    // If slot 1 is suddenly taken, fallback to slot 2
+  peer.on('error', () => {
     peer = new Peer(QUEUE_ROOM_BASE + "2");
-    peer.on('open', () => status.innerText = "WAITING IN QUEUE (SLOT 2)...");
-    peer.on('connection', (conn) => { netConn = conn; setupNetListeners(); status.innerText = "OPPONENT JOINED!"; });
+    peer.on('open', () => { status.innerText = "WAITING IN LOBBY 2..."; myPlayerIndex = 1; });
+    peer.on('connection', (conn) => { netConn = conn; status.innerText = "MATCH FOUND!"; setupNetListeners(); });
   });
 }
 
@@ -154,22 +142,20 @@ function setupNetListeners() {
     } else if (data.type === "SEABATTLE_SHOT") {
       handleSeaBattleShot(data.targetPlayer, data.index, false);
     } else if (data.type === "CHESS_MOVE") {
-      executeChessMove(data.from, data.to, false);
+      executeStrictChessMove(data.from, data.to, false);
     } else if (data.type === "TTT_MOVE") {
       handleTTT2PMove(data.index, false);
     }
   });
 }
-
-function sendNetData(data) {
-  if (netConn && netConn.open) netConn.send(data);
-}
+function sendNetData(data) { if (netConn && netConn.open) netConn.send(data); }
 
 /* ==========================================================
-   1. SINGLE PLAYER: SPACE STRIKER (DETAILED SHIP & METEORS)
+   1. SINGLE PLAYER: 3D SPACE STRIKER (3D TILT SHIP & ROTATING ASTEROIDS)
 ========================================================== */
 let spaceActive = false, sShipX = 400, sBullets = [], sMeteors = [], sPowerBalls = [];
 let sScore = 0, sAnimId = null, sLaserTier = 1, sSpeedBoost = 1, sLastShot = 0, sTimeTicks = 0;
+let shipTiltAngle = 0;
 const sCanvas = document.getElementById("spaceCanvas");
 
 function startSpaceGame() {
@@ -181,8 +167,8 @@ function startSpaceGame() {
   spaceActive = true;
 
   document.getElementById("spaceScore").innerText = "0";
-  document.getElementById("laserBuff").innerText = "SINGLE BEAM";
-  document.getElementById("speedBuff").innerText = "NORMAL";
+  document.getElementById("laserBuff").innerText = "SINGLE LASER";
+  document.getElementById("speedBuff").innerText = "CRUISING";
   hideOverlay("spaceOverlay");
   cancelAnimationFrame(sAnimId);
   loopSpace();
@@ -190,49 +176,61 @@ function startSpaceGame() {
 
 sCanvas?.addEventListener("pointermove", (e) => {
   const rect = sCanvas.getBoundingClientRect();
-  sShipX = Math.max(30, Math.min(sCanvas.width - 30, e.clientX - rect.left));
+  const targetX = Math.max(35, Math.min(sCanvas.width - 35, e.clientX - rect.left));
+  shipTiltAngle = (targetX - sShipX) * 0.04;
+  sShipX = targetX;
 });
 sCanvas?.addEventListener("pointerdown", () => { if (!spaceActive) startSpaceGame(); });
 
-function drawBlueprintShip(ctx, x, y) {
+function draw3DStarfighter(ctx, x, y, tilt) {
   ctx.save();
   ctx.translate(x, y);
-  ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2;
-  ctx.fillStyle = "rgba(0, 212, 255, 0.1)";
-  
-  // Nose
+  ctx.rotate(tilt);
+
+  // 3D Isometric Wireframe Starfighter
+  ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2.2;
+  ctx.fillStyle = "rgba(0, 212, 255, 0.15)";
+
+  // Hull
   ctx.beginPath();
-  ctx.moveTo(0, -25);
-  ctx.lineTo(8, -5);
-  ctx.lineTo(25, 5); // Right Wing
-  ctx.lineTo(8, 12);
-  ctx.lineTo(-8, 12);
-  ctx.lineTo(-25, 5); // Left Wing
-  ctx.lineTo(-8, -5);
+  ctx.moveTo(0, -32);          // Nose tip
+  ctx.lineTo(12, -8);
+  ctx.lineTo(34, 12);          // Right wing tip
+  ctx.lineTo(12, 16);
+  ctx.lineTo(8, 26);           // Right engine
+  ctx.lineTo(-8, 26);          // Left engine
+  ctx.lineTo(-12, 16);
+  ctx.lineTo(-34, 12);         // Left wing tip
+  ctx.lineTo(-12, -8);
   ctx.closePath();
   ctx.stroke(); ctx.fill();
 
-  // Engine Glow
-  ctx.fillStyle = "#ff003c";
-  ctx.shadowColor = "#ff003c"; ctx.shadowBlur = 10;
-  ctx.fillRect(-6, 12, 12, 6 + Math.random()*4);
+  // Cockpit 3D Canopy
+  ctx.strokeStyle = "#ffffff";
+  ctx.strokeRect(-4, -14, 8, 16);
+
+  // Twin Plasma Exhaust Flames
+  ctx.fillStyle = "#ff003c"; ctx.shadowColor = "#ff003c"; ctx.shadowBlur = 10;
+  ctx.fillRect(-7, 26, 4, 8 + Math.random()*6);
+  ctx.fillRect(3, 26, 4, 8 + Math.random()*6);
+  ctx.shadowBlur = 0;
+
   ctx.restore();
 }
 
-function drawAsteroid(ctx, x, y, r, rot) {
+function draw3DAsteroid(ctx, x, y, r, rot) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(rot);
-  ctx.strokeStyle = "#ff003c";
-  ctx.lineWidth = 2;
-  ctx.fillStyle = "rgba(255, 0, 60, 0.1)";
+  ctx.strokeStyle = "#ff003c"; ctx.lineWidth = 2;
+  ctx.fillStyle = "rgba(255, 0, 60, 0.15)";
   ctx.beginPath();
-  // Generate a jagged polygon
-  for (let i = 0; i < 6; i++) {
-    const angle = (i / 6) * Math.PI * 2;
-    const rad = r * (0.7 + Math.random() * 0.3); // Jagged edge
-    if (i === 0) ctx.moveTo(Math.cos(angle) * rad, Math.sin(angle) * rad);
-    else ctx.lineTo(Math.cos(angle) * rad, Math.sin(angle) * rad);
+  const pts = 7;
+  for (let i = 0; i < pts; i++) {
+    const a = (i / pts) * Math.PI * 2;
+    const rad = r * (0.65 + (i % 2 === 0 ? 0.35 : 0.15));
+    if (i === 0) ctx.moveTo(Math.cos(a) * rad, Math.sin(a) * rad);
+    else ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
   }
   ctx.closePath();
   ctx.stroke(); ctx.fill();
@@ -245,58 +243,59 @@ function loopSpace() {
   ctx.clearRect(0, 0, sCanvas.width, sCanvas.height);
   sTimeTicks++;
 
-  // Difficulty scales gradually based on Score + Time
-  const diffMultiplier = 1 + (sScore / 600) + (sTimeTicks / 6000);
-  const meteorSpeed = 1.8 * diffMultiplier * sSpeedBoost;
-  const spawnRate = 0.02 * diffMultiplier;
+  // Smooth Difficulty Progression
+  const diff = 1 + (sScore / 600) + (sTimeTicks / 8000);
+  const meteorSpeed = 1.9 * diff * sSpeedBoost;
 
   const now = Date.now();
   if (now - sLastShot > (220 / sSpeedBoost)) {
     sLastShot = now;
-    if (sLaserTier === 1) sBullets.push({ x: sShipX, y: sCanvas.height - 35, vx: 0 });
-    else if (sLaserTier === 2) {
-      sBullets.push({ x: sShipX - 12, y: sCanvas.height - 35, vx: 0 });
-      sBullets.push({ x: sShipX + 12, y: sCanvas.height - 35, vx: 0 });
+    if (sLaserTier === 1) {
+      sBullets.push({ x: sShipX, y: sCanvas.height - 40, vx: 0 });
+    } else if (sLaserTier === 2) {
+      sBullets.push({ x: sShipX - 12, y: sCanvas.height - 40, vx: 0 });
+      sBullets.push({ x: sShipX + 12, y: sCanvas.height - 40, vx: 0 });
     } else {
-      sBullets.push({ x: sShipX - 16, y: sCanvas.height - 35, vx: -0.5 });
-      sBullets.push({ x: sShipX, y: sCanvas.height - 35, vx: 0 });
-      sBullets.push({ x: sShipX + 16, y: sCanvas.height - 35, vx: 0.5 });
+      sBullets.push({ x: sShipX - 18, y: sCanvas.height - 40, vx: -0.8 });
+      sBullets.push({ x: sShipX, y: sCanvas.height - 40, vx: 0 });
+      sBullets.push({ x: sShipX + 18, y: sCanvas.height - 40, vx: 0.8 });
     }
   }
 
-  drawBlueprintShip(ctx, sShipX, sCanvas.height - 30);
+  // Draw 3D Jet
+  draw3DStarfighter(ctx, sShipX, sCanvas.height - 35, shipTiltAngle);
+  shipTiltAngle *= 0.85; // Reset tilt
 
-  // Bullets
-  ctx.fillStyle = "#00d4ff";
-  ctx.shadowColor = "#00d4ff"; ctx.shadowBlur = 8;
+  // Draw Lasers
+  ctx.fillStyle = "#00d4ff"; ctx.shadowColor = "#00d4ff"; ctx.shadowBlur = 8;
   sBullets.forEach(b => {
     b.y -= 10; b.x += b.vx;
     ctx.fillRect(b.x - 2, b.y, 4, 16);
   });
   ctx.shadowBlur = 0;
 
-  // Power Ups (Spawns every ~100 points logic via ticks)
-  if (sTimeTicks % 800 === 0 && Math.random() > 0.3) {
+  // Power Up Balls Spawning
+  if (sTimeTicks % 750 === 0) {
     const type = Math.random() > 0.5 ? "LASER" : "SPEED";
     sPowerBalls.push({ x: Math.random()*(sCanvas.width-60)+30, y: -20, r: 16, type: type });
   }
 
   for (let i = sPowerBalls.length - 1; i >= 0; i--) {
     let p = sPowerBalls[i];
-    p.y += 1.5;
+    p.y += 1.6;
     ctx.fillStyle = p.type === "LASER" ? "#ffbe0b" : "#00ff88";
     ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#000"; ctx.font = "bold 12px Rajdhani"; ctx.textAlign = "center";
-    ctx.fillText(p.type === "LASER" ? "2x" : ">>>", p.x, p.y + 4);
+    ctx.fillStyle = "#000"; ctx.font = "bold 11px Rajdhani"; ctx.textAlign = "center";
+    ctx.fillText(p.type === "LASER" ? "2X" : ">>>", p.x, p.y + 4);
 
     sBullets.forEach((b, bIdx) => {
       if (Math.hypot(b.x - p.x, b.y - p.y) < p.r + 5) {
         if (p.type === "LASER") {
           sLaserTier = Math.min(sLaserTier + 1, 3);
-          document.getElementById("laserBuff").innerText = sLaserTier === 2 ? "DUAL" : "TRIPLE";
+          document.getElementById("laserBuff").innerText = sLaserTier === 2 ? "DUAL LASER" : "TRIPLE SPREAD";
         } else {
-          sSpeedBoost = 1.5; document.getElementById("speedBuff").innerText = "1.5x SURGE";
-          setTimeout(() => { sSpeedBoost = 1; document.getElementById("speedBuff").innerText = "NORMAL"; }, 10000);
+          sSpeedBoost = 1.45; document.getElementById("speedBuff").innerText = "WARP SPEED";
+          setTimeout(() => { sSpeedBoost = 1; document.getElementById("speedBuff").innerText = "CRUISING"; }, 12000);
         }
         sPowerBalls.splice(i, 1); sBullets.splice(bIdx, 1);
       }
@@ -304,38 +303,36 @@ function loopSpace() {
   }
 
   // Meteors
-  if (Math.random() < spawnRate) {
-    sMeteors.push({ x: Math.random()*(sCanvas.width-40)+20, y: -20, r: Math.random()*10+15, rot: 0 });
+  if (Math.random() < 0.02 * diff) {
+    sMeteors.push({ x: Math.random()*(sCanvas.width-40)+20, y: -20, r: Math.random()*10+16, rot: 0 });
   }
 
   for (let mIdx = sMeteors.length - 1; mIdx >= 0; mIdx--) {
     let m = sMeteors[mIdx];
-    m.y += meteorSpeed;
-    m.rot += 0.05;
-    
-    drawAsteroid(ctx, m.x, m.y, m.r, m.rot);
+    m.y += meteorSpeed; m.rot += 0.04;
+    draw3DAsteroid(ctx, m.x, m.y, m.r, m.rot);
 
     sBullets.forEach((b, bIdx) => {
-      if (Math.hypot(b.x - m.x, b.y - m.y) < m.r + 4) {
+      if (Math.hypot(b.x - m.x, b.y - m.y) < m.r + 5) {
         sMeteors.splice(mIdx, 1); sBullets.splice(bIdx, 1);
-        sScore += 5; document.getElementById("spaceScore").innerText = sScore;
+        sScore += 10; document.getElementById("spaceScore").innerText = sScore;
       }
     });
 
-    if (m.y > sCanvas.height + 20) {
+    if (m.y > sCanvas.height + 25) {
       spaceActive = false;
-      showOverlay("spaceOverlay", "HULL BREACH", `Meteors Destroyed: <strong>${sScore}</strong>`, "Relaunch", "startSpaceGame()");
+      showOverlay("spaceOverlay", "DEFENSE FAILED", `Meteors Obliterated: <strong>${sScore}</strong>`, "Relaunch Jet", "startSpaceGame()");
       return;
     }
   }
 
   sBullets = sBullets.filter(b => b.y > -20);
-  sPowerBalls = sPowerBalls.filter(p => p.y < sCanvas.height + 20);
+  sPowerBalls = sPowerBalls.filter(p => p.y < sCanvas.height + 25);
   sAnimId = requestAnimationFrame(loopSpace);
 }
 
 /* ==========================================================
-   2. SINGLE PLAYER: FLAPPY PHOENIX
+   2. SINGLE PLAYER: 3D FLAPPY PHOENIX (PERSPECTIVE 3D BUILD)
 ========================================================== */
 let flappyActive = false, fBirdY = 200, fBirdV = 0, fPipes = [], fScore = 0, fAnimId = null;
 let wingCycle = 0;
@@ -355,12 +352,23 @@ function flapWing() { if (flappyActive) fBirdV = -6.5; else startFlappyGame(); }
 fCanvas?.addEventListener("pointerdown", flapWing);
 window.addEventListener("keydown", (e) => { if (e.code==="Space" && document.getElementById("flappyView")?.classList.contains("active")) flapWing(); });
 
-function drawCyberBird(ctx, x, y, vy, cycle) {
+function draw3DIsometricBird(ctx, x, y, vy, cycle) {
   ctx.save(); ctx.translate(x, y); ctx.rotate(Math.min(Math.max(vy * 0.05, -0.5), 0.6));
-  ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2;
-  ctx.strokeRect(-12, -8, 24, 16); // Body
-  ctx.fillStyle = "#ff003c"; ctx.fillRect(12, -2, 8, 4); // Beak
-  ctx.fillStyle = "#fff"; ctx.fillRect(-4, Math.sin(cycle)*12, 10, 14); // Wing
+  ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2; ctx.fillStyle = "rgba(0, 212, 255, 0.2)";
+
+  // 3D Wireframe Body
+  ctx.beginPath();
+  ctx.moveTo(18, 0); ctx.lineTo(-10, -12); ctx.lineTo(-18, 0); ctx.lineTo(-10, 12); ctx.closePath();
+  ctx.stroke(); ctx.fill();
+
+  // 3D Flapping Wings
+  const wingZ = Math.sin(cycle) * 16;
+  ctx.strokeStyle = "#ffffff"; ctx.beginPath();
+  ctx.moveTo(0, -6); ctx.lineTo(-8, -20 - wingZ); ctx.lineTo(10, -6); ctx.stroke(); // Left
+  ctx.moveTo(0, 6); ctx.lineTo(-8, 20 + wingZ); ctx.lineTo(10, 6); ctx.stroke();   // Right
+
+  // Beak
+  ctx.fillStyle = "#ff003c"; ctx.fillRect(18, -3, 8, 6);
   ctx.restore();
 }
 
@@ -369,11 +377,11 @@ function loopFlappy() {
   const ctx = fCanvas.getContext("2d");
   ctx.clearRect(0, 0, fCanvas.width, fCanvas.height);
 
-  fBirdV += 0.35; fBirdY += fBirdV; wingCycle += 0.25;
-  drawCyberBird(ctx, 80, fBirdY, fBirdV, wingCycle);
+  fBirdV += 0.35; fBirdY += fBirdV; wingCycle += 0.24;
+  draw3DIsometricBird(ctx, 80, fBirdY, fBirdV, wingCycle);
 
   if (fPipes.length === 0 || fPipes[fPipes.length - 1].x < fCanvas.width - 240) {
-    const gap = 130;
+    const gap = 135;
     const topH = Math.random() * (fCanvas.height - gap - 100) + 40;
     fPipes.push({ x: fCanvas.width, top: topH, bottom: topH + gap, passed: false });
   }
@@ -383,23 +391,23 @@ function loopFlappy() {
     ctx.fillStyle = "#ff003c"; ctx.fillRect(p.x, 0, 48, p.top);
     ctx.fillStyle = "#00d4ff"; ctx.fillRect(p.x, p.bottom, 48, fCanvas.height - p.bottom);
 
-    if (80 + 12 > p.x && 80 - 12 < p.x + 48) {
-      if (fBirdY - 8 < p.top || fBirdY + 8 > p.bottom) {
-        flappyActive = false; showOverlay("flappyOverlay", "CRASHED", `Score: <strong>${fScore}</strong>`, "Fly Again", "startFlappyGame()"); return;
+    if (80 + 14 > p.x && 80 - 14 < p.x + 48) {
+      if (fBirdY - 10 < p.top || fBirdY + 10 > p.bottom) {
+        flappyActive = false; showOverlay("flappyOverlay", "FLIGHT OVER", `Score: <strong>${fScore}</strong>`, "Fly Again", "startFlappyGame()"); return;
       }
     }
     if (!p.passed && p.x < 80) { p.passed = true; fScore++; document.getElementById("flappyScore").innerText = fScore; }
   }
 
   if (fBirdY > fCanvas.height - 15 || fBirdY < 15) {
-    flappyActive = false; showOverlay("flappyOverlay", "OUT OF BOUNDS", `Score: <strong>${fScore}</strong>`, "Fly Again", "startFlappyGame()"); return;
+    flappyActive = false; showOverlay("flappyOverlay", "CRASHED", `Score: <strong>${fScore}</strong>`, "Fly Again", "startFlappyGame()"); return;
   }
   fPipes = fPipes.filter(p => p.x > -60);
   fAnimId = requestAnimationFrame(loopFlappy);
 }
 
 /* ==========================================================
-   3. SINGLE PLAYER: CHROME CYBER DINO (CYBER T-REX)
+   3. SINGLE PLAYER: 3D CYBER RAPTOR (PERSPECTIVE DINO)
 ========================================================== */
 let dinoActive = false, dY = 0, dV = 0, dScore = 0, dCacti = [], dAnimId = null;
 let dLegCycle = 0, dTicks = 0;
@@ -419,45 +427,30 @@ function jumpDinoAction() { if (dinoActive && dY === 0) dV = 11.5; else if (!din
 dCanvas?.addEventListener("pointerdown", jumpDinoAction);
 window.addEventListener("keydown", (e) => { if (e.code === "Space" && document.getElementById("dinoView")?.classList.contains("active")) jumpDinoAction(); });
 
-function drawCyberTRex(ctx, x, y, cycle, inAir) {
+function draw3DCyberRaptor(ctx, x, y, cycle, inAir) {
   ctx.save(); ctx.translate(x, y);
-  ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2.5; ctx.fillStyle = "rgba(0, 212, 255, 0.1)";
-  
-  // Detailed T-Rex Path
+  ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2.5; ctx.fillStyle = "rgba(0, 212, 255, 0.15)";
+
+  // 3D Angular Raptor Hull
   ctx.beginPath();
-  ctx.moveTo(10, -25); // Snout
-  ctx.lineTo(25, -25);
-  ctx.lineTo(25, -15); // Jaw
-  ctx.lineTo(12, -15);
-  ctx.lineTo(12, -5);  // Neck
-  ctx.lineTo(-5, 0);   // Back
-  ctx.lineTo(-20, 15); // Tail
-  ctx.lineTo(-25, 12);
-  ctx.lineTo(-10, -2); // Lower back
-  ctx.lineTo(-5, 15);  // Leg joint
+  ctx.moveTo(12, -28); ctx.lineTo(28, -28); ctx.lineTo(26, -14); ctx.lineTo(12, -14); // Head & Jaw
+  ctx.lineTo(8, -4); ctx.lineTo(-6, 2); ctx.lineTo(-24, 18); ctx.lineTo(-28, 14);     // Back & Tail
+  ctx.lineTo(-8, -2); ctx.lineTo(-4, 16);
   ctx.closePath();
   ctx.stroke(); ctx.fill();
 
-  ctx.fillStyle = "#ff003c"; ctx.fillRect(16, -22, 4, 3); // Red glowing eye
+  ctx.fillStyle = "#ff003c"; ctx.fillRect(18, -24, 5, 3); // Red Laser Eye
 
-  // Legs
-  ctx.strokeStyle = "#00d4ff";
+  // Mechanical Limbs
   if (!inAir) {
-    const l1 = Math.sin(cycle) * 8;
-    ctx.beginPath(); ctx.moveTo(-5, 15); ctx.lineTo(-8, 25 + l1); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, 12); ctx.lineTo(4, 25 - l1); ctx.stroke();
+    const l = Math.sin(cycle) * 10;
+    ctx.beginPath(); ctx.moveTo(-6, 16); ctx.lineTo(-10, 26 + l); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, 14); ctx.lineTo(6, 26 - l); ctx.stroke();
   } else {
-    ctx.beginPath(); ctx.moveTo(-5, 15); ctx.lineTo(-12, 20); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, 12); ctx.lineTo(8, 18); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-6, 16); ctx.lineTo(-14, 22); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, 14); ctx.lineTo(8, 20); ctx.stroke();
   }
   ctx.restore();
-}
-
-function drawCyberCactus(ctx, x, y, w, h) {
-  ctx.fillStyle = "#ff003c"; ctx.shadowColor = "#ff003c"; ctx.shadowBlur = 8;
-  ctx.beginPath();
-  ctx.moveTo(x, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w/2, y - h); ctx.closePath();
-  ctx.fill(); ctx.shadowBlur = 0;
 }
 
 function loopDino() {
@@ -467,29 +460,32 @@ function loopDino() {
   dTicks++;
 
   const groundY = dCanvas.height - 40;
-  // Gradual speed scaling
-  const speed = 4.8 + Math.log10(1 + dTicks / 500) * 2;
+  const speed = 4.8 + Math.log10(1 + dTicks / 500) * 2.2;
 
   dY += dV;
   if (dY > 0) dV -= 0.52; else { dY = 0; dV = 0; }
   dLegCycle += 0.25;
 
-  ctx.strokeStyle = "rgba(0, 212, 255, 0.5)"; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(0, groundY + 25); ctx.lineTo(dCanvas.width, groundY + 25); ctx.stroke();
+  // Grid Floor
+  ctx.strokeStyle = "rgba(0, 212, 255, 0.4)"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, groundY + 26); ctx.lineTo(dCanvas.width, groundY + 26); ctx.stroke();
 
-  drawCyberTRex(ctx, 70, groundY, dLegCycle, dY > 0);
+  draw3DCyberRaptor(ctx, 70, groundY, dLegCycle, dY > 0);
 
+  // Barriers
   if (dCacti.length === 0 || dCacti[dCacti.length - 1].x < dCanvas.width - (300 - speed*10)) {
-    if (Math.random() < 0.02) dCacti.push({ x: dCanvas.width, w: 18, h: Math.random() * 20 + 25 });
+    if (Math.random() < 0.02) dCacti.push({ x: dCanvas.width, w: 20, h: Math.random() * 20 + 26 });
   }
 
   for (let i = 0; i < dCacti.length; i++) {
     let c = dCacti[i]; c.x -= speed;
-    drawCyberCactus(ctx, c.x, groundY + 25, c.w, c.h);
+    ctx.fillStyle = "#ff003c"; ctx.shadowColor = "#ff003c"; ctx.shadowBlur = 8;
+    ctx.fillRect(c.x, groundY + 26 - c.h, c.w, c.h);
+    ctx.shadowBlur = 0;
 
     if (70 + 15 > c.x && 70 - 15 < c.x + c.w && dY < c.h) {
       dinoActive = false;
-      showOverlay("dinoOverlay", "IMPACT DETECTED", `Distance: <strong>${Math.floor(dScore/5)}m</strong>`, "Run Again", "startDinoGame()");
+      showOverlay("dinoOverlay", "IMPACT BREACH", `Distance: <strong>${Math.floor(dScore/5)}m</strong>`, "Run Again", "startDinoGame()");
       return;
     }
   }
@@ -500,12 +496,219 @@ function loopDino() {
 }
 
 /* ==========================================================
-   2-PLAYER: SEA BATTLE, CHESS (WITH REAL RULES), TIC TAC TOE
+   2-PLAYER: STRICT CHESS ENGINE WITH FULL MOVE RULES
 ========================================================== */
+const INITIAL_CHESS = [
+  "r","n","b","q","k","b","n","r",
+  "p","p","p","p","p","p","p","p",
+  "","","","","","","","",
+  "","","","","","","","",
+  "","","","","","","","",
+  "","","","","","","","",
+  "P","P","P","P","P","P","P","P",
+  "R","N","B","Q","K","B","N","R"
+];
+const CHESS_SYM = {
+  "r":"♜","n":"♞","b":"♝","q":"♛","k":"♚","p":"♟",
+  "R":"♖","N":"♘","B":"♗","Q":"♕","K":"♔","P":"♙"
+};
+let chessBoard = [];
+let chessTurn = "W";
+let selChess = null;
+let validMovesForSelected = [];
 
-/* Sea Battle */
+function init2PDefaults() {
+  resetChessBoard();
+  resetSeaBattle();
+  resetTTT2P();
+}
+
+function resetChessBoard() {
+  chessBoard = [...INITIAL_CHESS];
+  chessTurn = "W";
+  selChess = null;
+  validMovesForSelected = [];
+  document.getElementById("chessTurn").innerText = "WHITE (PLAYER 1)";
+  document.getElementById("chessStatus").innerText = "MATCH ACTIVE";
+  renderChessBoard();
+}
+
+function isPathClear(from, to, board) {
+  const r1 = Math.floor(from / 8), c1 = from % 8;
+  const r2 = Math.floor(to / 8), c2 = to % 8;
+  const dr = Math.sign(r2 - r1);
+  const dc = Math.sign(c2 - c1);
+  let currR = r1 + dr;
+  let currC = c1 + dc;
+  while (currR !== r2 || currC !== c2) {
+    if (board[currR * 8 + currC] !== "") return false;
+    currR += dr; currC += dc;
+  }
+  return true;
+}
+
+// STRICT CHESS MOVE VALIDATION (REAL RULES)
+function isValidChessMove(from, to, board, turn) {
+  const piece = board[from];
+  const target = board[to];
+  if (!piece) return false;
+
+  const isW = piece === piece.toUpperCase();
+  if ((turn === "W" && !isW) || (turn === "B" && isW)) return false;
+
+  // Cannot capture own piece
+  if (target !== "") {
+    const tIsW = target === target.toUpperCase();
+    if (isW === tIsW) return false;
+  }
+
+  const r1 = Math.floor(from / 8), c1 = from % 8;
+  const r2 = Math.floor(to / 8), c2 = to % 8;
+  const dr = r2 - r1, dc = c2 - c1;
+  const absR = Math.abs(dr), absC = Math.abs(dc);
+  const pType = piece.toLowerCase();
+
+  // PAWN (PYADA) RULES: 1 or 2 steps forward, cross capture ONLY
+  if (pType === 'p') {
+    const dir = isW ? -1 : 1;
+    const startRow = isW ? 6 : 1;
+    // Straight march
+    if (dc === 0 && target === "") {
+      if (dr === dir) return true;
+      if (r1 === startRow && dr === 2 * dir && board[from + dir * 8] === "") return true;
+    }
+    // Diagonal capture
+    else if (absC === 1 && dr === dir && target !== "") {
+      return true;
+    }
+    return false;
+  }
+
+  // KNIGHT (GHODA) RULES: L-Shape, jumps over pieces
+  if (pType === 'n') {
+    return (absR === 2 && absC === 1) || (absR === 1 && absC === 2);
+  }
+
+  // BISHOP (OONT) RULES: Diagonals with clear path
+  if (pType === 'b') {
+    return absR === absC && isPathClear(from, to, board);
+  }
+
+  // ROOK (HAATHI) RULES: Straight lines with clear path
+  if (pType === 'r') {
+    return (absR === 0 || absC === 0) && isPathClear(from, to, board);
+  }
+
+  // QUEEN (RANI) RULES: Straight or Diagonals with clear path
+  if (pType === 'q') {
+    return (absR === absC || absR === 0 || absC === 0) && isPathClear(from, to, board);
+  }
+
+  // KING (RAJA) RULES: 1 step any direction
+  if (pType === 'k') {
+    return absR <= 1 && absC <= 1;
+  }
+
+  return false;
+}
+
+function getLegalMovesFor(fromIdx) {
+  let moves = [];
+  for (let i = 0; i < 64; i++) {
+    if (isValidChessMove(fromIdx, i, chessBoard, chessTurn)) {
+      moves.push(i);
+    }
+  }
+  return moves;
+}
+
+function renderChessBoard() {
+  const g = document.getElementById("chessGrid"); if (!g) return;
+  g.innerHTML = "";
+
+  for (let i = 0; i < 64; i++) {
+    const c = document.createElement("div");
+    const isLight = (Math.floor(i / 8) + i % 8) % 2 === 0;
+    c.className = `chess-cell ${isLight ? "light" : "dark"}`;
+
+    if (selChess === i) c.classList.add("selected");
+    // Show legal move dots
+    if (validMovesForSelected.includes(i)) {
+      const dot = document.createElement("span");
+      dot.style.cssText = "width:10px;height:10px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;";
+      c.appendChild(dot);
+    }
+
+    if (chessBoard[i]) {
+      c.innerText = CHESS_SYM[chessBoard[i]];
+      c.classList.add(chessBoard[i] === chessBoard[i].toUpperCase() ? "white-piece" : "black-piece");
+    }
+
+    c.onclick = () => onChessClick(i);
+    g.appendChild(c);
+  }
+}
+
+function onChessClick(idx) {
+  if (multiplayerMode === "online") {
+    if (chessTurn === "W" && myPlayerIndex !== 1) return;
+    if (chessTurn === "B" && myPlayerIndex !== 2) return;
+  }
+
+  const piece = chessBoard[idx];
+  const isWhite = piece && piece === piece.toUpperCase();
+  const isOwn = piece && ((chessTurn === "W" && isWhite) || (chessTurn === "B" && !isWhite));
+
+  if (selChess === null) {
+    if (isOwn) {
+      selChess = idx;
+      validMovesForSelected = getLegalMovesFor(idx);
+      renderChessBoard();
+    }
+  } else {
+    if (selChess === idx) {
+      selChess = null;
+      validMovesForSelected = [];
+      renderChessBoard();
+    } else if (isOwn) {
+      // Switch selection to another of own pieces
+      selChess = idx;
+      validMovesForSelected = getLegalMovesFor(idx);
+      renderChessBoard();
+    } else if (validMovesForSelected.includes(idx)) {
+      executeStrictChessMove(selChess, idx, true);
+    }
+  }
+}
+
+function executeStrictChessMove(from, to, broadcast) {
+  const capturedPiece = chessBoard[to];
+  chessBoard[to] = chessBoard[from];
+  chessBoard[from] = "";
+  selChess = null;
+  validMovesForSelected = [];
+
+  // WINNER DETERMINATION: King Capture
+  if (capturedPiece === "k" || capturedPiece === "K") {
+    const winner = capturedPiece === "k" ? "WHITE (PLAYER 1)" : "BLACK (PLAYER 2)";
+    alert(`CHECKMATE // VICTORY! ${winner} has captured the King and won the game!`);
+    resetChessBoard();
+    return;
+  }
+
+  chessTurn = chessTurn === "W" ? "B" : "W";
+  document.getElementById("chessTurn").innerText = chessTurn === "W" ? "WHITE (PLAYER 1)" : "BLACK (PLAYER 2)";
+
+  if (broadcast && multiplayerMode === "online") {
+    sendNetData({ type: "CHESS_MOVE", from, to });
+  }
+  renderChessBoard();
+}
+
+/* ==========================================================
+   2-PLAYER: SEA BATTLE (5 SHIPS EACH)
+========================================================== */
 let sbPhase = "DEPLOY", sbCurrentDeployPlayer = 1, sbShips = { 1: [], 2: [] }, sbShots = { 1: [], 2: [] }, sbTurn = 1;
-function init2PDefaults() { resetSeaBattle(); resetChessBoard(); resetTTT2P(); }
 
 function resetSeaBattle() {
   sbPhase = "DEPLOY"; sbCurrentDeployPlayer = 1; sbShips = { 1: [], 2: [] }; sbShots = { 1: [], 2: [] }; sbTurn = 1;
@@ -521,14 +724,12 @@ function renderSeaBattleBoards() {
 
   for (let i = 0; i < 25; i++) {
     const c1 = document.createElement("div"); c1.className = "sb-cell";
-    if (sbPhase === "DEPLOY" && sbCurrentDeployPlayer === 1 && sbShips[1].includes(i)) c1.classList.add("ship");
-    else if (sbPhase === "ATTACK" && sbShips[1].includes(i)) c1.classList.add("ship");
+    if (sbShips[1].includes(i)) c1.classList.add("ship");
     if (sbShots[2].includes(i)) c1.classList.add(sbShips[1].includes(i) ? "hit" : "miss");
     c1.onclick = () => onSBCellClick(1, i); g1.appendChild(c1);
 
     const c2 = document.createElement("div"); c2.className = "sb-cell";
     if (sbPhase === "DEPLOY" && sbCurrentDeployPlayer === 2 && sbShips[2].includes(i)) c2.classList.add("ship");
-    // During attack, don't show P2 ships unless hit
     if (sbShots[1].includes(i)) c2.classList.add(sbShips[2].includes(i) ? "hit" : "miss");
     c2.onclick = () => onSBCellClick(2, i); g2.appendChild(c2);
   }
@@ -564,112 +765,17 @@ function handleSeaBattleShot(targetPlayer, idx, broadcast) {
   if (broadcast && multiplayerMode === "online") sendNetData({ type: "SEABATTLE_SHOT", targetPlayer, index: idx });
 
   const hits = sbShots[atk].filter(i => sbShips[targetPlayer].includes(i)).length;
-  if (hits === 5) { alert(`VICTORY! Player ${atk} sunk all ships!`); resetSeaBattle(); return; }
+  if (hits === 5) { alert(`VICTORY! Player ${atk} sunk all 5 enemy ships!`); resetSeaBattle(); return; }
   sbTurn = atk === 1 ? 2 : 1;
   document.getElementById("sbTurn").innerText = `PLAYER ${sbTurn}`;
   renderSeaBattleBoards();
 }
 
-/* Blueprint Chess (Real Move Validation) */
-const INITIAL_CHESS = ["r","n","b","q","k","b","n","r", "p","p","p","p","p","p","p","p", "","","","","","","","", "","","","","","","","", "","","","","","","","", "","","","","","","","", "P","P","P","P","P","P","P","P", "R","N","B","Q","K","B","N","R"];
-const CHESS_SYM = { "r":"♜","n":"♞","b":"♝","q":"♛","k":"♚","p":"♟", "R":"♖","N":"♘","B":"♗","Q":"♕","K":"♔","P":"♙" };
-let chessBoard = [], chessTurn = "W", selChess = null;
-
-function resetChessBoard() {
-  chessBoard = [...INITIAL_CHESS]; chessTurn = "W"; selChess = null;
-  document.getElementById("chessTurn").innerText = "WHITE (BLUEPRINT)";
-  renderChessBoard();
-}
-
-function renderChessBoard() {
-  const g = document.getElementById("chessGrid"); if (!g) return;
-  g.innerHTML = "";
-  for (let i = 0; i < 64; i++) {
-    const c = document.createElement("div");
-    c.className = `chess-cell ${(Math.floor(i/8) + i%8) % 2 === 0 ? "light" : "dark"}`;
-    if (selChess === i) c.classList.add("selected");
-    if (chessBoard[i]) {
-      c.innerText = CHESS_SYM[chessBoard[i]];
-      c.classList.add(chessBoard[i] === chessBoard[i].toUpperCase() ? "white-piece" : "black-piece");
-    }
-    c.onclick = () => onChessClick(i);
-    g.appendChild(c);
-  }
-}
-
-function isPathClear(from, to, board) {
-  const r1 = Math.floor(from/8), c1 = from%8, r2 = Math.floor(to/8), c2 = to%8;
-  const dr = Math.sign(r2 - r1), dc = Math.sign(c2 - c1);
-  let currR = r1 + dr, currC = c1 + dc;
-  while (currR !== r2 || currC !== c2) {
-    if (board[currR * 8 + currC] !== "") return false;
-    currR += dr; currC += dc;
-  }
-  return true;
-}
-
-function isValidChessMove(from, to) {
-  const piece = chessBoard[from]; const target = chessBoard[to];
-  const r1 = Math.floor(from/8), c1 = from%8, r2 = Math.floor(to/8), c2 = to%8;
-  const isW = piece === piece.toUpperCase();
-  
-  if (target !== "") {
-    const tIsW = target === target.toUpperCase();
-    if (isW === tIsW) return false; // Can't eat own piece
-  }
-
-  const dr = r2 - r1, dc = c2 - c1, absR = Math.abs(dr), absC = Math.abs(dc);
-  const pType = piece.toLowerCase();
-
-  if (pType === 'p') {
-    const dir = isW ? -1 : 1;
-    const startRow = isW ? 6 : 1;
-    if (dc === 0 && target === "") {
-      if (dr === dir) return true;
-      if (r1 === startRow && dr === 2*dir && chessBoard[from + dir*8] === "") return true;
-    } else if (absC === 1 && dr === dir && target !== "") return true;
-    return false;
-  }
-  if (pType === 'n') return (absR === 2 && absC === 1) || (absR === 1 && absC === 2);
-  if (pType === 'b') return absR === absC && isPathClear(from, to, chessBoard);
-  if (pType === 'r') return (absR === 0 || absC === 0) && isPathClear(from, to, chessBoard);
-  if (pType === 'q') return (absR === absC || absR === 0 || absC === 0) && isPathClear(from, to, chessBoard);
-  if (pType === 'k') return absR <= 1 && absC <= 1;
-
-  return false;
-}
-
-function onChessClick(idx) {
-  if (multiplayerMode === "online") {
-    if (chessTurn === "W" && myPlayerIndex !== 1) return;
-    if (chessTurn === "B" && myPlayerIndex !== 2) return;
-  }
-
-  const piece = chessBoard[idx];
-  const isWhite = piece && piece === piece.toUpperCase();
-  const isOwn = piece && ((chessTurn === "W" && isWhite) || (chessTurn === "B" && !isWhite));
-
-  if (selChess === null) {
-    if (isOwn) { selChess = idx; renderChessBoard(); }
-  } else {
-    if (selChess === idx) { selChess = null; renderChessBoard(); }
-    else if (isOwn) { selChess = idx; renderChessBoard(); } // Switch selection
-    else if (isValidChessMove(selChess, idx)) executeChessMove(selChess, idx, true);
-  }
-}
-
-function executeChessMove(from, to, broadcast) {
-  chessBoard[to] = chessBoard[from];
-  chessBoard[from] = "";
-  selChess = null;
-  chessTurn = chessTurn === "W" ? "B" : "W";
-  document.getElementById("chessTurn").innerText = chessTurn === "W" ? "WHITE (BLUEPRINT)" : "BLACK (BLUEPRINT)";
-  if (broadcast && multiplayerMode === "online") sendNetData({ type: "CHESS_MOVE", from, to });
-  renderChessBoard();
-}
-
-/* Tic Tac Toe */
+/* ==========================================================
+   2-PLAYER: TIC TAC TOE
+========================================================== */
 let tttBoard = ["","","","","","","","",""], tttTurn = "X";
+
 function resetTTT2P() {
   tttBoard = ["","","","","","","","",""]; tttTurn = "X";
   document.getElementById("tttTurn").innerText = "PLAYER 1 (X)";
@@ -692,9 +798,9 @@ function handleTTT2PMove(i, broadcast) {
   if (broadcast && multiplayerMode === "online") sendNetData({ type: "TTT_MOVE", index: i });
   
   const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]].some(([a,b,c]) => tttBoard[a] && tttBoard[a]===tttBoard[b] && tttBoard[a]===tttBoard[c]);
-  if (w) { alert(tttTurn + " WON!"); resetTTT2P(); return; }
+  if (w) { alert(`VICTORY! PLAYER ${tttTurn} WON!`); resetTTT2P(); return; }
   
   tttTurn = tttTurn === "X" ? "O" : "X";
-  document.getElementById("tttTurn").innerText = tttTurn;
+  document.getElementById("tttTurn").innerText = `PLAYER ${tttTurn === "X" ? "1 (X)" : "2 (O)"}`;
   renderTTT2P();
 }

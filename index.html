@@ -3,77 +3,259 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SPARK // Owner Terminal</title>
+  <title>SPARK // Quantum Web Matrix</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
+  <!-- Cyber Space Background Canvas -->
   <canvas id="sparkCanvas"></canvas>
 
+  <!-- Top Navbar -->
   <header class="navbar">
     <div class="brand">
       <i class="fa-solid fa-bolt-lightning bolt-glow"></i>
       <span>SPARK</span>
     </div>
     <nav class="nav-links">
-      <a href="index.html" class="nav-tab active"><i class="fa-solid fa-crown"></i> Owner</a>
-      <a href="showcase.html" class="nav-tab"><i class="fa-solid fa-brain"></i> Showcase</a>
-      <a href="game.html" class="nav-tab"><i class="fa-solid fa-gamepad"></i> Games</a>
+      <button class="nav-tab active" data-target="homeView"><i class="fa-solid fa-crown"></i> Owner</button>
+      <button class="nav-tab" data-target="showcaseView"><i class="fa-solid fa-brain"></i> Showcase</button>
+      <button class="nav-tab" data-target="gameView"><i class="fa-solid fa-gamepad"></i> 5 Games</button>
     </nav>
     <div class="nav-tag">
       <span class="live-dot"></span>
-      <span>SYSTEM VERIFIED</span>
+      <span>SYSTEM: ARMED</span>
     </div>
   </header>
 
+  <!-- Main Viewport Router -->
   <main class="page-container">
-    <div class="owner-card-wrap glow-border-wrap">
-      <div class="glow-inner owner-inner">
 
-        <!-- Avatar Ring -->
-        <div class="avatar-ring-container">
-          <div class="avatar-rotating-border"></div>
-          <img src="avatar.png" alt="Owner Avatar" class="owner-avatar" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=SparkOwner'" />
-          <span class="owner-badge-tag"><i class="fa-solid fa-shield-halved"></i> ARCHITECT</span>
-        </div>
-
-        <h1 class="owner-name">SPARK FOUNDER</h1>
-        <p class="owner-role">Lead Architect & Systems Engineer</p>
-
-        <p class="owner-bio">
-          Welcome to the central node of <strong>SPARK</strong>. Overseeing real-time quantum web interfaces, generative AI pipelines, and interactive game systems.
-        </p>
-
-        <div class="owner-metrics">
-          <div class="metric-pill">
-            <span class="m-val">ROOT</span>
-            <span class="m-lbl">Access Level</span>
+    <!-- ================= PAGE 1: HOME (OWNER) ================= -->
+    <section id="homeView" class="page-view active">
+      <div class="owner-card-wrap glow-border-wrap">
+        <div class="glow-inner owner-inner">
+          <div class="avatar-ring-container">
+            <div class="avatar-rotating-border"></div>
+            <img src="avatar.png" alt="Owner Avatar" class="owner-avatar" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=SparkMaster'" />
+            <span class="owner-badge-tag"><i class="fa-solid fa-shield-halved"></i> ARCHITECT</span>
           </div>
-          <div class="metric-pill">
-            <span class="m-val">99.99%</span>
-            <span class="m-lbl">Core Uptime</span>
+
+          <h1 class="owner-name">SPARK FOUNDER</h1>
+          <p class="owner-role">Lead Architect & Systems Engineer</p>
+          <p class="owner-bio">
+            Welcome to the central node of <strong>SPARK</strong>. Overseeing real-time quantum web interfaces, generative AI pipelines, and interactive game systems.
+          </p>
+
+          <div class="owner-metrics">
+            <div class="metric-pill">
+              <span class="m-val">ROOT</span>
+              <span class="m-lbl">Access Level</span>
+            </div>
+            <div class="metric-pill">
+              <span class="m-val">99.99%</span>
+              <span class="m-lbl">Core Uptime</span>
+            </div>
+            <div class="metric-pill">
+              <span class="m-val">5 ACTIVE</span>
+              <span class="m-lbl">Engines</span>
+            </div>
           </div>
-          <div class="metric-pill">
-            <span class="m-val">5 ACTIVE</span>
-            <span class="m-lbl">Engines</span>
+
+          <div class="owner-actions">
+            <button class="spark-btn btn-primary" onclick="switchPage('gameView')">
+              <span>Play 5 Mini Games</span> <i class="fa-solid fa-play"></i>
+            </button>
+            <button class="spark-btn btn-ghost" onclick="switchPage('showcaseView')">
+              <span>Explore Neural Ball</span> <i class="fa-solid fa-arrow-right"></i>
+            </button>
           </div>
         </div>
-
-        <div class="owner-actions">
-          <a href="game.html" class="spark-btn btn-primary">
-            <span>Play 5 Arcade Games</span> <i class="fa-solid fa-play"></i>
-          </a>
-          <a href="showcase.html" class="spark-btn btn-ghost">
-            <span>Explore Neural Showcase</span> <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        </div>
-
       </div>
-    </div>
+    </section>
+
+    <!-- ================= PAGE 2: SHOWCASE (3D BALL) ================= -->
+    <section id="showcaseView" class="page-view">
+      <div class="section-title">
+        <h2>3D QUANTUM NEURAL BALL</h2>
+        <p>Interactive 4D Vector Sphere responding to cursor tracking & live telemetry</p>
+      </div>
+
+      <div class="showcase-layout">
+        <div class="glow-border-wrap hologram-card">
+          <div class="glow-inner hologram-inner">
+            <div class="panel-header">
+              <span><i class="fa-solid fa-atom"></i> HYPER-NEURAL SPHERE CORE</span>
+              <span class="mono-cyan" id="sphereMode">320 NODES STABLE</span>
+            </div>
+
+            <div class="hologram-viewport" id="holoViewport">
+              <canvas id="aiHologramCanvas"></canvas>
+              <div class="holo-hud">
+                <div>ANGULAR VELOCITY: <span class="mono-gold" id="angVel">0.04 rad/s</span></div>
+                <div>VECTOR FLUX: <span class="mono-cyan">2.84 GHz</span></div>
+                <div>STABILITY: <span class="mono-green">OPTIMAL</span></div>
+              </div>
+            </div>
+
+            <div class="holo-controls">
+              <button class="spark-btn btn-sm" onclick="accelerateWarp()">Warp Speed Boost</button>
+              <button class="spark-btn btn-sm btn-ghost" onclick="invertTensorField()">Invert Rotation</button>
+              <button class="spark-btn btn-sm btn-pink" onclick="burstSphere()">Quantum Burst</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="glow-border-wrap telemetry-card">
+          <div class="glow-inner">
+            <div class="panel-header">
+              <span><i class="fa-solid fa-microchip"></i> LIVE MATRIX METRICS</span>
+              <span class="mono-green">REAL-TIME</span>
+            </div>
+
+            <div class="metric-row">
+              <div class="m-text"><span>Precision Accuracy</span><span class="mono-gold">99.99%</span></div>
+              <div class="progress-bar"><div class="fill fill-gold" style="width: 99.99%;"></div></div>
+            </div>
+            <div class="metric-row">
+              <div class="m-text"><span>Loop Latency</span><span class="mono-cyan">0.02 ms</span></div>
+              <div class="progress-bar"><div class="fill fill-cyan" style="width: 98%;"></div></div>
+            </div>
+            <div class="metric-row">
+              <div class="m-text"><span>Tensor Throughput</span><span class="mono-pink">14.6 TFLOPS</span></div>
+              <div class="progress-bar"><div class="fill fill-pink" style="width: 94%;"></div></div>
+            </div>
+
+            <div class="terminal-log" id="showcaseTerminal">
+              <p>> [KERNEL] 3D Neural Sphere Core initialized at 60 FPS.</p>
+              <p>> [SPATIAL] Real-time Euler angles dynamically bound to pointer physics.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PAGE 3: 5 MINI GAMES ================= -->
+    <section id="gameView" class="page-view">
+      <div class="section-title">
+        <h2>SPARK ARCADE ARENA</h2>
+        <p>Select any game and hit "START MISSION" to begin</p>
+      </div>
+
+      <div class="game-select-bar">
+        <button class="game-selector-btn active" data-game="flappy"><i class="fa-solid fa-dove"></i> Flappy Bird</button>
+        <button class="game-selector-btn" data-game="dino"><i class="fa-solid fa-dragon"></i> Dino Runner</button>
+        <button class="game-selector-btn" data-game="space"><i class="fa-solid fa-shuttle-space"></i> Space Ship</button>
+        <button class="game-selector-btn" data-game="tower"><i class="fa-solid fa-cubes-stacked"></i> Tower Jump</button>
+        <button class="game-selector-btn" data-game="tictactoe"><i class="fa-solid fa-xmark"></i> Tic Tac Toe</button>
+      </div>
+
+      <div class="glow-border-wrap game-board-wrap">
+        <div class="glow-inner game-board-inner">
+
+          <!-- 1. FLAPPY BIRD -->
+          <div class="arcade-view active" id="flappyView">
+            <div class="arcade-topbar">
+              <div>SCORE: <span id="flappyScore">0</span></div>
+              <div>STATUS: <span class="mono-cyan" id="flappyStatus">READY</span></div>
+              <button class="spark-btn btn-sm" onclick="flapWing()">Flap (Space / Tap)</button>
+            </div>
+            <div class="canvas-stage">
+              <canvas id="flappyCanvas"></canvas>
+              <div class="arcade-overlay active" id="flappyOverlay">
+                <h3>FLAPPY SPARK</h3>
+                <p>Press <strong>Spacebar</strong>, click or tap to flap wings!</p>
+                <button class="spark-btn btn-primary" onclick="startFlappyGame()">START MISSION</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. DINO RUNNER -->
+          <div class="arcade-view" id="dinoView">
+            <div class="arcade-topbar">
+              <div>SCORE: <span id="dinoScore">0</span></div>
+              <div>STATUS: <span class="mono-cyan" id="dinoStatus">READY</span></div>
+              <button class="spark-btn btn-sm" onclick="jumpDinoAction()">Jump (Space / Tap)</button>
+            </div>
+            <div class="canvas-stage">
+              <canvas id="dinoCanvas"></canvas>
+              <div class="arcade-overlay active" id="dinoOverlay">
+                <h3>DINO HIGH-VOLTAGE</h3>
+                <p>Jump over moving cyber barriers! Use <strong>Spacebar</strong> or tap.</p>
+                <button class="spark-btn btn-primary" onclick="startDinoGame()">START RUNNER</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. SPACE SHIP -->
+          <div class="arcade-view" id="spaceView">
+            <div class="arcade-topbar">
+              <div>SCORE: <span id="spaceScore">0</span></div>
+              <div>HULL: <span class="mono-green">100%</span></div>
+              <button class="spark-btn btn-sm" onclick="fireSpaceBullet()">Fire Laser</button>
+            </div>
+            <div class="canvas-stage">
+              <canvas id="spaceCanvas"></canvas>
+              <div class="arcade-overlay active" id="spaceOverlay">
+                <h3>SPACE STRIKER</h3>
+                <p>Move mouse / touch to steer. Tap or press <strong>Spacebar</strong> to shoot.</p>
+                <button class="spark-btn btn-primary" onclick="startSpaceGame()">LAUNCH SHIP</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. TOWER JUMP -->
+          <div class="arcade-view" id="towerView">
+            <div class="arcade-topbar">
+              <div>HEIGHT: <span id="towerHeight">0m</span></div>
+              <div class="tower-ctrl-btns">
+                <button class="spark-btn btn-sm" onpointerdown="setTowerMove(-1)" onpointerup="setTowerMove(0)">◀ Left</button>
+                <button class="spark-btn btn-sm" onpointerdown="setTowerMove(1)" onpointerup="setTowerMove(0)">Right ▶</button>
+              </div>
+            </div>
+            <div class="canvas-stage">
+              <canvas id="towerCanvas"></canvas>
+              <div class="arcade-overlay active" id="towerOverlay">
+                <h3>TOWER JUMP OVERDRIVE</h3>
+                <p>Jump on descending neon blocks! Use <strong>A / D</strong>, Arrows or screen buttons.</p>
+                <button class="spark-btn btn-primary" onclick="startTowerGame()">CLIMB TOWER</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. TIC TAC TOE -->
+          <div class="arcade-view" id="tictactoeView">
+            <div class="arcade-topbar">
+              <div>TURN: <span id="tttTurn" class="mono-gold">Player (X)</span></div>
+              <div>OUTCOME: <span id="tttResult" class="mono-cyan">Playing</span></div>
+              <button class="spark-btn btn-sm" onclick="resetTTT()">Restart Board</button>
+            </div>
+            <div class="canvas-stage ttt-stage">
+              <div class="ttt-grid">
+                <div class="ttt-cell" data-idx="0"></div>
+                <div class="ttt-cell" data-idx="1"></div>
+                <div class="ttt-cell" data-idx="2"></div>
+                <div class="ttt-cell" data-idx="3"></div>
+                <div class="ttt-cell" data-idx="4"></div>
+                <div class="ttt-cell" data-idx="5"></div>
+                <div class="ttt-cell" data-idx="6"></div>
+                <div class="ttt-cell" data-idx="7"></div>
+                <div class="ttt-cell" data-idx="8"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <script src="script.js"></script>
+  <!-- Modular Scripts Loading -->
+  <script src="home.js"></script>
+  <script src="showcase.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>

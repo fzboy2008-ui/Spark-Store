@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPARK // 5 Arcade Arena</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <canvas id="sparkCanvas"></canvas>
+
+  <header class="navbar">
+    <div class="brand">
+      <i class="fa-solid fa-bolt-lightning bolt-glow"></i>
+      <span>SPARK</span>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-tab"><i class="fa-solid fa-crown"></i> Owner</a>
+      <a href="showcase.html" class="nav-tab"><i class="fa-solid fa-brain"></i> Showcase</a>
+      <a href="game.html" class="nav-tab active"><i class="fa-solid fa-gamepad"></i> Games</a>
+    </nav>
+    <div class="nav-tag">
+      <span class="live-dot"></span>
+      <span>5 GAMES READY</span>
+    </div>
+  </header>
+
+  <main class="page-container games-container">
+    <div class="section-title">
+      <h2>SPARK ARCADE ARENA</h2>
+      <p>5 standalone classic retro and reflex games engineered in vanilla script</p>
+    </div>
+
+    <!-- Game Switcher Bar -->
+    <div class="game-select-bar">
+      <button class="game-selector-btn active" data-game="flappy"><i class="fa-solid fa-dove"></i> Flappy Bird</button>
+      <button class="game-selector-btn" data-game="dino"><i class="fa-solid fa-dragon"></i> Dino Runner</button>
+      <button class="game-selector-btn" data-game="space"><i class="fa-solid fa-shuttle-space"></i> Space Ship</button>
+      <button class="game-selector-btn" data-game="tower"><i class="fa-solid fa-cubes-stacked"></i> Tower Jump</button>
+      <button class="game-selector-btn" data-game="tictactoe"><i class="fa-solid fa-xmark"></i> Tic Tac Toe</button>
+    </div>
+
+    <div class="glow-border-wrap game-board-wrap">
+      <div class="glow-inner game-board-inner">
+
+        <!-- ================= 1. FLAPPY BIRD ================= -->
+        <div class="arcade-view active" id="flappyView">
+          <div class="arcade-topbar">
+            <div>SCORE: <span id="flappyScore">0</span></div>
+            <div>BEST: <span id="flappyBest">0</span></div>
+            <button class="spark-btn btn-sm" id="flappyStartBtn">Start / Jump</button>
+          </div>
+          <div class="canvas-stage" id="flappyStage">
+            <canvas id="flappyCanvas"></canvas>
+            <div class="arcade-overlay active" id="flappyOverlay">
+              <h3>FLAPPY SPARK</h3>
+              <p>Press <strong>Spacebar</strong>, click or tap the screen to flap wings!</p>
+              <button class="spark-btn btn-primary" onclick="initFlappy()">Start Flight</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= 2. DINO RUNNER ================= -->
+        <div class="arcade-view" id="dinoView">
+          <div class="arcade-topbar">
+            <div>SCORE: <span id="dinoScore">0</span></div>
+            <div>SPEED: <span id="dinoSpeed">1x</span></div>
+            <button class="spark-btn btn-sm" id="dinoJumpBtn">Jump (Space / Tap)</button>
+          </div>
+          <div class="canvas-stage" id="dinoStage">
+            <canvas id="dinoCanvas"></canvas>
+            <div class="arcade-overlay active" id="dinoOverlay">
+              <h3>DINO HIGH-VOLTAGE</h3>
+              <p>Jump over incoming obstacles. Use <strong>Spacebar</strong> or click.</p>
+              <button class="spark-btn btn-primary" onclick="initDino()">Run Mission</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= 3. SPACE SHIP ================= -->
+        <div class="arcade-view" id="spaceView">
+          <div class="arcade-topbar">
+            <div>SCORE: <span id="spaceScore">0</span></div>
+            <div>HULL: <span id="spaceHealth" class="mono-green">100%</span></div>
+            <button class="spark-btn btn-sm" id="spaceFireBtn">Fire Plasma</button>
+          </div>
+          <div class="canvas-stage" id="spaceStage">
+            <canvas id="spaceCanvas"></canvas>
+            <div class="arcade-overlay active" id="spaceOverlay">
+              <h3>SPACE STRIKER</h3>
+              <p>Move mouse / drag touch to pilot. Click or press <strong>Spacebar</strong> to shoot.</p>
+              <button class="spark-btn btn-primary" onclick="initSpace()">Launch Fighter</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= 4. TOWER JUMP ================= -->
+        <div class="arcade-view" id="towerView">
+          <div class="arcade-topbar">
+            <div>HEIGHT: <span id="towerHeight">0m</span></div>
+            <div>STATUS: <span id="towerStatus" class="mono-cyan">READY</span></div>
+            <button class="spark-btn btn-sm" id="towerJumpBtn">Hop Left / Right</button>
+          </div>
+          <div class="canvas-stage" id="towerStage">
+            <canvas id="towerCanvas"></canvas>
+            <div class="arcade-overlay active" id="towerOverlay">
+              <h3>TOWER JUMP OVERDRIVE</h3>
+              <p>Move Left/Right with <strong>A/D</strong>, Arrow Keys or screen buttons to jump from block to block!</p>
+              <button class="spark-btn btn-primary" onclick="initTower()">Climb Tower</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= 5. TIC TAC TOE ================= -->
+        <div class="arcade-view" id="tictactoeView">
+          <div class="arcade-topbar">
+            <div>TURN: <span id="tttTurn" class="mono-gold">Player (X)</span></div>
+            <div>OUTCOME: <span id="tttResult" class="mono-cyan">Ongoing</span></div>
+            <button class="spark-btn btn-sm" onclick="resetTTT()">Reset Board</button>
+          </div>
+          <div class="canvas-stage ttt-stage">
+            <div class="ttt-grid">
+              <div class="ttt-cell" data-idx="0"></div>
+              <div class="ttt-cell" data-idx="1"></div>
+              <div class="ttt-cell" data-idx="2"></div>
+              <div class="ttt-cell" data-idx="3"></div>
+              <div class="ttt-cell" data-idx="4"></div>
+              <div class="ttt-cell" data-idx="5"></div>
+              <div class="ttt-cell" data-idx="6"></div>
+              <div class="ttt-cell" data-idx="7"></div>
+              <div class="ttt-cell" data-idx="8"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,10 +1,11 @@
 /* ==========================================================
-   1. GLOBAL CANVAS PARTICLES BACKGROUND
+   1. ANIMATED CYBER GRID MATRIX BACKGROUND (ALL PAGES)
 ========================================================== */
 const bgCanvas = document.getElementById("sparkCanvas");
 if (bgCanvas) {
   const bgCtx = bgCanvas.getContext("2d");
   let bgParticles = [];
+  let mouse = { x: null, y: null };
 
   function resizeBg() {
     bgCanvas.width = window.innerWidth;
@@ -13,13 +14,18 @@ if (bgCanvas) {
   window.addEventListener("resize", resizeBg);
   resizeBg();
 
-  class BgP {
+  window.addEventListener("mousemove", (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  class CyberNode {
     constructor() {
       this.x = Math.random() * bgCanvas.width;
       this.y = Math.random() * bgCanvas.height;
-      this.vx = (Math.random() - 0.5) * 1.4;
-      this.vy = (Math.random() - 0.5) * 1.4;
-      this.size = Math.random() * 2 + 1;
+      this.vx = (Math.random() - 0.5) * 1.2;
+      this.vy = (Math.random() - 0.5) * 1.2;
+      this.radius = Math.random() * 2 + 1;
       this.color = Math.random() > 0.5 ? "#ffbe0b" : "#00f0ff";
     }
     update() {
@@ -27,77 +33,111 @@ if (bgCanvas) {
       this.y += this.vy;
       if (this.x < 0 || this.x > bgCanvas.width) this.vx *= -1;
       if (this.y < 0 || this.y > bgCanvas.height) this.vy *= -1;
+
+      if (mouse.x !== null) {
+        let dx = mouse.x - this.x;
+        let dy = mouse.y - this.y;
+        let dist = Math.hypot(dx, dy);
+        if (dist < 130) {
+          this.x -= (dx / dist) * 2;
+          this.y -= (dy / dist) * 2;
+        }
+      }
     }
     draw() {
       bgCtx.beginPath();
-      bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      bgCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
       bgCtx.fillStyle = this.color;
       bgCtx.fill();
     }
   }
 
-  for (let i = 0; i < Math.floor((bgCanvas.width * bgCanvas.height) / 18000); i++) {
-    bgParticles.push(new BgP());
+  function initBgGrid() {
+    bgParticles = [];
+    const count = Math.floor((bgCanvas.width * bgCanvas.height) / 14000);
+    for (let i = 0; i < count; i++) bgParticles.push(new CyberNode());
   }
+  initBgGrid();
 
-  function renderBg() {
+  function renderCyberBg() {
     bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-    bgParticles.forEach(p => { p.update(); p.draw(); });
-    requestAnimationFrame(renderBg);
+
+    for (let a = 0; a < bgParticles.length; a++) {
+      bgParticles[a].update();
+      bgParticles[a].draw();
+      for (let b = a + 1; b < bgParticles.length; b++) {
+        let dist = Math.hypot(bgParticles[a].x - bgParticles[b].x, bgParticles[a].y - bgParticles[b].y);
+        if (dist < 90) {
+          bgCtx.strokeStyle = `rgba(0, 240, 255, ${0.25 * (1 - dist / 90)})`;
+          bgCtx.lineWidth = 0.8;
+          bgCtx.beginPath();
+          bgCtx.moveTo(bgParticles[a].x, bgParticles[a].y);
+          bgCtx.lineTo(bgParticles[b].x, bgParticles[b].y);
+          bgCtx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(renderCyberBg);
   }
-  renderBg();
+  renderCyberBg();
 }
 
 /* ==========================================================
-   2. SHOWCASE: 3D HOLOGRAPHIC QUANTUM SPHERE
+   2. SHOWCASE: ADVANCED 3D QUANTUM NEURAL BALL
 ========================================================== */
 const holoCanvas = document.getElementById("aiHologramCanvas");
+let rotX = 0.006;
+let rotY = 0.008;
+let sphereNodes = [];
+const TOTAL_BALL_NODES = 320;
+const BALL_RADIUS = 115;
+let burstEffect = 1;
+
 if (holoCanvas) {
   const hCtx = holoCanvas.getContext("2d");
-  let hNodes = [];
-  const TOTAL_NODES = 260;
-  const SPHERE_R = 110;
-  let rotX = 0.005;
-  let rotY = 0.007;
 
-  function fitHolo() {
+  function fitHoloCanvas() {
     holoCanvas.width = holoCanvas.parentElement.clientWidth;
     holoCanvas.height = holoCanvas.parentElement.clientHeight;
   }
-  window.addEventListener("resize", fitHolo);
-  setTimeout(fitHolo, 50);
+  window.addEventListener("resize", fitHoloCanvas);
+  setTimeout(fitHoloCanvas, 50);
 
-  for (let i = 0; i < TOTAL_NODES; i++) {
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(Math.random() * 2 - 1);
-    hNodes.push({
-      x: SPHERE_R * Math.sin(phi) * Math.cos(theta),
-      y: SPHERE_R * Math.sin(phi) * Math.sin(theta),
-      z: SPHERE_R * Math.cos(phi)
+  // Fibonacci Sphere Lattice distribution
+  for (let i = 0; i < TOTAL_BALL_NODES; i++) {
+    const phi = Math.acos(-1 + (2 * i) / TOTAL_BALL_NODES);
+    const theta = Math.sqrt(TOTAL_BALL_NODES * Math.PI) * phi;
+    sphereNodes.push({
+      x: BALL_RADIUS * Math.cos(theta) * Math.sin(phi),
+      y: BALL_RADIUS * Math.sin(theta) * Math.sin(phi),
+      z: BALL_RADIUS * Math.cos(phi),
+      origR: BALL_RADIUS
     });
   }
 
   window.addEventListener("mousemove", (e) => {
-    rotX = (e.clientY / window.innerHeight - 0.5) * 0.03;
-    rotY = (e.clientX / window.innerWidth - 0.5) * 0.03;
+    rotX = (e.clientY / window.innerHeight - 0.5) * 0.04;
+    rotY = (e.clientX / window.innerWidth - 0.5) * 0.04;
+    const angEl = document.getElementById("angVel");
+    if (angEl) angEl.innerText = `${Math.abs(rotX * 10).toFixed(2)} rad/s`;
   });
 
-  function renderHolo() {
+  function renderQuantumSphere() {
     hCtx.clearRect(0, 0, holoCanvas.width, holoCanvas.height);
     const cx = holoCanvas.width / 2;
     const cy = holoCanvas.height / 2;
-    const fov = 300;
+    const fov = 320;
 
     let projected = [];
 
-    hNodes.forEach(node => {
+    sphereNodes.forEach((node) => {
       // Rotate Y
-      let cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+      let cosY = Math.cos(rotY * burstEffect), sinY = Math.sin(rotY * burstEffect);
       let x1 = node.x * cosY - node.z * sinY;
       let z1 = node.z * cosY + node.x * sinY;
 
       // Rotate X
-      let cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+      let cosX = Math.cos(rotX * burstEffect), sinX = Math.sin(rotX * burstEffect);
       let y2 = node.y * cosX - z1 * sinX;
       let z2 = z1 * cosX + node.y * sinX;
 
@@ -107,18 +147,17 @@ if (holoCanvas) {
       projected.push({
         x: x1 * scale + cx,
         y: y2 * scale + cy,
-        alpha: Math.max(0.15, (z2 + SPHERE_R) / (2 * SPHERE_R))
+        scale: scale,
+        alpha: Math.max(0.12, (z2 + BALL_RADIUS) / (2 * BALL_RADIUS))
       });
     });
 
-    // Lines
+    // Draw Quantum Mesh Lines
     for (let a = 0; a < projected.length; a++) {
       for (let b = a + 1; b < projected.length; b++) {
-        let dx = projected[a].x - projected[b].x;
-        let dy = projected[a].y - projected[b].y;
-        let dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 40) {
-          hCtx.strokeStyle = `rgba(0, 240, 255, ${0.4 * (1 - dist / 40)})`;
+        let dist = Math.hypot(projected[a].x - projected[b].x, projected[a].y - projected[b].y);
+        if (dist < 42) {
+          hCtx.strokeStyle = `rgba(0, 240, 255, ${0.45 * (1 - dist / 42)})`;
           hCtx.lineWidth = 0.8;
           hCtx.beginPath();
           hCtx.moveTo(projected[a].x, projected[a].y);
@@ -128,52 +167,63 @@ if (holoCanvas) {
       }
     }
 
-    // Nodes
-    projected.forEach(p => {
+    // Draw Nodes
+    projected.forEach((p) => {
       hCtx.fillStyle = `rgba(255, 190, 11, ${p.alpha})`;
       hCtx.beginPath();
-      hCtx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+      hCtx.arc(p.x, p.y, Math.max(1, p.scale * 2.2), 0, Math.PI * 2);
       hCtx.fill();
     });
 
-    requestAnimationFrame(renderHolo);
+    requestAnimationFrame(renderQuantumSphere);
   }
-  renderHolo();
+  renderQuantumSphere();
 }
 
 function accelerateWarp() {
-  rotX *= 3; rotY *= 3;
-  appendLog("Warp acceleration applied to quantum sphere.");
+  burstEffect = 3.5;
+  logHolo("Warp speed engaged! Spin acceleration factor: 3.5x");
+  setTimeout(() => { burstEffect = 1; }, 2500);
 }
+
 function invertTensorField() {
   rotY = -rotY;
-  appendLog("Tensor field polarity inverted.");
+  rotX = -rotX;
+  logHolo("Tensor rotational poles inverted successfully.");
 }
-function synthesizeNeuralPulse() {
-  appendLog("Synaptic impulse generated across 320 nodes.");
+
+function burstSphere() {
+  sphereNodes.forEach((n) => {
+    n.x *= 1.4; n.y *= 1.4; n.z *= 1.4;
+    setTimeout(() => {
+      n.x /= 1.4; n.y /= 1.4; n.z /= 1.4;
+    }, 400);
+  });
+  logHolo("Quantum Core Burst: Tensors expanded and stabilized.");
 }
-function appendLog(msg) {
-  const terminal = document.getElementById("showcaseTerminal");
-  if (!terminal) return;
+
+function logHolo(msg) {
+  const t = document.getElementById("showcaseTerminal");
+  if (!t) return;
   const p = document.createElement("p");
   p.innerText = `> ${msg}`;
-  terminal.appendChild(p);
-  terminal.scrollTop = terminal.scrollHeight;
+  t.appendChild(p);
+  t.scrollTop = t.scrollHeight;
 }
 
 /* ==========================================================
-   3. ARCADE TAB SWITCHER
+   3. ARCADE TAB CONTROLLER
 ========================================================== */
 const gameSelectors = document.querySelectorAll(".game-selector-btn");
 const arcadeViews = document.querySelectorAll(".arcade-view");
 
 if (gameSelectors.length) {
-  gameSelectors.forEach(btn => {
+  gameSelectors.forEach((btn) => {
     btn.addEventListener("click", () => {
-      gameSelectors.forEach(b => b.classList.remove("active"));
+      gameSelectors.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       const target = btn.getAttribute("data-game");
-      arcadeViews.forEach(view => {
+      arcadeViews.forEach((view) => {
         view.classList.toggle("active", view.id === `${target}View`);
       });
     });
@@ -181,282 +231,369 @@ if (gameSelectors.length) {
 }
 
 /* ==========================================================
-   GAME 1: FLAPPY BIRD
+   GAME 1: FLAPPY BIRD (100% FIXED & PLAYABLE)
 ========================================================== */
-let flappyActive = false, flappyY = 150, flappyV = 0, flappyPipes = [], flappyScore = 0, flappyTimer;
+let flappyActive = false;
+let fBirdY = 150;
+let fBirdV = 0;
+let fPipes = [];
+let fScore = 0;
+let fAnimId = null;
 const fCanvas = document.getElementById("flappyCanvas");
 
-function initFlappy() {
+function startFlappyGame() {
   if (!fCanvas) return;
   fCanvas.width = fCanvas.parentElement.clientWidth;
   fCanvas.height = fCanvas.parentElement.clientHeight;
-  flappyY = fCanvas.height / 2;
-  flappyV = 0;
-  flappyPipes = [];
-  flappyScore = 0;
+
+  fBirdY = fCanvas.height / 2;
+  fBirdV = -5;
+  fPipes = [];
+  fScore = 0;
   flappyActive = true;
-  document.getElementById("flappyScore").innerText = 0;
+
+  document.getElementById("flappyScore").innerText = "0";
+  document.getElementById("flappyStatus").innerText = "IN FLIGHT";
   document.getElementById("flappyOverlay").classList.remove("active");
-  runFlappy();
+
+  cancelAnimationFrame(fAnimId);
+  loopFlappy();
 }
 
-function flap() { if (flappyActive) flappyV = -5.5; }
-document.getElementById("flappyStartBtn")?.addEventListener("click", () => {
-  if (!flappyActive) initFlappy(); else flap();
-});
+function flapWing() {
+  if (flappyActive) fBirdV = -5.8;
+  else startFlappyGame();
+}
+
+fCanvas?.addEventListener("pointerdown", (e) => { e.preventDefault(); flapWing(); });
 window.addEventListener("keydown", (e) => {
   if (e.code === "Space" && document.getElementById("flappyView")?.classList.contains("active")) {
     e.preventDefault();
-    if (!flappyActive) initFlappy(); else flap();
+    flapWing();
   }
 });
-fCanvas?.addEventListener("pointerdown", () => {
-  if (!flappyActive) initFlappy(); else flap();
-});
 
-function runFlappy() {
+function loopFlappy() {
   if (!flappyActive) return;
   const ctx = fCanvas.getContext("2d");
   ctx.clearRect(0, 0, fCanvas.width, fCanvas.height);
 
-  flappyV += 0.28;
-  flappyY += flappyV;
+  // Bird physics
+  fBirdV += 0.32;
+  fBirdY += fBirdV;
 
-  // Draw Bird (Spark Orb)
+  // Draw Cyber Bird (Glowing Gold Orb)
   ctx.fillStyle = "#ffbe0b";
   ctx.beginPath();
-  ctx.arc(60, flappyY, 14, 0, Math.PI * 2);
+  ctx.arc(65, fBirdY, 14, 0, Math.PI * 2);
   ctx.fill();
 
-  // Pipes
-  if (Math.random() < 0.015) {
-    const gap = 110;
-    const topH = Math.random() * (fCanvas.height - gap - 60) + 30;
-    flappyPipes.push({ x: fCanvas.width, top: topH, bottom: topH + gap });
+  // Pipe spawn
+  if (fPipes.length === 0 || fPipes[fPipes.length - 1].x < fCanvas.width - 170) {
+    const gap = 115;
+    const topH = Math.random() * (fCanvas.height - gap - 80) + 40;
+    fPipes.push({ x: fCanvas.width, top: topH, bottom: topH + gap, passed: false });
   }
 
-  for (let i = 0; i < flappyPipes.length; i++) {
-    let p = flappyPipes[i];
-    p.x -= 2.5;
+  for (let i = 0; i < fPipes.length; i++) {
+    let p = fPipes[i];
+    p.x -= 2.8;
 
+    // Draw Top & Bottom Pillars
     ctx.fillStyle = "#00f0ff";
-    ctx.fillRect(p.x, 0, 42, p.top);
-    ctx.fillRect(p.x, p.bottom, 42, fCanvas.height - p.bottom);
+    ctx.fillRect(p.x, 0, 44, p.top);
+    ctx.fillRect(p.x, p.bottom, 44, fCanvas.height - p.bottom);
 
-    // Collision
-    if (60 + 14 > p.x && 60 - 14 < p.x + 42) {
-      if (flappyY - 14 < p.top || flappyY + 14 > p.bottom) {
-        endFlappy();
-        return;
+    // Collision Check
+    if (65 + 14 > p.x && 65 - 14 < p.x + 44) {
+      if (fBirdY - 14 < p.top || fBirdY + 14 > p.bottom) {
+        return endFlappy();
       }
     }
-    if (p.x === 58) {
-      flappyScore++;
-      document.getElementById("flappyScore").innerText = flappyScore;
+
+    // Score
+    if (!p.passed && p.x < 65) {
+      p.passed = true;
+      fScore++;
+      document.getElementById("flappyScore").innerText = fScore;
     }
   }
 
-  if (flappyY > fCanvas.height || flappyY < 0) {
-    endFlappy();
-    return;
+  // Ground / Ceiling Check
+  if (fBirdY > fCanvas.height - 14 || fBirdY < 14) {
+    return endFlappy();
   }
 
-  flappyPipes = flappyPipes.filter(p => p.x > -50);
-  requestAnimationFrame(runFlappy);
+  fPipes = fPipes.filter((p) => p.x > -60);
+  fAnimId = requestAnimationFrame(loopFlappy);
 }
 
 function endFlappy() {
   flappyActive = false;
-  const overlay = document.getElementById("flappyOverlay");
-  overlay.innerHTML = `<h3>ENERGY LOST</h3><p>Score: <strong>${flappyScore}</strong></p><button class="spark-btn btn-primary" onclick="initFlappy()">Restart Flight</button>`;
-  overlay.classList.add("active");
+  document.getElementById("flappyStatus").innerText = "CRASHED";
+  const o = document.getElementById("flappyOverlay");
+  o.innerHTML = `<h3>SYSTEM LOST</h3><p>Total Cleared: <strong>${fScore}</strong></p><button class="spark-btn btn-primary" onclick="startFlappyGame()">Flight Again</button>`;
+  o.classList.add("active");
 }
 
 /* ==========================================================
-   GAME 2: DINO RUNNER
+   GAME 2: DINO RUNNER (100% FIXED & PLAYABLE)
 ========================================================== */
-let dinoActive = false, dinoY = 0, dinoV = 0, dinoObs = [], dinoScore = 0;
+let dinoActive = false;
+let dinoY = 0;
+let dinoV = 0;
+let dinoObstacles = [];
+let dScore = 0;
+let dAnimId = null;
 const dCanvas = document.getElementById("dinoCanvas");
 
-function initDino() {
+function startDinoGame() {
   if (!dCanvas) return;
   dCanvas.width = dCanvas.parentElement.clientWidth;
   dCanvas.height = dCanvas.parentElement.clientHeight;
-  dinoY = 0; dinoV = 0; dinoObs = []; dinoScore = 0; dinoActive = true;
-  document.getElementById("dinoScore").innerText = 0;
+
+  dinoY = 0;
+  dinoV = 0;
+  dinoObstacles = [];
+  dScore = 0;
+  dinoActive = true;
+
+  document.getElementById("dinoScore").innerText = "0";
+  document.getElementById("dinoStatus").innerText = "RUNNING";
   document.getElementById("dinoOverlay").classList.remove("active");
-  runDino();
+
+  cancelAnimationFrame(dAnimId);
+  loopDino();
 }
 
-function dinoJump() {
-  if (dinoActive && dinoY === 0) dinoV = 9;
+function jumpDinoAction() {
+  if (dinoActive && dinoY === 0) dinoV = 9.8;
+  else if (!dinoActive) startDinoGame();
 }
-document.getElementById("dinoJumpBtn")?.addEventListener("click", dinoJump);
-dCanvas?.addEventListener("pointerdown", dinoJump);
 
-function runDino() {
+dCanvas?.addEventListener("pointerdown", (e) => { e.preventDefault(); jumpDinoAction(); });
+window.addEventListener("keydown", (e) => {
+  if (e.code === "Space" && document.getElementById("dinoView")?.classList.contains("active")) {
+    e.preventDefault();
+    jumpDinoAction();
+  }
+});
+
+function loopDino() {
   if (!dinoActive) return;
   const ctx = dCanvas.getContext("2d");
   ctx.clearRect(0, 0, dCanvas.width, dCanvas.height);
 
-  const groundY = dCanvas.height - 40;
-  dinoY += dinoV;
-  if (dinoY > 0) dinoV -= 0.42; else { dinoY = 0; dinoV = 0; }
+  const groundY = dCanvas.height - 35;
 
-  // Draw Ground
-  ctx.strokeStyle = "rgba(255,255,255,0.2)";
-  ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(dCanvas.width, groundY); ctx.stroke();
+  dinoY += dinoV;
+  if (dinoY > 0) dinoV -= 0.45;
+  else { dinoY = 0; dinoV = 0; }
+
+  // Draw Neon Ground
+  ctx.strokeStyle = "rgba(0, 240, 255, 0.4)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, groundY);
+  ctx.lineTo(dCanvas.width, groundY);
+  ctx.stroke();
 
   // Dino (Cyber Cube)
   ctx.fillStyle = "#ff007f";
   ctx.fillRect(50, groundY - dinoY - 32, 32, 32);
 
-  // Obstacles
-  if (Math.random() < 0.02) {
-    dinoObs.push({ x: dCanvas.width, w: 22, h: Math.random() * 25 + 25 });
+  // Obstacle generation
+  if (dinoObstacles.length === 0 || dinoObstacles[dinoObstacles.length - 1].x < dCanvas.width - 240) {
+    if (Math.random() < 0.6) {
+      dinoObstacles.push({ x: dCanvas.width, w: 22, h: Math.random() * 26 + 26 });
+    }
   }
 
-  for (let i = 0; i < dinoObs.length; i++) {
-    let o = dinoObs[i];
-    o.x -= 4.5;
+  for (let i = 0; i < dinoObstacles.length; i++) {
+    let o = dinoObstacles[i];
+    o.x -= 4.8;
+
     ctx.fillStyle = "#ffbe0b";
     ctx.fillRect(o.x, groundY - o.h, o.w, o.h);
 
+    // Collision Check
     if (50 + 32 > o.x && 50 < o.x + o.w && dinoY < o.h) {
       dinoActive = false;
-      document.getElementById("dinoOverlay").innerHTML = `<h3>GRID COLLISION</h3><p>Score: <strong>${dinoScore}</strong></p><button class="spark-btn btn-primary" onclick="initDino()">Run Again</button>`;
-      document.getElementById("dinoOverlay").classList.add("active");
+      document.getElementById("dinoStatus").innerText = "IMPACT DETECTED";
+      const ov = document.getElementById("dinoOverlay");
+      ov.innerHTML = `<h3>GRID COLLISION</h3><p>Distance Survived: <strong>${Math.floor(dScore / 5)}</strong></p><button class="spark-btn btn-primary" onclick="startDinoGame()">Run Again</button>`;
+      ov.classList.add("active");
       return;
     }
   }
 
-  dinoScore++;
-  document.getElementById("dinoScore").innerText = Math.floor(dinoScore / 5);
-  dinoObs = dinoObs.filter(o => o.x > -30);
-  requestAnimationFrame(runDino);
+  dScore++;
+  document.getElementById("dinoScore").innerText = Math.floor(dScore / 5);
+  dinoObstacles = dinoObstacles.filter((o) => o.x > -40);
+  dAnimId = requestAnimationFrame(loopDino);
 }
 
 /* ==========================================================
-   GAME 3: SPACE SHIP
+   GAME 3: SPACE SHIP (100% FIXED & PLAYABLE)
 ========================================================== */
-let spaceActive = false, shipX = 150, bullets = [], enemies = [], spaceScore = 0;
+let spaceActive = false;
+let shipX = 160;
+let spaceBullets = [];
+let spaceEnemies = [];
+let sScore = 0;
+let sAnimId = null;
 const sCanvas = document.getElementById("spaceCanvas");
 
-function initSpace() {
+function startSpaceGame() {
   if (!sCanvas) return;
   sCanvas.width = sCanvas.parentElement.clientWidth;
   sCanvas.height = sCanvas.parentElement.clientHeight;
+
   shipX = sCanvas.width / 2;
-  bullets = []; enemies = []; spaceScore = 0; spaceActive = true;
-  document.getElementById("spaceScore").innerText = 0;
+  spaceBullets = [];
+  spaceEnemies = [];
+  sScore = 0;
+  spaceActive = true;
+
+  document.getElementById("spaceScore").innerText = "0";
+  document.getElementById("spaceHull").innerText = "100%";
   document.getElementById("spaceOverlay").classList.remove("active");
-  runSpace();
+
+  cancelAnimationFrame(sAnimId);
+  loopSpace();
 }
 
-sCanvas?.parentElement.addEventListener("mousemove", (e) => {
+function fireSpaceBullet() {
+  if (spaceActive) {
+    spaceBullets.push({ x: shipX, y: sCanvas.height - 45 });
+  } else {
+    startSpaceGame();
+  }
+}
+
+sCanvas?.addEventListener("pointerdown", (e) => { e.preventDefault(); fireSpaceBullet(); });
+sCanvas?.addEventListener("pointermove", (e) => {
   const rect = sCanvas.getBoundingClientRect();
   shipX = e.clientX - rect.left;
 });
-sCanvas?.parentElement.addEventListener("touchmove", (e) => {
-  const rect = sCanvas.getBoundingClientRect();
-  shipX = e.touches[0].clientX - rect.left;
+window.addEventListener("keydown", (e) => {
+  if (e.code === "Space" && document.getElementById("spaceView")?.classList.contains("active")) {
+    e.preventDefault();
+    fireSpaceBullet();
+  }
 });
 
-function fireBullet() {
-  if (spaceActive) bullets.push({ x: shipX, y: sCanvas.height - 45 });
-}
-document.getElementById("spaceFireBtn")?.addEventListener("click", fireBullet);
-sCanvas?.addEventListener("pointerdown", fireBullet);
-
-function runSpace() {
+function loopSpace() {
   if (!spaceActive) return;
   const ctx = sCanvas.getContext("2d");
   ctx.clearRect(0, 0, sCanvas.width, sCanvas.height);
 
-  // Ship
+  // Draw Player Fighter
   ctx.fillStyle = "#00f0ff";
   ctx.beginPath();
   ctx.moveTo(shipX, sCanvas.height - 40);
-  ctx.lineTo(shipX - 16, sCanvas.height - 15);
-  ctx.lineTo(shipX + 16, sCanvas.height - 15);
+  ctx.lineTo(shipX - 16, sCanvas.height - 12);
+  ctx.lineTo(shipX + 16, sCanvas.height - 12);
   ctx.fill();
 
-  // Bullets
+  // Update Bullets
   ctx.fillStyle = "#ffbe0b";
-  bullets.forEach(b => {
-    b.y -= 7;
+  spaceBullets.forEach((b) => {
+    b.y -= 7.5;
     ctx.fillRect(b.x - 2, b.y, 4, 12);
   });
 
-  // Spawn Enemy
-  if (Math.random() < 0.03) {
-    enemies.push({ x: Math.random() * (sCanvas.width - 30) + 15, y: -20, r: 14 });
+  // Spawn Enemies
+  if (Math.random() < 0.035) {
+    spaceEnemies.push({ x: Math.random() * (sCanvas.width - 40) + 20, y: -20, r: 14 });
   }
 
-  // Update Enemy & Collisions
-  for (let eIdx = enemies.length - 1; eIdx >= 0; eIdx--) {
-    let en = enemies[eIdx];
-    en.y += 2.8;
-    ctx.fillStyle = "#ff007f";
-    ctx.beginPath(); ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2); ctx.fill();
+  // Update & Check Collisions
+  for (let eIdx = spaceEnemies.length - 1; eIdx >= 0; eIdx--) {
+    let en = spaceEnemies[eIdx];
+    en.y += 2.5;
 
-    bullets.forEach((b, bIdx) => {
-      let dist = Math.hypot(b.x - en.x, b.y - en.y);
-      if (dist < en.r + 4) {
-        enemies.splice(eIdx, 1);
-        bullets.splice(bIdx, 1);
-        spaceScore += 10;
-        document.getElementById("spaceScore").innerText = spaceScore;
+    ctx.fillStyle = "#ff007f";
+    ctx.beginPath();
+    ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bullet hits Enemy
+    spaceBullets.forEach((b, bIdx) => {
+      if (Math.hypot(b.x - en.x, b.y - en.y) < en.r + 4) {
+        spaceEnemies.splice(eIdx, 1);
+        spaceBullets.splice(bIdx, 1);
+        sScore += 10;
+        document.getElementById("spaceScore").innerText = sScore;
       }
     });
 
+    // Enemy infiltrates bottom
     if (en.y > sCanvas.height) {
       spaceActive = false;
-      document.getElementById("spaceOverlay").innerHTML = `<h3>BASE INFILTRATED</h3><p>Destroyed Ships: <strong>${spaceScore / 10}</strong></p><button class="spark-btn btn-primary" onclick="initSpace()">Defend Again</button>`;
-      document.getElementById("spaceOverlay").classList.add("active");
+      const ov = document.getElementById("spaceOverlay");
+      ov.innerHTML = `<h3>BASE INFILTRATED</h3><p>Destroyed Ships: <strong>${sScore / 10}</strong></p><button class="spark-btn btn-primary" onclick="startSpaceGame()">Launch Again</button>`;
+      ov.classList.add("active");
       return;
     }
   }
 
-  bullets = bullets.filter(b => b.y > -20);
-  requestAnimationFrame(runSpace);
+  spaceBullets = spaceBullets.filter((b) => b.y > -20);
+  sAnimId = requestAnimationFrame(loopSpace);
 }
 
 /* ==========================================================
-   GAME 4: TOWER JUMP
+   GAME 4: TOWER JUMP (100% FIXED & PLAYABLE)
 ========================================================== */
-let tActive = false, tPlayer = { x: 150, y: 300, vx: 0, vy: 0 }, tBlocks = [], tHeight = 0;
+let towerActive = false;
+let tPlayer = { x: 150, y: 250, vx: 0, vy: -7 };
+let tBlocks = [];
+let tAltitude = 0;
+let tAnimId = null;
 const tCanvas = document.getElementById("towerCanvas");
 
-function initTower() {
+function startTowerGame() {
   if (!tCanvas) return;
   tCanvas.width = tCanvas.parentElement.clientWidth;
   tCanvas.height = tCanvas.parentElement.clientHeight;
-  tPlayer = { x: tCanvas.width / 2, y: tCanvas.height - 40, vx: 0, vy: -7 };
-  tBlocks = []; tHeight = 0; tActive = true;
+
+  tPlayer = { x: tCanvas.width / 2, y: tCanvas.height - 40, vx: 0, vy: -7.5 };
+  tBlocks = [];
+  tAltitude = 0;
+  towerActive = true;
 
   for (let i = 0; i < 7; i++) {
-    tBlocks.push({ x: Math.random() * (tCanvas.width - 70), y: tCanvas.height - i * 55, w: 70, h: 12 });
+    tBlocks.push({
+      x: Math.random() * (tCanvas.width - 70),
+      y: tCanvas.height - i * 55,
+      w: 70,
+      h: 12
+    });
   }
+
+  document.getElementById("towerHeight").innerText = "0m";
   document.getElementById("towerOverlay").classList.remove("active");
-  runTower();
+
+  cancelAnimationFrame(tAnimId);
+  loopTower();
+}
+
+function setTowerMove(dir) {
+  tPlayer.vx = dir * 4.5;
 }
 
 window.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowLeft" || e.key === "a") tPlayer.vx = -4.5;
-  if (e.key === "ArrowRight" || e.key === "d") tPlayer.vx = 4.5;
+  if (e.key === "ArrowLeft" || e.key === "a") setTowerMove(-1);
+  if (e.key === "ArrowRight" || e.key === "d") setTowerMove(1);
 });
-window.addEventListener("keyup", () => { tPlayer.vx = 0; });
-document.getElementById("towerJumpBtn")?.addEventListener("click", () => {
-  tPlayer.vx = tPlayer.vx === 0 ? 4.5 : -tPlayer.vx;
-});
+window.addEventListener("keyup", () => { setTowerMove(0); });
 
-function runTower() {
-  if (!tActive) return;
+function loopTower() {
+  if (!towerActive) return;
   const ctx = tCanvas.getContext("2d");
   ctx.clearRect(0, 0, tCanvas.width, tCanvas.height);
 
-  tPlayer.vy += 0.22;
+  tPlayer.vy += 0.24;
   tPlayer.x += tPlayer.vx;
   tPlayer.y += tPlayer.vy;
 
@@ -464,19 +601,25 @@ function runTower() {
   if (tPlayer.x < 0) tPlayer.x = tCanvas.width;
   if (tPlayer.x > tCanvas.width) tPlayer.x = 0;
 
-  // Platform hit
-  tBlocks.forEach(b => {
-    if (tPlayer.vy > 0 && tPlayer.x > b.x && tPlayer.x < b.x + b.w && tPlayer.y + 12 >= b.y && tPlayer.y + 12 <= b.y + 14) {
-      tPlayer.vy = -7.2;
-      tHeight += 10;
-      document.getElementById("towerHeight").innerText = `${tHeight}m`;
+  // Collision on platform top
+  tBlocks.forEach((b) => {
+    if (
+      tPlayer.vy > 0 &&
+      tPlayer.x > b.x &&
+      tPlayer.x < b.x + b.w &&
+      tPlayer.y + 12 >= b.y &&
+      tPlayer.y + 12 <= b.y + 14
+    ) {
+      tPlayer.vy = -7.5;
+      tAltitude += 10;
+      document.getElementById("towerHeight").innerText = `${tAltitude}m`;
     }
   });
 
-  // Camera scroll
+  // Scrolling Camera Up
   if (tPlayer.y < 140) {
     tPlayer.y = 140;
-    tBlocks.forEach(b => {
+    tBlocks.forEach((b) => {
       b.y += 4;
       if (b.y > tCanvas.height) {
         b.y = 0;
@@ -485,22 +628,24 @@ function runTower() {
     });
   }
 
-  // Draw Blocks
+  // Draw Platforms
   ctx.fillStyle = "#ffbe0b";
-  tBlocks.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
+  tBlocks.forEach((b) => ctx.fillRect(b.x, b.y, b.w, b.h));
 
   // Draw Player
   ctx.fillStyle = "#00f0ff";
   ctx.fillRect(tPlayer.x - 8, tPlayer.y, 16, 16);
 
+  // Fall check
   if (tPlayer.y > tCanvas.height) {
-    tActive = false;
-    document.getElementById("towerOverlay").innerHTML = `<h3>ALTITUDE FAILED</h3><p>Height: <strong>${tHeight}m</strong></p><button class="spark-btn btn-primary" onclick="initTower()">Jump Again</button>`;
-    document.getElementById("towerOverlay").classList.add("active");
+    towerActive = false;
+    const ov = document.getElementById("towerOverlay");
+    ov.innerHTML = `<h3>FALLEN OFF MATRIX</h3><p>Highest Altitude: <strong>${tAltitude}m</strong></p><button class="spark-btn btn-primary" onclick="startTowerGame()">Jump Again</button>`;
+    ov.classList.add("active");
     return;
   }
 
-  requestAnimationFrame(runTower);
+  tAnimId = requestAnimationFrame(loopTower);
 }
 
 /* ==========================================================
@@ -511,15 +656,15 @@ const tttCells = document.querySelectorAll(".ttt-cell");
 
 function resetTTT() {
   tttBoard = ["", "", "", "", "", "", "", "", ""];
-  tttCells.forEach(c => {
+  tttCells.forEach((c) => {
     c.innerText = "";
     c.className = "ttt-cell";
   });
   document.getElementById("tttTurn").innerText = "Player (X)";
-  document.getElementById("tttResult").innerText = "Ongoing";
+  document.getElementById("tttResult").innerText = "Playing";
 }
 
-tttCells.forEach(cell => {
+tttCells.forEach((cell) => {
   cell.addEventListener("click", () => {
     const idx = +cell.getAttribute("data-idx");
     if (tttBoard[idx] === "" && !checkWin(tttBoard)) {
@@ -531,12 +676,11 @@ tttCells.forEach(cell => {
         document.getElementById("tttResult").innerText = "Player X Won!";
         return;
       }
-      if (tttBoard.every(val => val !== "")) {
+      if (tttBoard.every((val) => val !== "")) {
         document.getElementById("tttResult").innerText = "Match Tied!";
         return;
       }
 
-      // AI Move
       document.getElementById("tttTurn").innerText = "AI (O)...";
       setTimeout(makeAiMove, 300);
     }
@@ -544,7 +688,7 @@ tttCells.forEach(cell => {
 });
 
 function makeAiMove() {
-  const empty = tttBoard.map((val, idx) => val === "" ? idx : null).filter(val => val !== null);
+  const empty = tttBoard.map((val, idx) => (val === "" ? idx : null)).filter((val) => val !== null);
   if (!empty.length || checkWin(tttBoard)) return;
   const choice = empty[Math.floor(Math.random() * empty.length)];
   tttBoard[choice] = "O";
@@ -560,9 +704,9 @@ function makeAiMove() {
 
 function checkWin(b) {
   const wins = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
   ];
-  return wins.some(([x,y,z]) => b[x] && b[x] === b[y] && b[x] === b[z]);
+  return wins.some(([x, y, z]) => b[x] && b[x] === b[y] && b[x] === b[z]);
 }

@@ -3,148 +3,280 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SPARK // High Voltage Web Experience</title>
+  <title>SPARK // Advanced Cyber-Neural Web Core</title>
   
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- Electric Spark Canvas -->
+  <!-- Background Electric Mesh Canvas -->
   <canvas id="sparkCanvas"></canvas>
 
-  <!-- Navigation Bar -->
+  <!-- Top Navigation Bar -->
   <header class="navbar">
     <div class="brand">
-      <i class="fa-solid fa-bolt-lightning bolt-icon"></i>
+      <i class="fa-solid fa-bolt-lightning bolt-glow"></i>
       <span>SPARK</span>
     </div>
 
     <nav class="nav-links">
-      <button class="nav-tab active" data-target="home">Ignite</button>
-      <button class="nav-tab" data-target="showcase">Matrix</button>
-      <button class="nav-tab" data-target="minigame">Overdrive</button>
+      <button class="nav-tab active" data-target="home"><i class="fa-solid fa-house"></i> Home</button>
+      <button class="nav-tab" data-target="showcase"><i class="fa-solid fa-brain"></i> AI Showcase</button>
+      <button class="nav-tab" data-target="minigames"><i class="fa-solid fa-gamepad"></i> 5 Mini Games</button>
     </nav>
 
-    <div class="nav-indicator">
+    <div class="nav-tag">
       <span class="live-dot"></span>
-      <span class="volt-text">440V LIVE</span>
+      <span class="tag-text">SPARK CORE ONLINE</span>
     </div>
   </header>
 
-  <!-- View Wrapper -->
-  <main class="viewport-wrapper">
+  <!-- Main Viewport -->
+  <main class="page-container">
 
-    <!-- PAGE 1: HOME (IGNITE) -->
-    <section id="home" class="page-pane active">
-      <div class="pane-content hero-pane">
-        <div class="status-badge">⚡ NEXT-GEN VOLTAGE ENGINE</div>
-        <h1 class="main-heading">IGNITE THE DIGITAL HORIZON</h1>
+    <!-- ================= PAGE 1: HOME ================= -->
+    <section id="home" class="page-view active">
+      <div class="hero-box">
+        <!-- Big Glow Outline Hero Badge -->
+        <div class="glow-border-wrap hero-badge-wrap">
+          <div class="glow-inner">
+            <i class="fa-solid fa-atom"></i> HYPER-VOLTAGE REACTION ENGINE
+          </div>
+        </div>
+
+        <h1 class="spark-main-title">SPARK</h1>
         <p class="hero-desc">
-          High-performance canvas physics, ultra-responsive architecture, and pure mathematical reactivity engineered into a single seamless experience.
+          Next-generation interface featuring hyper-reactive AI nodes, thick luminescent borders, and 5 dynamic arcade mini-games.
         </p>
-        
-        <div class="hero-cta-group">
-          <button class="spark-btn btn-glow" onclick="switchPage('minigame')">
-            Enter Overdrive <i class="fa-solid fa-arrow-right"></i>
+
+        <div class="hero-btns">
+          <button class="spark-btn btn-primary" onclick="switchPage('minigames')">
+            <span>Play 5 Mini Games</span> <i class="fa-solid fa-gamepad"></i>
           </button>
           <button class="spark-btn btn-ghost" onclick="switchPage('showcase')">
-            View Matrix
+            <span>Launch AI Core</span> <i class="fa-solid fa-brain"></i>
           </button>
         </div>
+      </div>
 
-        <div class="telemetry-bar">
-          <div class="telemetry-item">
-            <span class="val">0.02ms</span>
-            <span class="lbl">Latency</span>
+      <!-- Feature Cards With Prominent Moving Glow Outlines -->
+      <div class="title-cards-grid">
+        <div class="glow-border-wrap card-box">
+          <div class="glow-inner">
+            <div class="card-icon"><i class="fa-solid fa-bolt"></i></div>
+            <h3>Quantum Engine</h3>
+            <p>Engineered with 60FPS fluid canvas particles and zero external framework latency.</p>
+            <div class="card-stat">99.99% EFFICIENT</div>
           </div>
-          <div class="telemetry-divider"></div>
-          <div class="telemetry-item">
-            <span class="val">60 FPS</span>
-            <span class="lbl">Render Loop</span>
+        </div>
+
+        <div class="glow-border-wrap card-box">
+          <div class="glow-inner">
+            <div class="card-icon"><i class="fa-solid fa-network-wired"></i></div>
+            <h3>Synaptic Nexus</h3>
+            <p>Mathematical vector networks that actively bend toward user gestures and mouse paths.</p>
+            <div class="card-stat">NEURAL LINK ACTIVE</div>
           </div>
-          <div class="telemetry-divider"></div>
-          <div class="telemetry-item">
-            <span class="val">Pure Vanilla</span>
-            <span class="lbl">Architecture</span>
+        </div>
+
+        <div class="glow-border-wrap card-box">
+          <div class="glow-inner">
+            <div class="card-icon"><i class="fa-solid fa-cubes"></i></div>
+            <h3>Arcade Terminal</h3>
+            <p>Five high-speed reflex and cognitive test challenges compiled directly in vanilla script.</p>
+            <div class="card-stat">5 GAMES ARMED</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- PAGE 2: SHOWCASE (MATRIX) -->
-    <section id="showcase" class="page-pane">
-      <div class="pane-content">
-        <div class="pane-title-group">
-          <h2>SYSTEM MATRIX</h2>
-          <p>Modular capabilities built for raw speed and interaction.</p>
+    <!-- ================= PAGE 2: SHOWCASE (99.99% AI TECH) ================= -->
+    <section id="showcase" class="page-view">
+      <div class="section-title">
+        <h2>AI SYNAPSE REALITY</h2>
+        <p>Real-time neural matrix computation, generative vectors, and biometric tracking</p>
+      </div>
+
+      <div class="ai-dashboard-grid">
+        <!-- Interactive AI Brain Visualization -->
+        <div class="glow-border-wrap ai-core-panel">
+          <div class="glow-inner ai-inner">
+            <div class="panel-header">
+              <div class="header-left">
+                <i class="fa-solid fa-microchip"></i>
+                <span>NEURAL QUANTUM LAB</span>
+              </div>
+              <span class="synapse-rate" id="synapseCounter">99.99% COGNITION</span>
+            </div>
+
+            <!-- AI Live Visualizer Canvas -->
+            <div class="ai-canvas-wrapper">
+              <canvas id="aiMeshCanvas"></canvas>
+              <div class="ai-hud-overlay">
+                <div class="hud-item"><span>MODEL:</span> <strong>SPARK-OMNI-v9</strong></div>
+                <div class="hud-item"><span>TENSORS:</span> <strong id="tensorCount">1,048,576</strong></div>
+                <div class="hud-item"><span>LOSS:</span> <strong>0.000012</strong></div>
+              </div>
+            </div>
+
+            <!-- Real-time Synapse Trigger Controls -->
+            <div class="ai-control-row">
+              <button class="spark-btn btn-sm" onclick="burstSynapse()">Pulse Neurons</button>
+              <button class="spark-btn btn-sm btn-ghost" onclick="toggleAIWarp()">Warp Density</button>
+              <button class="spark-btn btn-sm btn-pink" onclick="recalibrateWeights()">Recalibrate Weights</button>
+            </div>
+          </div>
         </div>
 
-        <div class="matrix-grid">
-          <div class="matrix-card">
-            <div class="card-glow"></div>
-            <div class="card-icon"><i class="fa-solid fa-microchip"></i></div>
-            <h3>Zero Dependency</h3>
-            <p>Runs purely on native web APIs with no bulky overhead, keeping the thread completely unblocked.</p>
-            <span class="tag">PERFORMANCE</span>
-          </div>
+        <!-- AI Biometric & Sentiment Scanner -->
+        <div class="glow-border-wrap ai-stats-panel">
+          <div class="glow-inner ai-inner">
+            <div class="panel-header">
+              <i class="fa-solid fa-eye"></i>
+              <span>BIOMETRIC MATRIX SCAN</span>
+            </div>
 
-          <div class="matrix-card">
-            <div class="card-glow"></div>
-            <div class="card-icon"><i class="fa-solid fa-wave-square"></i></div>
-            <h3>Dynamic Kinetic Physics</h3>
-            <p>Calculated vector velocities that dynamically bend and react towards cursor position in real time.</p>
-            <span class="tag">PHYSICS</span>
-          </div>
+            <div class="ai-metric-group">
+              <div class="metric-info">
+                <span>Perception Precision</span>
+                <span class="metric-val">99.99%</span>
+              </div>
+              <div class="metric-bar"><div class="fill" style="width: 99.99%;"></div></div>
+            </div>
 
-          <div class="matrix-card">
-            <div class="card-glow"></div>
-            <div class="card-icon"><i class="fa-solid fa-shield-halved"></i></div>
-            <h3>Glass & Mesh UI</h3>
-            <p>Polished blur shaders and variable gradient boundaries tuned for instant eye-tracking contrast.</p>
-            <span class="tag">INTERFACE</span>
+            <div class="ai-metric-group">
+              <div class="metric-info">
+                <span>Synaptic Processing Rate</span>
+                <span class="metric-val">8.4 TFLOPS</span>
+              </div>
+              <div class="metric-bar"><div class="fill fill-cyan" style="width: 94%;"></div></div>
+            </div>
+
+            <div class="ai-metric-group">
+              <div class="metric-info">
+                <span>Zero-Shot Inference</span>
+                <span class="metric-val">0.08 ms</span>
+              </div>
+              <div class="metric-bar"><div class="fill fill-pink" style="width: 98%;"></div></div>
+            </div>
+
+            <div class="ai-log-terminal" id="aiLogTerminal">
+              <p>> [SYSTEM] Neural core booted with 99.99% accuracy index.</p>
+              <p>> [STREAM] Dynamic attention weights synchronized.</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- PAGE 3: MINI GAME (OVERDRIVE) -->
-    <section id="minigame" class="page-pane">
-      <div class="pane-content">
-        <div class="pane-title-group">
-          <h2>OVERDRIVE ARENA</h2>
-          <p>Hit the spark node as many times as possible in 15 seconds.</p>
-        </div>
+    <!-- ================= PAGE 3: 5 MINI GAMES ================= -->
+    <section id="minigames" class="page-view">
+      <div class="section-title">
+        <h2>SPARK ARCADE MATRIX</h2>
+        <p>Select from 5 high-voltage games</p>
+      </div>
 
-        <div class="game-container">
-          <div class="game-hud">
-            <div class="hud-box">
-              <span class="hud-lbl">ENERGY SCORE</span>
-              <span class="hud-val" id="scoreVal">0</span>
+      <!-- Game Tabs Navigation -->
+      <div class="game-select-bar">
+        <button class="game-selector-btn active" data-game="game1"><i class="fa-solid fa-crosshairs"></i> 1. Reflex Aim</button>
+        <button class="game-selector-btn" data-game="game2"><i class="fa-solid fa-memory"></i> 2. Neural Memory</button>
+        <button class="game-selector-btn" data-game="game3"><i class="fa-solid fa-shield"></i> 3. Quantum Dodge</button>
+        <button class="game-selector-btn" data-game="game4"><i class="fa-solid fa-gauge-high"></i> 4. CPS Overdrive</button>
+        <button class="game-selector-btn" data-game="game5"><i class="fa-solid fa-key"></i> 5. Binary Decrypt</button>
+      </div>
+
+      <!-- MAIN GAME STAGE CONTAINER -->
+      <div class="glow-border-wrap game-board-wrap">
+        <div class="glow-inner game-board-inner">
+
+          <!-- ================= GAME 1: REFLEX AIM ================= -->
+          <div class="game-screen active" id="game1Screen">
+            <div class="game-topbar">
+              <div class="g-stat">SCORE: <span id="g1Score">0</span></div>
+              <div class="g-stat highlight">TIME: <span id="g1Time">15s</span></div>
+              <button class="spark-btn btn-sm" id="g1StartBtn">Start Game</button>
             </div>
-            <div class="hud-box">
-              <span class="hud-lbl">VOLTAGE TIMER</span>
-              <span class="hud-val timer" id="timerVal">15s</span>
-            </div>
-            <div class="hud-box">
-              <span class="hud-lbl">COMBO SURGE</span>
-              <span class="hud-val surge" id="comboVal">x1</span>
+            <div class="game-canvas-area" id="g1Area">
+              <button class="g1-target" id="g1Target"><i class="fa-solid fa-bolt"></i></button>
+              <div class="g-overlay active" id="g1Overlay">
+                <h3>REFLEX AIM ARENA</h3>
+                <p>Click the fast-jumping spark node before the timer ends!</p>
+              </div>
             </div>
           </div>
 
-          <div class="arena-field" id="arenaField">
-            <button class="target-node" id="targetNode">
-              <i class="fa-solid fa-bolt"></i>
-            </button>
-            <div class="arena-modal active" id="arenaModal">
-              <h3>SYSTEM READY</h3>
-              <p>Test your reaction limits against the spark flux.</p>
-              <button class="spark-btn btn-glow" id="startBtn">Initiate Circuit</button>
+          <!-- ================= GAME 2: NEURAL MEMORY ================= -->
+          <div class="game-screen" id="game2Screen">
+            <div class="game-topbar">
+              <div class="g-stat">LEVEL: <span id="g2Level">1</span></div>
+              <div class="g-stat highlight">STATUS: <span id="g2Status">Wait for sequence</span></div>
+              <button class="spark-btn btn-sm" id="g2StartBtn">Start Sequence</button>
+            </div>
+            <div class="game-canvas-area memory-grid-area">
+              <div class="memory-grid">
+                <div class="mem-pad" data-id="0"></div>
+                <div class="mem-pad" data-id="1"></div>
+                <div class="mem-pad" data-id="2"></div>
+                <div class="mem-pad" data-id="3"></div>
+              </div>
             </div>
           </div>
+
+          <!-- ================= GAME 3: QUANTUM DODGE ================= -->
+          <div class="game-screen" id="game3Screen">
+            <div class="game-topbar">
+              <div class="g-stat">SURVIVED: <span id="g3Score">0s</span></div>
+              <div class="g-stat highlight">LIVES: <span id="g3Lives">1</span></div>
+              <button class="spark-btn btn-sm" id="g3StartBtn">Launch Dodge</button>
+            </div>
+            <div class="game-canvas-area" id="g3Area">
+              <canvas id="g3Canvas"></canvas>
+              <div class="g-overlay active" id="g3Overlay">
+                <h3>QUANTUM DODGE</h3>
+                <p>Move mouse / swipe finger left and right to dodge falling red plasma rocks!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= GAME 4: CPS OVERDRIVE ================= -->
+          <div class="game-screen" id="game4Screen">
+            <div class="game-topbar">
+              <div class="g-stat">CLICKS: <span id="g4Clicks">0</span></div>
+              <div class="g-stat highlight">TIMER: <span id="g4Timer">5s</span></div>
+              <div class="g-stat">CPS: <span id="g4CPS">0.0</span></div>
+            </div>
+            <div class="game-canvas-area cps-area">
+              <button class="cps-trigger" id="g4Button">CLICK / TAP RAPIDLY!</button>
+              <div class="g-overlay active" id="g4Overlay">
+                <h3>CPS SPEED BURST</h3>
+                <p>Hit the button as fast as humanly possible in 5 seconds.</p>
+                <button class="spark-btn btn-primary" id="g4StartBtn">Test Voltage</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= GAME 5: BINARY DECRYPTOR ================= -->
+          <div class="game-screen" id="game5Screen">
+            <div class="game-topbar">
+              <div class="g-stat">DECRYPTED: <span id="g5Score">0</span></div>
+              <div class="g-stat highlight">TIME: <span id="g5Time">20s</span></div>
+              <button class="spark-btn btn-sm" id="g5StartBtn">Start Decryption</button>
+            </div>
+            <div class="game-canvas-area binary-area">
+              <div class="binary-task">
+                <span class="binary-label">TARGET SEQUENCE:</span>
+                <span class="binary-display" id="g5TargetDisplay">1010</span>
+              </div>
+              <div class="binary-options" id="g5Options"></div>
+              <div class="g-overlay active" id="g5Overlay">
+                <h3>BINARY CIPHER CRACK</h3>
+                <p>Match the target 4-bit binary code as fast as possible!</p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

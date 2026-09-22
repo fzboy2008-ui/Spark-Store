@@ -3,30 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SPARK // Quantum Neural Web & Arcade</title>
+  <title>SPARK // Quantum Neural Matrix</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- Background Animated Cyber Matrix -->
+  <!-- Cyber Matrix Space Canvas -->
   <canvas id="sparkCanvas"></canvas>
 
-  <!-- Navigation Bar -->
+  <!-- Top Fixed Navbar -->
   <header class="navbar">
     <div class="brand">
       <i class="fa-solid fa-bolt-lightning bolt-glow"></i>
       <span>SPARK</span>
     </div>
     <nav class="nav-links">
-      <button class="nav-tab active" data-target="homeView"><i class="fa-solid fa-crown"></i> Owner</button>
-      <button class="nav-tab" data-target="showcaseView"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Lab & Creator</button>
-      <button class="nav-tab" data-target="gameView"><i class="fa-solid fa-gamepad"></i> Arcade Arena</button>
+      <button class="nav-tab active" data-target="homeView"><i class="fa-solid fa-crown"></i> <span>Owner</span></button>
+      <button class="nav-tab" data-target="showcaseView"><i class="fa-solid fa-wand-magic-sparkles"></i> <span>Showcase</span></button>
+      <button class="nav-tab" data-target="gameView"><i class="fa-solid fa-gamepad"></i> <span>Arcade</span></button>
     </nav>
     <div class="nav-tag">
       <span class="live-dot"></span>
-      <span class="tag-text">HYPERDRIVE ACTIVE</span>
+      <span class="tag-text">SYS ONLINE</span>
     </div>
   </header>
 
@@ -45,7 +45,7 @@
           <h1 class="owner-name">SPARK FOUNDER</h1>
           <p class="owner-role">Lead Architect & Systems Engineer</p>
           <p class="owner-bio">
-            Welcome to the central node of <strong>SPARK</strong>. Powered by generative quantum shaders, auto-scaling arcade engines, and interactive geometry labs.
+            Welcome to the central node of <strong>SPARK</strong>. Engineered with dual-pole red-blue quantum shaders, adaptive arcade engines, and interactive geometry matrices.
           </p>
 
           <div class="owner-metrics">
@@ -55,27 +55,27 @@
             </div>
             <div class="metric-pill">
               <span class="m-val">99.99%</span>
-              <span class="m-lbl">Inference Link</span>
+              <span class="m-lbl">Uptime Link</span>
             </div>
             <div class="metric-pill">
-              <span class="m-val">5 RETRO</span>
-              <span class="m-lbl">Active Games</span>
+              <span class="m-val">5 ARMED</span>
+              <span class="m-lbl">Game Cores</span>
             </div>
           </div>
 
           <div class="owner-actions">
             <button class="spark-btn btn-primary" onclick="switchPage('gameView')">
-              <span>Enter Arcade Arena</span> <i class="fa-solid fa-play"></i>
+              <i class="fa-solid fa-play"></i> <span>Play 5 Mini Games</span>
             </button>
             <button class="spark-btn btn-ghost" onclick="switchPage('showcaseView')">
-              <span>Open Quantum Sandbox</span> <i class="fa-solid fa-arrow-right"></i>
+              <span>Open Quantum Lab</span> <i class="fa-solid fa-arrow-right"></i>
             </button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ================= PAGE 2: SHOWCASE (QUANTUM LAB & DESIGN CREATOR) ================= -->
+    <!-- ================= PAGE 2: SHOWCASE (QUANTUM LAB & CREATOR) ================= -->
     <section id="showcaseView" class="page-view">
       <div class="section-title">
         <h2>QUANTUM CORE & DESIGN STUDIO</h2>
@@ -83,7 +83,7 @@
       </div>
 
       <div class="showcase-layout">
-        <!-- Main Morphing 3D Quantum Viewport -->
+        <!-- 3D Morphing Core -->
         <div class="glow-border-wrap hologram-card">
           <div class="glow-inner hologram-inner">
             <div class="panel-header">
@@ -94,46 +94,45 @@
             <div class="hologram-viewport" id="holoViewport">
               <canvas id="aiHologramCanvas"></canvas>
               <div class="holo-hud">
-                <div>GEOMETRIC FORM: <strong class="mono-gold" id="formDisplay">SPHERE (320 TENSORS)</strong></div>
-                <div>GRAVITATIONAL PULL: <span class="mono-cyan" id="gravDisplay">1.0x VECTOR</span></div>
-                <div>AUDIO SYNTH: <span class="mono-green">HARMONIC 432Hz</span></div>
+                <div>GEOMETRIC FORM: <strong class="mono-red" id="formDisplay">SPHERE (300 TENSORS)</strong></div>
+                <div>POLARITY BIAS: <span class="mono-cyan">DUAL BLUE-RED</span></div>
+                <div>AUDIO SYNTH: <span class="mono-green">ACTIVE 432Hz</span></div>
               </div>
             </div>
 
-            <!-- Shape Morphing Selectors -->
             <div class="shape-switch-row">
               <button class="shape-btn active" onclick="morphTo('sphere')"><i class="fa-solid fa-circle-dot"></i> Sphere</button>
-              <button class="shape-btn" onclick="morphTo('torus')"><i class="fa-solid fa-ring"></i> Torus Ring</button>
+              <button class="shape-btn" onclick="morphTo('torus')"><i class="fa-solid fa-ring"></i> Torus</button>
               <button class="shape-btn" onclick="morphTo('cube')"><i class="fa-solid fa-cube"></i> Tesseract</button>
               <button class="shape-btn" onclick="morphTo('vortex')"><i class="fa-solid fa-tornado"></i> Vortex</button>
             </div>
           </div>
         </div>
 
-        <!-- Custom Design Studio (Users Create Their Own Visuals) -->
+        <!-- Custom User Design Sandbox -->
         <div class="glow-border-wrap sandbox-card">
           <div class="glow-inner sandbox-inner">
             <div class="panel-header">
-              <span><i class="fa-solid fa-palette"></i> CREATE YOUR OWN MATRIX</span>
-              <span class="mono-gold">TOUCH / CLICK ACTIVE</span>
+              <span><i class="fa-solid fa-palette"></i> CREATE YOUR MATRIX</span>
+              <span class="mono-red">TOUCH ACTIVE</span>
             </div>
 
-            <p class="sandbox-tip">Click or drag below to generate your custom particle network in real time.</p>
+            <p class="sandbox-tip">Drag or tap below to weave your own responsive neural constellation.</p>
 
             <div class="user-sandbox-box">
               <canvas id="userCanvas"></canvas>
               <div class="canvas-controls-bar">
                 <button class="spark-btn btn-sm" onclick="clearUserDesign()"><i class="fa-solid fa-trash"></i> Reset</button>
-                <button class="spark-btn btn-sm btn-ghost" onclick="toggleConnectors()"><i class="fa-solid fa-bezier-curve"></i> Connectors</button>
-                <button class="spark-btn btn-sm btn-pink" onclick="burstUserParticles()"><i class="fa-solid fa-fire"></i> Supernova</button>
+                <button class="spark-btn btn-sm btn-ghost" onclick="toggleConnectors()"><i class="fa-solid fa-bezier-curve"></i> Beams</button>
+                <button class="spark-btn btn-sm btn-red" onclick="burstUserParticles()"><i class="fa-solid fa-fire"></i> Burst</button>
               </div>
             </div>
 
             <div class="palette-row">
-              <span>THEME:</span>
-              <button class="color-dot c-gold active" onclick="setDrawColor('#ffbe0b')"></button>
-              <button class="color-dot c-cyan" onclick="setDrawColor('#00f0ff')"></button>
-              <button class="color-dot c-pink" onclick="setDrawColor('#ff007f')"></button>
+              <span>ACTIVE BEAM:</span>
+              <button class="color-dot c-blue active" onclick="setDrawColor('#00d4ff')"></button>
+              <button class="color-dot c-red" onclick="setDrawColor('#ff003c')"></button>
+              <button class="color-dot c-purple" onclick="setDrawColor('#b000ff')"></button>
               <button class="color-dot c-green" onclick="setDrawColor('#00ff88')"></button>
             </div>
           </div>
@@ -141,39 +140,39 @@
       </div>
     </section>
 
-    <!-- ================= PAGE 3: ARCADE ARENA (BIGGER SCREEN + 5 ADAPTIVE GAMES) ================= -->
+    <!-- ================= PAGE 3: ARCADE ARENA ================= -->
     <section id="gameView" class="page-view">
       <div class="section-title">
         <h2>SPARK RETRO ARENA</h2>
-        <p>Bigger viewport with dynamic difficulty scaling — the higher your score, the faster it gets!</p>
+        <p>Big viewport arcade matrix with progressive difficulty scaling</p>
       </div>
 
-      <!-- Game Selector Bar -->
+      <!-- Game Tabs -->
       <div class="game-select-bar">
         <button class="game-selector-btn active" data-game="flappy"><i class="fa-solid fa-dove"></i> Flappy Bird</button>
         <button class="game-selector-btn" data-game="dino"><i class="fa-solid fa-dragon"></i> Dino Runner</button>
-        <button class="game-selector-btn" data-game="space"><i class="fa-solid fa-shuttle-space"></i> Space Striker (Auto-Laser)</button>
-        <button class="game-selector-btn" data-game="tower"><i class="fa-solid fa-cubes-stacked"></i> Tower Climb</button>
+        <button class="game-selector-btn" data-game="space"><i class="fa-solid fa-shuttle-space"></i> Space Striker</button>
+        <button class="game-selector-btn" data-game="tower"><i class="fa-solid fa-cubes-stacked"></i> Tower Jump</button>
         <button class="game-selector-btn" data-game="snake"><i class="fa-solid fa-worm"></i> Cyber Snake</button>
       </div>
 
-      <!-- Enlarged Game Board Frame -->
+      <!-- Game Screen Wrapper -->
       <div class="glow-border-wrap mega-game-wrap">
         <div class="glow-inner mega-game-inner">
 
           <!-- 1. FLAPPY BIRD -->
           <div class="arcade-view active" id="flappyView">
             <div class="arcade-topbar">
-              <div>SCORE: <span id="flappyScore">0</span></div>
-              <div>DIFFICULTY: <span class="mono-gold" id="flappyDiff">1.0x</span></div>
-              <button class="spark-btn btn-sm" onclick="flapWing()">Flap (Space / Tap)</button>
+              <div class="topbar-stat">SCORE: <span id="flappyScore">0</span></div>
+              <div class="topbar-stat">SPEED: <span class="mono-red" id="flappyDiff">1.0x</span></div>
+              <button class="spark-btn btn-sm btn-primary" onclick="flapWing()">Flap (Space / Click)</button>
             </div>
             <div class="canvas-stage big-stage">
               <canvas id="flappyCanvas"></canvas>
               <div class="arcade-overlay active" id="flappyOverlay">
                 <h3>FLAPPY SPARK</h3>
-                <p>Speed accelerates dynamically as you clear cyber pillars!</p>
-                <button class="spark-btn btn-primary" onclick="startFlappyGame()">START FLIGHT</button>
+                <p>Click, tap, or hit <strong>Spacebar</strong> to leap through the crimson pillars!</p>
+                <button class="spark-btn btn-primary btn-launch" onclick="startFlappyGame()">START MISSION</button>
               </div>
             </div>
           </div>
@@ -181,33 +180,33 @@
           <!-- 2. DINO RUNNER -->
           <div class="arcade-view" id="dinoView">
             <div class="arcade-topbar">
-              <div>DISTANCE: <span id="dinoScore">0m</span></div>
-              <div>SPEED: <span class="mono-cyan" id="dinoSpeedDisplay">1.0x</span></div>
-              <button class="spark-btn btn-sm" onclick="jumpDinoAction()">Jump (Space / Tap)</button>
+              <div class="topbar-stat">DISTANCE: <span id="dinoScore">0m</span></div>
+              <div class="topbar-stat">VELOCITY: <span class="mono-cyan" id="dinoSpeedDisplay">1.0x</span></div>
+              <button class="spark-btn btn-sm btn-primary" onclick="jumpDinoAction()">Jump (Space / Click)</button>
             </div>
             <div class="canvas-stage big-stage">
               <canvas id="dinoCanvas"></canvas>
               <div class="arcade-overlay active" id="dinoOverlay">
                 <h3>DINO HIGH-VOLTAGE</h3>
-                <p>Obstacles spawn faster and move with increasing speed!</p>
-                <button class="spark-btn btn-primary" onclick="startDinoGame()">LAUNCH RUNNER</button>
+                <p>Jump over moving cyber barriers before they collide with your core!</p>
+                <button class="spark-btn btn-primary btn-launch" onclick="startDinoGame()">LAUNCH RUNNER</button>
               </div>
             </div>
           </div>
 
-          <!-- 3. SPACE SHIP (AUTO-LASER + PROGRESSIVE CANNONS) -->
+          <!-- 3. SPACE SHIP (AUTO-FIRE) -->
           <div class="arcade-view" id="spaceView">
             <div class="arcade-topbar">
-              <div>SCORE: <span id="spaceScore">0</span></div>
-              <div>LASER BATTERY: <span class="mono-gold" id="laserLevel">LEVEL 1 (SINGLE)</span></div>
-              <div>STATUS: <span class="mono-green">AUTO-FIRE ARMED</span></div>
+              <div class="topbar-stat">SCORE: <span id="spaceScore">0</span></div>
+              <div class="topbar-stat">CANNONS: <span class="mono-red" id="laserLevel">LEVEL 1 (SINGLE)</span></div>
+              <div class="topbar-stat hide-mob">AUTO-LASER: <span class="mono-green">ONLINE</span></div>
             </div>
             <div class="canvas-stage big-stage">
               <canvas id="spaceCanvas"></canvas>
               <div class="arcade-overlay active" id="spaceOverlay">
                 <h3>SPACE STRIKER</h3>
-                <p>Lasers fire automatically! Move ship to aim. Upgrade weapons every 100 points!</p>
-                <button class="spark-btn btn-primary" onclick="startSpaceGame()">LAUNCH DEFENDER</button>
+                <p>Lasers fire automatically! Move mouse or swipe finger to direct plasma.</p>
+                <button class="spark-btn btn-primary btn-launch" onclick="startSpaceGame()">LAUNCH DEFENDER</button>
               </div>
             </div>
           </div>
@@ -215,8 +214,7 @@
           <!-- 4. TOWER JUMP -->
           <div class="arcade-view" id="towerView">
             <div class="arcade-topbar">
-              <div>ALTITUDE: <span id="towerHeight">0m</span></div>
-              <div>DROP SPEED: <span class="mono-pink" id="towerSpeed">NORMAL</span></div>
+              <div class="topbar-stat">ALTITUDE: <span id="towerHeight">0m</span></div>
               <div class="tower-ctrl-btns">
                 <button class="spark-btn btn-sm" onpointerdown="setTowerMove(-1)" onpointerup="setTowerMove(0)">◀ Left</button>
                 <button class="spark-btn btn-sm" onpointerdown="setTowerMove(1)" onpointerup="setTowerMove(0)">Right ▶</button>
@@ -226,17 +224,17 @@
               <canvas id="towerCanvas"></canvas>
               <div class="arcade-overlay active" id="towerOverlay">
                 <h3>TOWER CLIMB</h3>
-                <p>Ascending blocks narrow and fall down faster as you reach higher peaks!</p>
-                <button class="spark-btn btn-primary" onclick="startTowerGame()">CLIMB TOWER</button>
+                <p>Jump on descending neon blocks! Use <strong>A / D</strong>, Arrows, or the buttons.</p>
+                <button class="spark-btn btn-primary btn-launch" onclick="startTowerGame()">CLIMB TOWER</button>
               </div>
             </div>
           </div>
 
-          <!-- 5. CYBER SNAKE (NEW GAME REPLACING TIC-TAC-TOE) -->
+          <!-- 5. CYBER SNAKE -->
           <div class="arcade-view" id="snakeView">
             <div class="arcade-topbar">
-              <div>ORBS COLLECTED: <span id="snakeScore">0</span></div>
-              <div>VELOCITY: <span class="mono-cyan" id="snakeSpeedVal">1.0x</span></div>
+              <div class="topbar-stat">ORBS: <span id="snakeScore">0</span></div>
+              <div class="topbar-stat">SPEED: <span class="mono-cyan" id="snakeSpeedVal">1.0x</span></div>
               <div class="snake-ctrl-btns">
                 <button class="spark-btn btn-sm" onclick="turnSnake('UP')">▲</button>
                 <button class="spark-btn btn-sm" onclick="turnSnake('LEFT')">◀</button>
@@ -247,9 +245,9 @@
             <div class="canvas-stage big-stage">
               <canvas id="snakeCanvas"></canvas>
               <div class="arcade-overlay active" id="snakeOverlay">
-                <h3>CYBER SNAKE HYPERDRIVE</h3>
-                <p>Use <strong>Arrow Keys / W A S D</strong> or on-screen arrows to guide the neon trail!</p>
-                <button class="spark-btn btn-primary" onclick="startSnakeGame()">START SNAKE</button>
+                <h3>CYBER SNAKE</h3>
+                <p>Control the quantum beam with <strong>W A S D</strong>, Arrow Keys, or on-screen buttons.</p>
+                <button class="spark-btn btn-primary btn-launch" onclick="startSnakeGame()">START SNAKE</button>
               </div>
             </div>
           </div>

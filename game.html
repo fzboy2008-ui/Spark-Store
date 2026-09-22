@@ -10,6 +10,7 @@
 </head>
 <body>
 
+  <!-- Cyber Space Matrix Background -->
   <canvas id="sparkCanvas"></canvas>
 
   <header class="navbar">
@@ -24,14 +25,14 @@
     </nav>
     <div class="nav-tag">
       <span class="live-dot"></span>
-      <span>5 GAMES READY</span>
+      <span>5 GAMES ARMED</span>
     </div>
   </header>
 
   <main class="page-container games-container">
     <div class="section-title">
       <h2>SPARK ARCADE ARENA</h2>
-      <p>5 standalone classic retro and reflex games engineered in vanilla script</p>
+      <p>Choose any game and click "START MISSION" to begin immediately</p>
     </div>
 
     <!-- Game Switcher Bar -->
@@ -46,80 +47,83 @@
     <div class="glow-border-wrap game-board-wrap">
       <div class="glow-inner game-board-inner">
 
-        <!-- ================= 1. FLAPPY BIRD ================= -->
+        <!-- 1. FLAPPY BIRD -->
         <div class="arcade-view active" id="flappyView">
           <div class="arcade-topbar">
             <div>SCORE: <span id="flappyScore">0</span></div>
-            <div>BEST: <span id="flappyBest">0</span></div>
-            <button class="spark-btn btn-sm" id="flappyStartBtn">Start / Jump</button>
+            <div>STATUS: <span class="mono-cyan" id="flappyStatus">READY</span></div>
+            <button class="spark-btn btn-sm" onclick="startFlappyGame()">Tap / Flap (Space)</button>
           </div>
           <div class="canvas-stage" id="flappyStage">
             <canvas id="flappyCanvas"></canvas>
             <div class="arcade-overlay active" id="flappyOverlay">
               <h3>FLAPPY SPARK</h3>
-              <p>Press <strong>Spacebar</strong>, click or tap the screen to flap wings!</p>
-              <button class="spark-btn btn-primary" onclick="initFlappy()">Start Flight</button>
+              <p>Flap between cyber pillars! Press <strong>Spacebar</strong>, click, or tap screen.</p>
+              <button class="spark-btn btn-primary" onclick="startFlappyGame()">START MISSION</button>
             </div>
           </div>
         </div>
 
-        <!-- ================= 2. DINO RUNNER ================= -->
+        <!-- 2. DINO RUNNER -->
         <div class="arcade-view" id="dinoView">
           <div class="arcade-topbar">
             <div>SCORE: <span id="dinoScore">0</span></div>
-            <div>SPEED: <span id="dinoSpeed">1x</span></div>
-            <button class="spark-btn btn-sm" id="dinoJumpBtn">Jump (Space / Tap)</button>
+            <div>STATUS: <span class="mono-cyan" id="dinoStatus">READY</span></div>
+            <button class="spark-btn btn-sm" onclick="jumpDinoAction()">Jump (Space / Tap)</button>
           </div>
           <div class="canvas-stage" id="dinoStage">
             <canvas id="dinoCanvas"></canvas>
             <div class="arcade-overlay active" id="dinoOverlay">
               <h3>DINO HIGH-VOLTAGE</h3>
-              <p>Jump over incoming obstacles. Use <strong>Spacebar</strong> or click.</p>
-              <button class="spark-btn btn-primary" onclick="initDino()">Run Mission</button>
+              <p>Jump over moving cyber barriers! Use <strong>Spacebar</strong>, screen button or tap.</p>
+              <button class="spark-btn btn-primary" onclick="startDinoGame()">START RUNNER</button>
             </div>
           </div>
         </div>
 
-        <!-- ================= 3. SPACE SHIP ================= -->
+        <!-- 3. SPACE SHIP -->
         <div class="arcade-view" id="spaceView">
           <div class="arcade-topbar">
             <div>SCORE: <span id="spaceScore">0</span></div>
-            <div>HULL: <span id="spaceHealth" class="mono-green">100%</span></div>
-            <button class="spark-btn btn-sm" id="spaceFireBtn">Fire Plasma</button>
+            <div>HULL: <span class="mono-green" id="spaceHull">100%</span></div>
+            <button class="spark-btn btn-sm" onclick="fireSpaceBullet()">Fire Laser</button>
           </div>
           <div class="canvas-stage" id="spaceStage">
             <canvas id="spaceCanvas"></canvas>
             <div class="arcade-overlay active" id="spaceOverlay">
-              <h3>SPACE STRIKER</h3>
-              <p>Move mouse / drag touch to pilot. Click or press <strong>Spacebar</strong> to shoot.</p>
-              <button class="spark-btn btn-primary" onclick="initSpace()">Launch Fighter</button>
+              <h3>SPACE INVADER DEFENDER</h3>
+              <p>Move mouse or touch screen to steer. Click or press <strong>Spacebar</strong> to shoot.</p>
+              <button class="spark-btn btn-primary" onclick="startSpaceGame()">LAUNCH SHIP</button>
             </div>
           </div>
         </div>
 
-        <!-- ================= 4. TOWER JUMP ================= -->
+        <!-- 4. TOWER JUMP -->
         <div class="arcade-view" id="towerView">
           <div class="arcade-topbar">
             <div>HEIGHT: <span id="towerHeight">0m</span></div>
-            <div>STATUS: <span id="towerStatus" class="mono-cyan">READY</span></div>
-            <button class="spark-btn btn-sm" id="towerJumpBtn">Hop Left / Right</button>
+            <div>DIRECTION: <span class="mono-cyan" id="towerDir">LEFT / RIGHT</span></div>
+            <div class="tower-ctrl-btns">
+              <button class="spark-btn btn-sm" onpointerdown="setTowerMove(-1)" onpointerup="setTowerMove(0)">◀ Left</button>
+              <button class="spark-btn btn-sm" onpointerdown="setTowerMove(1)" onpointerup="setTowerMove(0)">Right ▶</button>
+            </div>
           </div>
           <div class="canvas-stage" id="towerStage">
             <canvas id="towerCanvas"></canvas>
             <div class="arcade-overlay active" id="towerOverlay">
               <h3>TOWER JUMP OVERDRIVE</h3>
-              <p>Move Left/Right with <strong>A/D</strong>, Arrow Keys or screen buttons to jump from block to block!</p>
-              <button class="spark-btn btn-primary" onclick="initTower()">Climb Tower</button>
+              <p>Jump on descending neon platforms. Use <strong>A / D</strong>, Arrow Keys, or the screen buttons.</p>
+              <button class="spark-btn btn-primary" onclick="startTowerGame()">CLIMB TOWER</button>
             </div>
           </div>
         </div>
 
-        <!-- ================= 5. TIC TAC TOE ================= -->
+        <!-- 5. TIC TAC TOE -->
         <div class="arcade-view" id="tictactoeView">
           <div class="arcade-topbar">
             <div>TURN: <span id="tttTurn" class="mono-gold">Player (X)</span></div>
-            <div>OUTCOME: <span id="tttResult" class="mono-cyan">Ongoing</span></div>
-            <button class="spark-btn btn-sm" onclick="resetTTT()">Reset Board</button>
+            <div>OUTCOME: <span id="tttResult" class="mono-cyan">Playing</span></div>
+            <button class="spark-btn btn-sm" onclick="resetTTT()">Restart Board</button>
           </div>
           <div class="canvas-stage ttt-stage">
             <div class="ttt-grid">

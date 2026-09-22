@@ -92,7 +92,7 @@
             </div>
 
             <div class="hologram-viewport" id="holoViewport">
-              <canvas id="aiHologramCanvas"></canvas>
+              <canvas id="aiHologramCanvas" width="500" height="330"></canvas>
               <div class="holo-hud">
                 <div>GEOMETRIC FORM: <strong class="mono-red" id="formDisplay">SPHERE (300 TENSORS)</strong></div>
                 <div>POLARITY BIAS: <span class="mono-cyan">DUAL BLUE-RED</span></div>
@@ -120,7 +120,7 @@
             <p class="sandbox-tip">Drag or tap below to weave your own responsive neural constellation.</p>
 
             <div class="user-sandbox-box">
-              <canvas id="userCanvas"></canvas>
+              <canvas id="userCanvas" width="400" height="290"></canvas>
               <div class="canvas-controls-bar">
                 <button class="spark-btn btn-sm" onclick="clearUserDesign()"><i class="fa-solid fa-trash"></i> Reset</button>
                 <button class="spark-btn btn-sm btn-ghost" onclick="toggleConnectors()"><i class="fa-solid fa-bezier-curve"></i> Beams</button>
@@ -167,8 +167,8 @@
               <button class="spark-btn btn-sm btn-primary" onclick="flapWing()">Flap (Space / Tap)</button>
             </div>
             <div class="canvas-stage big-stage">
-              <canvas id="flappyCanvas"></canvas>
-              <div class="arcade-overlay active" id="flappyOverlay">
+              <canvas id="flappyCanvas" width="800" height="460"></canvas>
+              <div class="arcade-overlay" id="flappyOverlay">
                 <h3>PHOENIX FLIGHT</h3>
                 <p>Maneuver the animated plasma bird through quantum gateway pillars!</p>
                 <button class="spark-btn btn-primary btn-launch" onclick="startFlappyGame()">LAUNCH BIRD</button>
@@ -184,8 +184,8 @@
               <button class="spark-btn btn-sm btn-primary" onclick="runnerJumpAction()">Jump (Space / Tap)</button>
             </div>
             <div class="canvas-stage big-stage">
-              <canvas id="runnerCanvas"></canvas>
-              <div class="arcade-overlay active" id="runnerOverlay">
+              <canvas id="runnerCanvas" width="800" height="460"></canvas>
+              <div class="arcade-overlay" id="runnerOverlay">
                 <h3>NEON SHINOBI</h3>
                 <p>Run, leap, and perform mid-air <strong>Double Jumps</strong> over laser spikes!</p>
                 <button class="spark-btn btn-primary btn-launch" onclick="startRunnerGame()">START RUNNER</button>
@@ -201,8 +201,8 @@
               <div class="topbar-stat">ABILITY: <span class="mono-red" id="abilityMeter">NORMAL</span></div>
             </div>
             <div class="canvas-stage big-stage">
-              <canvas id="spaceCanvas"></canvas>
-              <div class="arcade-overlay active" id="spaceOverlay">
+              <canvas id="spaceCanvas" width="800" height="460"></canvas>
+              <div class="arcade-overlay" id="spaceOverlay">
                 <h3>VOID STRIKER ULTRA</h3>
                 <p>Continuous auto-lasers! Chain uninterrupted hits to trigger <strong>Overdrive</strong>. Missing enemies resets your ability!</p>
                 <button class="spark-btn btn-primary btn-launch" onclick="startSpaceGame()">LAUNCH SHIP</button>
@@ -218,8 +218,8 @@
               <div class="topbar-stat">COMBO: <span class="mono-cyan" id="bladeCombo">x1</span></div>
             </div>
             <div class="canvas-stage big-stage">
-              <canvas id="bladeCanvas"></canvas>
-              <div class="arcade-overlay active" id="bladeOverlay">
+              <canvas id="bladeCanvas" width="800" height="460"></canvas>
+              <div class="arcade-overlay" id="bladeOverlay">
                 <h3>CYBER BLADE SLASH</h3>
                 <p>Swipe/drag cursor or finger across launching quantum orbs to slice them in half!</p>
                 <button class="spark-btn btn-primary btn-launch" onclick="startBladeGame()">DRAW BLADE</button>
@@ -235,8 +235,8 @@
               <div class="topbar-stat hide-mob">SHIELD: <span class="mono-green">ROTATING</span></div>
             </div>
             <div class="canvas-stage big-stage">
-              <canvas id="orbitCanvas"></canvas>
-              <div class="arcade-overlay active" id="orbitOverlay">
+              <canvas id="orbitCanvas" width="800" height="460"></canvas>
+              <div class="arcade-overlay" id="orbitOverlay">
                 <h3>QUANTUM ORBIT SHIELD</h3>
                 <p>Move mouse / finger around the central core to rotate the energy shield and deflect incoming red attacks!</p>
                 <button class="spark-btn btn-primary btn-launch" onclick="startOrbitGame()">ACTIVATE CORE</button>
@@ -254,4 +254,4 @@
   <script src="showcase.js"></script>
   <script src="game.js"></script>
 </body>
-</html>
+</html>                                                                                                                   

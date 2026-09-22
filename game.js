@@ -1,29 +1,33 @@
 /* ==========================================================
-   SPARK ARCADE CORE ENGINE (SINGLE + 2-PLAYER P2P RTC)
+   ROBUST CANVAS SETUP & OVERLAY HELPERS
 ========================================================== */
-
-// Helper to reliably size canvas
 function setupCanvas(canvas) {
   if (!canvas) return;
   const parent = canvas.parentElement;
-  if (parent && parent.clientWidth > 0 && parent.clientHeight > 0) {
-    canvas.width = parent.clientWidth;
-    canvas.height = parent.clientHeight;
-  } else {
-    canvas.width = 800;
-    canvas.height = 460;
-  }
+  let w = parent ? parent.clientWidth : 0;
+  let h = parent ? parent.clientHeight : 0;
+
+  // Fallback to safe arcade resolution if container is hidden/0
+  if (w <= 0) w = 800;
+  if (h <= 0) h = 460;
+
+  canvas.width = w;
+  canvas.height = h;
 }
 
 function hideOverlay(id) {
   const o = document.getElementById(id);
-  if (o) o.style.display = "none";
+  if (o) {
+    o.style.display = "none";
+    o.classList.remove("active");
+  }
 }
 
 function showOverlay(id, title, desc, btnText, callbackName) {
   const o = document.getElementById(id);
   if (o) {
     o.style.display = "flex";
+    o.classList.add("active");
     o.innerHTML = `
       <h3>${title}</h3>
       <p>${desc}</p>
@@ -33,7 +37,7 @@ function showOverlay(id, title, desc, btnText, callbackName) {
 }
 
 /* ==========================================================
-   TIER SELECTOR: 1 PLAYER VS 2 PLAYERS
+   TIER 1P VS 2P CONTROLS
 ========================================================== */
 function switchPlayerTier(tier) {
   document.querySelectorAll(".tier-card").forEach(c => c.classList.remove("active"));
@@ -50,13 +54,13 @@ function switchPlayerTier(tier) {
 }
 
 /* ==========================================================
-   ONLINE / OFFLINE WEBRTC MULTIPLAYER PEER CONNECTION
+   ONLINE / OFFLINE WEBRTC MULTIPLAYER
 ========================================================== */
-let multiplayerMode = "offline"; // 'offline' or 'online'
+let multiplayerMode = "offline";
 let peer = null;
 let netConn = null;
 let isHost = false;
-let myPlayerIndex = 1; // 1 or 2
+let myPlayerIndex = 1;
 
 function setMultiplayerMode(mode) {
   multiplayerMode = mode;
@@ -81,10 +85,9 @@ function connectOnlineRoom(role) {
   if (role === 'host') {
     isHost = true;
     myPlayerIndex = 1;
-    // Host registers peer ID with room code
     peer = new Peer(peerRoomId);
     peer.on("open", () => {
-      status.innerText = "ROOM HOSTED! WAITING FOR P2...";
+      status.innerText = "HOSTED! WAITING FOR P2...";
     });
     peer.on("connection", (conn) => {
       netConn = conn;
@@ -92,7 +95,7 @@ function connectOnlineRoom(role) {
       status.innerText = "CONNECTED! ENJOY MATCH";
       sendNetData({ type: "SYNC_START", hostName: name });
     });
-    peer.on("error", (err) => {
+    peer.on("error", () => {
       status.innerText = "CODE IN USE / RETRY";
     });
   } else {
@@ -125,7 +128,7 @@ function handleIncomingNetMove(data) {
     sbShips[data.player] = data.ships;
     if (sbShips[1].length === 5 && sbShips[2].length === 5) {
       sbPhase = "ATTACK";
-      document.getElementById("sbPhase").innerText = "ATTACK PHASE! FIND 5 SHIPS";
+      document.getElementById("sbPhase").innerText = "ATTACK PHASE! SINK 5 SHIPS";
       renderSeaBattleBoards();
     }
   } else if (data.type === "SEABATTLE_SHOT") {
@@ -138,7 +141,7 @@ function handleIncomingNetMove(data) {
 }
 
 /* ==========================================================
-   TAB SWITCHER FOR EACH TIER
+   GAME SELECTORS INSIDE TIERS
 ========================================================== */
 document.querySelectorAll(".game-selector-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -159,7 +162,7 @@ document.querySelectorAll(".game-selector-btn").forEach((btn) => {
 });
 
 /* ==========================================================
-   1. SINGLE PLAYER: SPACE STRIKER (POWER-UPS & SMOOTH DIFFICULTY)
+   1. SINGLE PLAYER: SPACE STRIKER (POWER-UPS & STEADY DIFFICULTY)
 ========================================================== */
 let spaceActive = false, sShipX = 200, sBullets = [], sMeteors = [], sPowerBalls = [];
 let sScore = 0, sAnimId = null, sLaserTier = 1, sSpeedBoost = 1, sLastShot = 0;
@@ -177,7 +180,7 @@ function startSpaceGame() {
 
   document.getElementById("spaceScore").innerText = "0";
   document.getElementById("laserBuff").innerText = "SINGLE BEAM";
-  document.getElementById("speedBuff").innerText = "NORMAL SPEED";
+  document.getElementById("speedBuff").innerText = "NORMAL";
   document.getElementById("spaceDiff").innerText = "TIER 1";
   hideOverlay("spaceOverlay");
 
@@ -190,7 +193,10 @@ function updateShipPos(clientX) {
   sShipX = Math.max(25, Math.min(sCanvas.width - 25, clientX - rect.left));
 }
 sCanvas?.addEventListener("pointermove", (e) => updateShipPos(e.clientX));
-sCanvas?.addEventListener("pointerdown", (e) => { if (!spaceActive) startSpaceGame(); else updateShipPos(e.clientX); });
+sCanvas?.addEventListener("pointerdown", (e) => {
+  if (!spaceActive) startSpaceGame();
+  else updateShipPos(e.clientX);
+});
 
 function loopSpace() {
   if (!spaceActive) return;
@@ -198,13 +204,12 @@ function loopSpace() {
   ctx.clearRect(0, 0, sCanvas.width, sCanvas.height);
 
   const now = Date.now();
-  // Smooth difficulty scaling based on 500 score brackets
   const diffTier = Math.floor(sScore / 500) + 1;
   document.getElementById("spaceDiff").innerText = `TIER ${diffTier}`;
   const meteorSpeed = (2.2 + diffTier * 0.4) * sSpeedBoost;
 
-  // Auto-Laser Firing
-  if (now - sLastShot > (200 / sSpeedBoost)) {
+  // Auto-Laser
+  if (now - sLastShot > (210 / sSpeedBoost)) {
     sLastShot = now;
     if (sLaserTier === 1) {
       sBullets.push({ x: sShipX, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
@@ -219,7 +224,7 @@ function loopSpace() {
     }
   }
 
-  // Draw Jet Ship
+  // Draw Player Ship
   ctx.fillStyle = "#00d4ff";
   ctx.beginPath();
   ctx.moveTo(sShipX, sCanvas.height - 50);
@@ -227,16 +232,16 @@ function loopSpace() {
   ctx.lineTo(sShipX + 20, sCanvas.height - 15);
   ctx.fill();
 
-  // Move Lasers
+  // Draw Lasers
   sBullets.forEach(b => {
     b.y -= 9; b.x += b.vx;
     ctx.fillStyle = b.color;
     ctx.fillRect(b.x - 2, b.y, 4, 14);
   });
 
-  // Spawn Power-Up Balls (Every 100 points or timed interval)
+  // Spawn Power-Up Balls (Every 100 points)
   sPowerSpawnTimer++;
-  if (sPowerSpawnTimer > 400 || (sScore >= 100 && sPowerBalls.length === 0 && sLaserTier === 1)) {
+  if (sPowerSpawnTimer > 380 || (sScore >= 100 && sPowerBalls.length === 0 && sLaserTier === 1)) {
     sPowerSpawnTimer = 0;
     const type = Math.random() > 0.5 ? "LASER_DOUBLE" : "SPEED_SURGE";
     sPowerBalls.push({
@@ -246,7 +251,7 @@ function loopSpace() {
     });
   }
 
-  // Update & Draw Power-Up Balls
+  // Update Power-Up Balls
   for (let pIdx = sPowerBalls.length - 1; pIdx >= 0; pIdx--) {
     let p = sPowerBalls[pIdx];
     p.y += 2;
@@ -255,7 +260,6 @@ function loopSpace() {
     ctx.fillStyle = "#fff"; ctx.font = "10px Orbitron";
     ctx.fillText(p.type === "LASER_DOUBLE" ? "2x" : "⚡", p.x - 6, p.y + 4);
 
-    // Bullet hit on Power-up Ball
     sBullets.forEach((b, bIdx) => {
       if (Math.hypot(b.x - p.x, b.y - p.y) < p.r + 5) {
         if (p.type === "LASER_DOUBLE") {
@@ -341,16 +345,16 @@ function loopFlappy() {
   const ctx = fCanvas.getContext("2d");
   ctx.clearRect(0, 0, fCanvas.width, fCanvas.height);
 
-  const speed = 2.8; // Normal classic steady speed
+  const speed = 2.8;
   fBirdV += 0.32; fBirdY += fBirdV; wingCycle += 0.22;
 
-  // Blueprint Phoenix
+  // Blueprint Bird
   ctx.save();
   ctx.translate(80, fBirdY);
   ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2.5;
   ctx.strokeRect(-12, -8, 24, 16);
-  ctx.fillStyle = "#ff003c"; ctx.fillRect(10, -3, 8, 6); // Beak
-  ctx.fillStyle = "#fff"; ctx.fillRect(-2, Math.sin(wingCycle) * 10, 8, 14); // Wing
+  ctx.fillStyle = "#ff003c"; ctx.fillRect(10, -3, 8, 6);
+  ctx.fillStyle = "#fff"; ctx.fillRect(-2, Math.sin(wingCycle) * 10, 8, 14);
   ctx.restore();
 
   if (fPipes.length === 0 || fPipes[fPipes.length - 1].x < fCanvas.width - 240) {
@@ -389,7 +393,7 @@ function loopFlappy() {
 }
 
 /* ==========================================================
-   3. SINGLE PLAYER: CHROME CYBER DINO (EXACT NO-INTERNET DINO)
+   3. SINGLE PLAYER: CHROME CYBER DINO (EXACT RUNNER)
 ========================================================== */
 let dinoActive = false, dY = 0, dV = 0, dScore = 0, dCacti = [], dAnimId = null;
 let dLegCycle = 0;
@@ -423,17 +427,12 @@ function drawBlueprintDino(ctx, x, y, cycle, inAir) {
   ctx.translate(x, y);
   ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2.5;
 
-  // Head & Snout
   ctx.strokeRect(-10, -32, 22, 14);
-  ctx.fillStyle = "#ff003c"; ctx.fillRect(6, -28, 4, 4); // Eye
+  ctx.fillStyle = "#ff003c"; ctx.fillRect(6, -28, 4, 4);
 
-  // Torso
   ctx.strokeRect(-16, -20, 20, 18);
-
-  // Tail
   ctx.beginPath(); ctx.moveTo(-16, -16); ctx.lineTo(-28, -22); ctx.stroke();
 
-  // Animated Running Legs
   if (!inAir) {
     const l1 = Math.sin(cycle) * 8;
     ctx.beginPath(); ctx.moveTo(-10, -2); ctx.lineTo(-10, 10 + l1); ctx.stroke();
@@ -457,13 +456,11 @@ function loopDino() {
   if (dY > 0) dV -= 0.54; else { dY = 0; dV = 0; }
   dLegCycle += 0.28;
 
-  // Ground Line
   ctx.strokeStyle = "rgba(0, 212, 255, 0.4)"; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(dCanvas.width, groundY); ctx.stroke();
 
   drawBlueprintDino(ctx, 70, groundY - dY, dLegCycle, dY > 0);
 
-  // Spawn Cactus Obstacles
   if (dCacti.length === 0 || dCacti[dCacti.length - 1].x < dCanvas.width - 250) {
     if (Math.random() < 0.6) {
       dCacti.push({ x: dCanvas.width, w: 20, h: Math.random() * 20 + 28 });
@@ -490,9 +487,9 @@ function loopDino() {
 }
 
 /* ==========================================================
-   2-PLAYER GAME 1: SEA BATTLE (5 SHIPS EACH)
+   2-PLAYER 1: SEA BATTLE (5 SHIPS EACH)
 ========================================================== */
-let sbPhase = "DEPLOY"; // 'DEPLOY' or 'ATTACK'
+let sbPhase = "DEPLOY";
 let sbCurrentDeployPlayer = 1;
 let sbShips = { 1: [], 2: [] };
 let sbShots = { 1: [], 2: [] };
@@ -518,6 +515,7 @@ function resetSeaBattle() {
 function renderSeaBattleBoards() {
   const g1 = document.getElementById("sbGrid1");
   const g2 = document.getElementById("sbGrid2");
+  if (!g1 || !g2) return;
   g1.innerHTML = ""; g2.innerHTML = "";
 
   for (let i = 0; i < 25; i++) {
@@ -565,7 +563,6 @@ function onSeaBattleCellClick(boardPlayer, idx) {
       }
     }
   } else if (sbPhase === "ATTACK") {
-    // Attack phase
     if (sbTurn === 1 && boardPlayer === 2) {
       handleSeaBattleShot(2, idx, true);
     } else if (sbTurn === 2 && boardPlayer === 1) {
@@ -583,7 +580,6 @@ function handleSeaBattleShot(targetPlayer, idx, shouldBroadcast) {
     sendNetData({ type: "SEABATTLE_SHOT", targetPlayer, index: idx });
   }
 
-  // Check Victory
   const hits = sbShots[attackingPlayer].filter(i => sbShips[targetPlayer].includes(i)).length;
   if (hits === 5) {
     alert(`VICTORY! Player ${attackingPlayer} destroyed all 5 ships!`);
@@ -597,7 +593,7 @@ function handleSeaBattleShot(targetPlayer, idx, shouldBroadcast) {
 }
 
 /* ==========================================================
-   2-PLAYER GAME 2: BLUEPRINT CHESS
+   2-PLAYER 2: BLUEPRINT CHESS
 ========================================================== */
 const INITIAL_CHESS_BOARD = [
   "r","n","b","q","k","b","n","r",
@@ -614,14 +610,15 @@ const CHESS_SYMBOLS = {
   "R": "♖", "N": "♘", "B": "♗", "Q": "♕", "K": "♔", "P": "♙"
 };
 let chessBoard = [];
-let chessTurn = "W"; // 'W' or 'B'
+let chessTurn = "W";
 let selectedChessCell = null;
 
 function resetChessBoard() {
   chessBoard = [...INITIAL_CHESS_BOARD];
   chessTurn = "W";
   selectedChessCell = null;
-  document.getElementById("chessTurn").innerText = "WHITE (BLUEPRINT)";
+  const turnEl = document.getElementById("chessTurn");
+  if (turnEl) turnEl.innerText = "WHITE (BLUEPRINT)";
   renderChessBoard();
 }
 
@@ -666,7 +663,6 @@ function onChessCellClick(idx) {
       renderChessBoard();
     }
   } else {
-    // Attempt move
     if (selectedChessCell === idx) {
       selectedChessCell = null;
       renderChessBoard();
@@ -690,7 +686,7 @@ function executeChessMove(from, to, shouldBroadcast) {
 }
 
 /* ==========================================================
-   2-PLAYER GAME 3: TIC TAC TOE 2P (OFFLINE & ONLINE CODE)
+   2-PLAYER 3: TIC TAC TOE 2P
 ========================================================== */
 let ttt2PBoard = ["","","","","","","","",""];
 let ttt2PTurn = "X";
@@ -698,8 +694,10 @@ let ttt2PTurn = "X";
 function resetTTT2P() {
   ttt2PBoard = ["","","","","","","","",""];
   ttt2PTurn = "X";
-  document.getElementById("tttTurn").innerText = "PLAYER 1 (X)";
-  document.getElementById("tttStatus").innerText = "READY";
+  const tEl = document.getElementById("tttTurn");
+  const sEl = document.getElementById("tttStatus");
+  if (tEl) tEl.innerText = "PLAYER 1 (X)";
+  if (sEl) sEl.innerText = "READY";
   renderTTT2P();
 }
 
@@ -735,7 +733,6 @@ function handleTTT2PMove(idx, shouldBroadcast) {
     sendNetData({ type: "TTT_MOVE", index: idx });
   }
 
-  // Check Win
   const wins = [
     [0,1,2],[3,4,5],[6,7,8],
     [0,3,6],[1,4,7],[2,5,8],

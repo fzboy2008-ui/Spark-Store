@@ -1,464 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Spark Project</title>
-    <meta name="description" content="Spark Project — A next-generation digital project.">
-    <meta name="theme-color" content="#09090f">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXUS // Next-Gen Animated Web Experience</title>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
-    <!-- Background -->
-    <div class="background">
-        <div class="grid"></div>
-        <div class="glow glow-one"></div>
-        <div class="glow glow-two"></div>
+  <!-- Custom Glow Cursor -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-outline" id="cursorOutline"></div>
+
+  <!-- Interactive Canvas Particles Background -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="logo">
+      <span>NEXUS</span><span class="logo-accent">.IO</span>
     </div>
-
-    <!-- Loading Screen -->
-    <div id="loader">
-        <div class="loader-logo">S</div>
-        <div class="loader-text">SPARK</div>
-        <div class="loader-line">
-            <span></span>
-        </div>
+    <nav class="nav-links">
+      <button class="nav-btn active" data-target="home"><i class="fa-solid fa-house"></i> Home</button>
+      <button class="nav-btn" data-target="showcase"><i class="fa-solid fa-cubes"></i> Showcase</button>
+      <button class="nav-btn" data-target="minigames"><i class="fa-solid fa-gamepad"></i> Mini Games</button>
+      <button class="nav-btn" data-target="stats"><i class="fa-solid fa-chart-pie"></i> Arena Stats</button>
+      <button class="nav-btn" data-target="community"><i class="fa-solid fa-users"></i> Community</button>
+    </nav>
+    <div class="nav-status">
+      <span class="pulse-indicator"></span>
+      <span class="status-text">SYSTEM ONLINE</span>
     </div>
-
-    <!-- Navigation -->
-    <header class="navbar">
-        <a href="#home" class="logo">
-            <span class="logo-icon">S</span>
-            <span>SPARK</span>
-        </a>
-
-        <nav id="navMenu">
-            <a href="#home" class="active">Home</a>
-            <a href="#demo">Demo</a>
-            <a href="#shop">Shop</a>
-            <a href="#about">About</a>
-        </nav>
-
-        <button class="nav-button" onclick="scrollToSection('shop')">
-            Shop Now
-        </button>
-
-        <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
-            ☰
-        </button>
-    </header>
-
-    <main>
-
-        <!-- HERO -->
-        <section id="home" class="hero section">
-
-            <div class="hero-content reveal">
-
-                <div class="badge">
-                    <span class="status-dot"></span>
-                    SPARK PROJECT · DEMO
-                </div>
-
-                <h1>
-                    Turn ideas into
-                    <span class="gradient-text">Spark.</span>
-                </h1>
-
-                <p>
-                    A simple demo project built to evolve into something
-                    much bigger. This is only the beginning.
-                </p>
-
-                <div class="hero-buttons">
-                    <button class="primary-button" onclick="scrollToSection('shop')">
-                        Explore Shop
-                        <span>→</span>
-                    </button>
-
-                    <button class="secondary-button" onclick="scrollToSection('demo')">
-                        View Demo
-                    </button>
-                </div>
-
-                <div class="hero-stats">
-                    <div>
-                        <strong>01</strong>
-                        <span>Project</span>
-                    </div>
-
-                    <div>
-                        <strong>∞</strong>
-                        <span>Possibilities</span>
-                    </div>
-
-                    <div>
-                        <strong>₹1</strong>
-                        <span>Demo Item</span>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="hero-visual reveal">
-
-                <div class="orbit orbit-one"></div>
-                <div class="orbit orbit-two"></div>
-
-                <div class="spark-core">
-                    <div class="core-ring"></div>
-                    <span>S</span>
-                </div>
-
-                <div class="floating-card card-one">
-                    <span>⚡</span>
-                    <div>
-                        <small>STATUS</small>
-                        <strong>ONLINE</strong>
-                    </div>
-                </div>
-
-                <div class="floating-card card-two">
-                    <span>✦</span>
-                    <div>
-                        <small>VERSION</small>
-                        <strong>DEMO 1.0</strong>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="scroll-indicator">
-                <span></span>
-                Scroll to explore
-            </div>
-
-        </section>
-
-
-        <!-- DEMO -->
-        <section id="demo" class="section demo-section">
-
-            <div class="section-heading reveal">
-                <span class="section-label">01 · DEMO</span>
-
-                <h2>
-                    Small project.
-                    <span>Big potential.</span>
-                </h2>
-
-                <p>
-                    Everything here is currently a demo. The architecture
-                    is designed so Spark can grow into a much larger project.
-                </p>
-            </div>
-
-            <div class="feature-grid">
-
-                <article class="feature-card reveal">
-                    <div class="feature-icon">⚡</div>
-                    <span class="feature-number">01</span>
-                    <h3>Fast</h3>
-                    <p>
-                        Lightweight frontend with smooth animations
-                        and a responsive experience.
-                    </p>
-                </article>
-
-                <article class="feature-card reveal">
-                    <div class="feature-icon">◈</div>
-                    <span class="feature-number">02</span>
-                    <h3>Flexible</h3>
-                    <p>
-                        Built as a foundation that can be expanded
-                        with new products and features.
-                    </p>
-                </article>
-
-                <article class="feature-card reveal">
-                    <div class="feature-icon">⌁</div>
-                    <span class="feature-number">03</span>
-                    <h3>Scalable</h3>
-                    <p>
-                        Future versions can include accounts,
-                        orders, payments and much more.
-                    </p>
-                </article>
-
-            </div>
-
-        </section>
-
-
-        <!-- SHOP -->
-        <section id="shop" class="section shop-section">
-
-            <div class="section-heading reveal">
-                <span class="section-label">02 · SHOP</span>
-
-                <h2>
-                    Welcome to the
-                    <span>Spark Store.</span>
-                </h2>
-
-                <p>
-                    This is a demo product for the current version.
-                </p>
-            </div>
-
-            <div class="shop-container">
-
-                <div class="product-visual reveal">
-
-                    <div class="product-glow"></div>
-
-                    <div class="product-icon">
-                        <span>✦</span>
-                    </div>
-
-                    <div class="product-orbit"></div>
-
-                    <div class="product-particles">
-                        <i></i>
-                        <i></i>
-                        <i></i>
-                        <i></i>
-                    </div>
-
-                </div>
-
-                <div class="product-info reveal">
-
-                    <div class="product-tag">
-                        DEMO PRODUCT
-                    </div>
-
-                    <h3>Spark</h3>
-
-                    <p class="product-description">
-                        The first item in the Spark Project store.
-                        This product is currently available only
-                        as a demonstration.
-                    </p>
-
-                    <div class="price">
-                        <span>₹</span>1
-                        <small>INR</small>
-                    </div>
-
-                    <div class="quantity-box">
-                        <span>Quantity</span>
-
-                        <div class="quantity-controls">
-                            <button onclick="changeQuantity(-1)">−</button>
-
-                            <span id="quantity">1</span>
-
-                            <button onclick="changeQuantity(1)">+</button>
-                        </div>
-                    </div>
-
-                    <div class="total-box">
-                        <span>Total</span>
-                        <strong id="total">₹1</strong>
-                    </div>
-
-                    <button class="buy-button" onclick="openCheckout()">
-                        <span>Buy Spark</span>
-                        <span>→</span>
-                    </button>
-
-                    <p class="demo-note">
-                        ⚡ Demo checkout · No real payment is processed
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- ABOUT -->
-        <section id="about" class="section about-section">
-
-            <div class="about-content reveal">
-
-                <span class="section-label">03 · ABOUT</span>
-
-                <h2>
-                    This is just
-                    <span>the beginning.</span>
-                </h2>
-
-                <p>
-                    Spark Project is currently a simple experimental
-                    platform. The goal is to build a strong foundation
-                    first and gradually add real products, accounts,
-                    payments, automation and other systems.
-                </p>
-
-                <div class="about-line"></div>
-
-                <div class="about-points">
-                    <div>
-                        <span>01</span>
-                        <p>Build the foundation</p>
-                    </div>
-
-                    <div>
-                        <span>02</span>
-                        <p>Add real functionality</p>
-                    </div>
-
-                    <div>
-                        <span>03</span>
-                        <p>Take Spark to the next level</p>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="about-visual reveal">
-                <div class="big-spark">
-                    <span>S</span>
-                </div>
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- FOOTER -->
-    <footer>
-
-        <div class="footer-main">
-
-            <div class="footer-brand">
-                <a href="#home" class="logo">
-                    <span class="logo-icon">S</span>
-                    <span>SPARK</span>
-                </a>
-
-                <p>
-                    A project with unlimited possibilities.
-                </p>
-            </div>
-
-            <div class="footer-links">
-                <div>
-                    <h4>Explore</h4>
-                    <a href="#home">Home</a>
-                    <a href="#demo">Demo</a>
-                    <a href="#shop">Shop</a>
-                    <a href="#about">About</a>
-                </div>
-
-                <div>
-                    <h4>Project</h4>
-                    <span>Demo Version</span>
-                    <span>Version 1.0</span>
-                    <span>India</span>
-                </div>
-            </div>
-
+  </header>
+
+  <!-- Main View Container (Single Page Animated Switcher) -->
+  <main class="page-container">
+
+    <!-- PAGE 1: HOME -->
+    <section id="home" class="page-view active">
+      <div class="hero-content">
+        <div class="badge-tag">⚡ WELCOME TO THE CYBER REALM</div>
+        <h1 class="glitch-title" data-text="UNLEASH THE DIGITAL REALITY">
+          UNLEASH THE DIGITAL REALITY
+        </h1>
+        <p class="hero-subtext">
+          Experience ultra-fluid animations, interactive high-performance canvas physics, mini-games, and cutting-edge web architecture.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="switchPage('minigames')">
+            <span>Play Mini Game</span> <i class="fa-solid fa-fire"></i>
+          </button>
+          <button class="btn btn-secondary" onclick="switchPage('showcase')">
+            <span>Explore Showcase</span> <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3D Tilt Feature Cards -->
+      <div class="cards-grid">
+        <div class="tilt-card" data-tilt>
+          <div class="card-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+          <h3>Ultra High Speed</h3>
+          <p>Optimized 60FPS fluid canvas physics with zero lag and ultra responsive rendering.</p>
+        </div>
+        <div class="tilt-card" data-tilt>
+          <div class="card-icon"><i class="fa-solid fa-microchip"></i></div>
+          <h3>Interactive Modules</h3>
+          <p>Dynamic DOM orchestration, live clicker engines, and real-time state manipulation.</p>
+        </div>
+        <div class="tilt-card" data-tilt>
+          <div class="card-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <h3>Pure Architecture</h3>
+          <p>Built completely without heavy external frameworks. Pure CSS & Modern JavaScript.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 2: SHOWCASE -->
+    <section id="showcase" class="page-view">
+      <div class="section-header">
+        <h2>PORTFOLIO & SHOWCASE</h2>
+        <p>Filter through custom built creations, bots, and interactive systems</p>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="systems">Systems</button>
+        <button class="filter-btn" data-filter="bots">Discord Bots</button>
+        <button class="filter-btn" data-filter="games">Game Engine</button>
+      </div>
+
+      <div class="showcase-grid" id="showcaseGrid">
+        <div class="showcase-card" data-category="systems">
+          <div class="showcase-preview preview-1"></div>
+          <div class="showcase-info">
+            <span class="category-tag">SYSTEMS</span>
+            <h3>Neural Particle Flow</h3>
+            <p>Mathematical canvas simulation using dynamic velocity vectors.</p>
+          </div>
         </div>
 
-        <div class="footer-bottom">
-            <span>© 2026 Spark Project. All rights reserved.</span>
-            <span>Built with ⚡ Spark</span>
+        <div class="showcase-card" data-category="bots">
+          <div class="showcase-preview preview-2"></div>
+          <div class="showcase-info">
+            <span class="category-tag">BOTS</span>
+            <h3>Automated Bot Core</h3>
+            <p>Event-driven asynchronous bot framework with dynamic slash commands.</p>
+          </div>
         </div>
 
-    </footer>
+        <div class="showcase-card" data-category="games">
+          <div class="showcase-preview preview-3"></div>
+          <div class="showcase-info">
+            <span class="category-tag">GAME ENGINE</span>
+            <h3>Reflex Clicker Arena</h3>
+            <p>Score multipliers, dynamic streak counters, and particle bursts.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
+    <!-- PAGE 3: MINI GAMES -->
+    <section id="minigames" class="page-view">
+      <div class="section-header">
+        <h2>CYBER REFLEX ARENA</h2>
+        <p>Click the energy core as fast as you can before the 15-second timer runs out!</p>
+      </div>
 
-    <!-- CHECKOUT MODAL -->
-    <div class="modal-overlay" id="checkoutModal">
-
-        <div class="checkout-modal">
-
-            <button class="modal-close" onclick="closeCheckout()">×</button>
-
-            <div class="checkout-icon">
-                ⚡
-            </div>
-
-            <span class="section-label">DEMO CHECKOUT</span>
-
-            <h2>Confirm Order</h2>
-
-            <p>
-                You are purchasing the demo Spark item.
-            </p>
-
-            <div class="checkout-summary">
-                <div>
-                    <span>Product</span>
-                    <strong>Spark</strong>
-                </div>
-
-                <div>
-                    <span>Quantity</span>
-                    <strong id="checkoutQuantity">1</strong>
-                </div>
-
-                <div>
-                    <span>Total</span>
-                    <strong id="checkoutTotal">₹1</strong>
-                </div>
-            </div>
-
-            <button class="confirm-button" onclick="demoPayment()">
-                Continue to Payment
-                <span>→</span>
-            </button>
-
-            <small>
-                Demo mode — no money will be charged.
-            </small>
-
+      <div class="game-wrapper">
+        <div class="game-dashboard">
+          <div class="stat-box">
+            <span class="label">SCORE</span>
+            <span class="value" id="gameScore">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="label">TIME LEFT</span>
+            <span class="value timer" id="gameTime">15s</span>
+          </div>
+          <div class="stat-box">
+            <span class="label">COMBO</span>
+            <span class="value combo" id="gameCombo">x1</span>
+          </div>
         </div>
 
-    </div>
+        <div class="game-arena" id="gameArena">
+          <button class="game-target" id="coreTarget">
+            <i class="fa-solid fa-atom"></i>
+          </button>
+          <div class="game-overlay active" id="gameOverlay">
+            <h3>CYBER PULSE TEST</h3>
+            <button class="btn btn-primary" id="startGameBtn">Start Mission</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
+    <!-- PAGE 4: ARENA STATS -->
+    <section id="stats" class="page-view">
+      <div class="section-header">
+        <h2>CORE MATRIX & METRICS</h2>
+        <p>Live telemetry and server skill benchmarks</p>
+      </div>
 
-    <!-- SUCCESS MODAL -->
-    <div class="modal-overlay" id="successModal">
-
-        <div class="success-modal">
-
-            <div class="success-icon">✓</div>
-
-            <h2>Demo Approved!</h2>
-
-            <p>
-                Your demo order has been successfully approved.
-            </p>
-
-            <div class="success-order">
-                <span>Order ID</span>
-                <strong id="orderId">SPK-DEMO</strong>
-            </div>
-
-            <button class="confirm-button" onclick="closeSuccess()">
-                Done
-            </button>
-
+      <div class="stats-container">
+        <div class="matrix-card">
+          <h3>Skill Benchmarks</h3>
+          <div class="skill-bar-wrapper">
+            <div class="skill-info"><span>JavaScript Logic</span><span>98%</span></div>
+            <div class="bar-outer"><div class="bar-inner" style="--level: 98%;"></div></div>
+          </div>
+          <div class="skill-bar-wrapper">
+            <div class="skill-info"><span>CSS Animations & 3D</span><span>95%</span></div>
+            <div class="bar-outer"><div class="bar-inner" style="--level: 95%;"></div></div>
+          </div>
+          <div class="skill-bar-wrapper">
+            <div class="skill-info"><span>Canvas Physics</span><span>90%</span></div>
+            <div class="bar-outer"><div class="bar-inner" style="--level: 90%;"></div></div>
+          </div>
         </div>
 
-    </div>
+        <div class="matrix-card">
+          <h3>Global Telemetry</h3>
+          <div class="counter-grid">
+            <div class="counter-item">
+              <h4 class="counter" data-count="14850">0</h4>
+              <p>Total Hits</p>
+            </div>
+            <div class="counter-item">
+              <h4 class="counter" data-count="99.9">0</h4>
+              <p>Uptime %</p>
+            </div>
+            <div class="counter-item">
+              <h4 class="counter" data-count="560">0</h4>
+              <p>Active Players</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
+    <!-- PAGE 5: COMMUNITY / CONTACT -->
+    <section id="community" class="page-view">
+      <div class="section-header">
+        <h2>TRANSMIT SIGNAL</h2>
+        <p>Connect to the cyber network or drop a message below</p>
+      </div>
 
-    <script src="script.js"></script>
+      <div class="community-grid">
+        <form class="contact-glass-form" id="contactForm">
+          <div class="input-group">
+            <label>Agent Identifier</label>
+            <input type="text" placeholder="Enter your handle..." required />
+          </div>
+          <div class="input-group">
+            <label>Comms Frequency (Email)</label>
+            <input type="email" placeholder="agent@nexus.io" required />
+          </div>
+          <div class="input-group">
+            <label>Encrypted Transmission</label>
+            <textarea rows="4" placeholder="Type your message..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">
+            <span>Transmit Data</span> <i class="fa-solid fa-paper-plane"></i>
+          </button>
+          <div class="form-feedback" id="formFeedback"></div>
+        </form>
 
+        <div class="social-links-panel">
+          <div class="social-card">
+            <i class="fa-brands fa-discord"></i>
+            <div>
+              <h4>Discord Hub</h4>
+              <p>Join our live developer & gaming guild</p>
+            </div>
+          </div>
+          <div class="social-card">
+            <i class="fa-brands fa-github"></i>
+            <div>
+              <h4>GitHub Vault</h4>
+              <p>Open source repos, engines & scripts</p>
+            </div>
+          </div>
+          <div class="social-card">
+            <i class="fa-brands fa-youtube"></i>
+            <div>
+              <h4>Stream Channel</h4>
+              <p>Clips, tutorials & cinematic edits</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>

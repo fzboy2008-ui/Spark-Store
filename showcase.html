@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPARK // Quantum AI Showcase</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <canvas id="sparkCanvas"></canvas>
+
+  <header class="navbar">
+    <div class="brand">
+      <i class="fa-solid fa-bolt-lightning bolt-glow"></i>
+      <span>SPARK</span>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-tab"><i class="fa-solid fa-crown"></i> Owner</a>
+      <a href="showcase.html" class="nav-tab active"><i class="fa-solid fa-brain"></i> Showcase</a>
+      <a href="game.html" class="nav-tab"><i class="fa-solid fa-gamepad"></i> Games</a>
+    </nav>
+    <div class="nav-tag">
+      <span class="live-dot"></span>
+      <span>AI CORE 99.99%</span>
+    </div>
+  </header>
+
+  <main class="page-container showcase-page">
+    <div class="section-title">
+      <h2>HOLOGRAPHIC QUANTUM MATRIX</h2>
+      <p>Mathematical 3D rotation, dynamic tensor fields, and real-time inference telemetry</p>
+    </div>
+
+    <div class="showcase-layout">
+      <!-- 3D Hologram Projection Core -->
+      <div class="glow-border-wrap hologram-card">
+        <div class="glow-inner hologram-inner">
+          <div class="panel-header">
+            <span><i class="fa-solid fa-atom"></i> 4D HYPER-TENSOR SPHERE</span>
+            <span class="mono-cyan" id="nodeCount">320 NODES ONLINE</span>
+          </div>
+
+          <div class="hologram-viewport">
+            <canvas id="aiHologramCanvas"></canvas>
+            <div class="hologram-crosshair"></div>
+            <div class="holo-hud">
+              <div>VECTOR FLUX: <span id="fluxVal">1.44 GHz</span></div>
+              <div>COGNITION: <span class="mono-green">OPTIMAL</span></div>
+            </div>
+          </div>
+
+          <div class="holo-controls">
+            <button class="spark-btn btn-sm" onclick="accelerateWarp()">Accelerate Spin</button>
+            <button class="spark-btn btn-sm btn-ghost" onclick="invertTensorField()">Invert Polarity</button>
+            <button class="spark-btn btn-sm btn-pink" onclick="synthesizeNeuralPulse()">Trigger Pulse</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Telemetry Dashboard -->
+      <div class="glow-border-wrap telemetry-card">
+        <div class="glow-inner">
+          <div class="panel-header">
+            <span><i class="fa-solid fa-chart-line"></i> TELEMETRY ENGINE</span>
+            <span class="mono-green">REAL-TIME</span>
+          </div>
+
+          <div class="metric-row">
+            <div class="m-text">
+              <span>Attention Mechanism Accuracy</span>
+              <span class="mono-gold">99.99%</span>
+            </div>
+            <div class="progress-bar"><div class="fill fill-gold" style="width: 99.99%;"></div></div>
+          </div>
+
+          <div class="metric-row">
+            <div class="m-text">
+              <span>Inference Computation Loop</span>
+              <span class="mono-cyan">0.03 ms</span>
+            </div>
+            <div class="progress-bar"><div class="fill fill-cyan" style="width: 96%;"></div></div>
+          </div>
+
+          <div class="metric-row">
+            <div class="m-text">
+              <span>Dynamic Matrix Synapse</span>
+              <span class="mono-pink">12.8 TFLOPS</span>
+            </div>
+            <div class="progress-bar"><div class="fill fill-pink" style="width: 92%;"></div></div>
+          </div>
+
+          <div class="terminal-log" id="showcaseTerminal">
+            <p>> [SYSTEM] Holographic quantum matrix synchronized.</p>
+            <p>> [AI CORE] Vector field rotation listening to pointer trajectories.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

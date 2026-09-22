@@ -1,5 +1,5 @@
 /* ==========================================================
-   PART 1: 4D SHAPE MORPHING QUANTUM CORE
+   SHOWCASE: 4D MORPHING LATTICE (BLUE & RED CORE)
 ========================================================== */
 const holoCanvas = document.getElementById("aiHologramCanvas");
 let hCtx = null;
@@ -33,13 +33,11 @@ if (holoCanvas) {
 
     let projected = [];
 
-    // Smooth transition between targets
     morphNodes.forEach(node => {
       node.x += (node.tx - node.x) * 0.08;
       node.y += (node.ty - node.y) * 0.08;
       node.z += (node.tz - node.z) * 0.08;
 
-      // 3D Matrix Rotation
       let cosY = Math.cos(rotY), sinY = Math.sin(rotY);
       let x1 = node.x * cosY - node.z * sinY;
       let z1 = node.z * cosY + node.x * sinY;
@@ -55,16 +53,16 @@ if (holoCanvas) {
         x: x1 * scale + cx,
         y: y2 * scale + cy,
         scale: scale,
+        color: node.color,
         alpha: Math.max(0.15, (z2 + 130) / 260)
       });
     });
 
-    // Dynamic Connections
     for (let a = 0; a < projected.length; a++) {
       for (let b = a + 1; b < projected.length; b++) {
         let dist = Math.hypot(projected[a].x - projected[b].x, projected[a].y - projected[b].y);
         if (dist < 38) {
-          hCtx.strokeStyle = `rgba(0, 240, 255, ${0.4 * (1 - dist / 38)})`;
+          hCtx.strokeStyle = `rgba(0, 212, 255, ${0.35 * (1 - dist / 38)})`;
           hCtx.lineWidth = 0.8;
           hCtx.beginPath();
           hCtx.moveTo(projected[a].x, projected[a].y);
@@ -74,9 +72,8 @@ if (holoCanvas) {
       }
     }
 
-    // Nodes
     projected.forEach(p => {
-      hCtx.fillStyle = `rgba(255, 190, 11, ${p.alpha})`;
+      hCtx.fillStyle = p.color;
       hCtx.beginPath();
       hCtx.arc(p.x, p.y, Math.max(1, p.scale * 2.2), 0, Math.PI * 2);
       hCtx.fill();
@@ -90,7 +87,10 @@ if (holoCanvas) {
 function generateMorphNodes() {
   morphNodes = [];
   for (let i = 0; i < TOTAL_SHAPE_NODES; i++) {
-    morphNodes.push({ x: 0, y: 0, z: 0, tx: 0, ty: 0, tz: 0 });
+    morphNodes.push({ 
+      x: 0, y: 0, z: 0, tx: 0, ty: 0, tz: 0,
+      color: i % 2 === 0 ? "#00d4ff" : "#ff003c"
+    });
   }
   morphTo('sphere');
 }
@@ -148,11 +148,11 @@ function morphTo(shape) {
 }
 
 /* ==========================================================
-   PART 2: USER DESIGN STUDIO (CREATIVE SANDBOX)
+   USER DESIGN STUDIO (CREATIVE SANDBOX)
 ========================================================== */
 const uCanvas = document.getElementById("userCanvas");
 let userParticles = [];
-let drawColor = "#ffbe0b";
+let drawColor = "#00d4ff";
 let showConnectors = true;
 
 function fitUserCanvas() {
@@ -169,8 +169,7 @@ if (uCanvas) {
   let isDrawing = false;
   function spawnUserParticle(x, y) {
     userParticles.push({
-      x: x,
-      y: y,
+      x: x, y: y,
       vx: (Math.random() - 0.5) * 1.5,
       vy: (Math.random() - 0.5) * 1.5,
       radius: Math.random() * 3 + 2,
@@ -234,14 +233,8 @@ function setDrawColor(col) {
   event.target.classList.add('active');
 }
 
-function clearUserDesign() {
-  userParticles = [];
-}
-
-function toggleConnectors() {
-  showConnectors = !showConnectors;
-}
-
+function clearUserDesign() { userParticles = []; }
+function toggleConnectors() { showConnectors = !showConnectors; }
 function burstUserParticles() {
   userParticles.forEach(p => {
     p.vx = (Math.random() - 0.5) * 8;

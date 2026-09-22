@@ -1,327 +1,207 @@
 /* ==========================================================
-   1. PROCEDURAL AUDIO SYNTHESIZER (ZERO ASSET AUDIO ENGINE)
+   1. PAGE NAVIGATION SYSTEM (SPA ROUTER)
 ========================================================== */
-const AudioContext = window.AudioContext || window.webkitAudioContext;
-let audioCtx = null;
-let soundEnabled = true;
+const navTabs = document.querySelectorAll('.nav-tab');
+const pagePanes = document.querySelectorAll('.page-pane');
 
-function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new AudioContext();
-  }
-  if (audioCtx.state === "suspended") {
-    audioCtx.resume();
-  }
+function switchPage(targetId) {
+  navTabs.forEach((tab) => {
+    tab.classList.toggle('active', tab.getAttribute('data-target') === targetId);
+  });
+
+  pagePanes.forEach((pane) => {
+    pane.classList.toggle('active', pane.id === targetId);
+  });
 }
 
-// Generates procedural sci-fi sound frequencies
-function playTone(freq = 440, type = "sine", duration = 0.12, gainValue = 0.08) {
-  if (!soundEnabled) return;
-  initAudio();
-
-  try {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-    // Envelope
-    gain.gain.setValueAtTime(gainValue, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch (err) {
-    // Ignore context locks
-  }
-}
-
-function playNeuralChord() {
-  const pitch = document.getElementById("pitchSlider") ? +document.getElementById("pitchSlider").value : 440;
-  playTone(pitch, "sawtooth", 0.35, 0.06);
-  setTimeout(() => playTone(pitch * 1.5, "sine", 0.4, 0.05), 80);
-  setTimeout(() => playTone(pitch * 2.0, "triangle", 0.5, 0.04), 160);
-}
-
-document.getElementById("audioToggleBtn").addEventListener("click", () => {
-  soundEnabled = !soundEnabled;
-  const icon = document.querySelector("#audioToggleBtn i");
-  icon.className = soundEnabled ? "fa-solid fa-volume-high" : "fa-solid fa-volume-xmark";
-  if (soundEnabled) playTone(880, "triangle", 0.1);
+navTabs.forEach((tab) => {
+  tab.addEventListener('click', () => {
+    const target = tab.getAttribute('data-target');
+    switchPage(target);
+  });
 });
 
 /* ==========================================================
-   2. 3D PROJECTION ENGINE (HYPER-SPHERE)
+   2. INTERACTIVE ELECTRIC SPARK CANVAS
 ========================================================== */
-const canvas = document.getElementById("neuralCanvas");
-const ctx = canvas.getContext("2d");
+const canvas = document.getElementById('sparkCanvas');
+const ctx = canvas.getContext('2d');
 
-let nodes = [];
-const TOTAL_NODES = 260;
-const RADIUS = 280;
-let angleX = 0.002;
-let angleY = 0.003;
-let warpSpeed = 1;
+let particles = [];
+let mouse = { x: null, y: null, radius: 120 };
 
-function resizeCanvas() {
+function fitCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 }
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
+window.addEventListener('resize', fitCanvas);
+fitCanvas();
 
-class HyperNode {
+window.addEventListener('mousemove', (e) => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+});
+
+class SparkParticle {
   constructor() {
-    // Golden Spiral Sphere generation
-    this.theta = Math.random() * Math.PI * 2;
-    this.phi = Math.acos(Math.random() * 2 - 1);
-    this.x = RADIUS * Math.sin(this.phi) * Math.cos(this.theta);
-    this.y = RADIUS * Math.sin(this.phi) * Math.sin(this.theta);
-    this.z = RADIUS * Math.cos(this.phi);
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 2 + 1;
+    this.vx = (Math.random() - 0.5) * 1.5;
+    this.vy = (Math.random() - 0.5) * 1.5;
+    this.color = Math.random() > 0.5 ? '#ffb703' : '#00f0ff';
   }
 
-  rotate(rx, ry) {
-    // Rotation on Y
-    let cosY = Math.cos(ry);
-    let sinY = Math.sin(ry);
-    let x1 = this.x * cosY - this.z * sinY;
-    let z1 = this.z * cosY + this.x * sinY;
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
 
-    // Rotation on X
-    let cosX = Math.cos(rx);
-    let sinX = Math.sin(rx);
-    let y2 = this.y * cosX - z1 * sinX;
-    let z2 = z1 * cosX + this.y * sinX;
+    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
 
-    this.x = x1;
-    this.y = y2;
-    this.z = z2;
-  }
+    // React to mouse
+    if (mouse.x !== null) {
+      let dx = mouse.x - this.x;
+      let dy = mouse.y - this.y;
+      let dist = Math.sqrt(dx * dx + dy * dy);
 
-  project(cx, cy, fov) {
-    const scale = fov / (fov + this.z);
-    return {
-      x: this.x * scale + cx,
-      y: this.y * scale + cy,
-      scale: scale,
-      alpha: Math.max(0.1, (this.z + RADIUS) / (2 * RADIUS))
-    };
-  }
-}
-
-for (let i = 0; i < TOTAL_NODES; i++) {
-  nodes.push(new HyperNode());
-}
-
-function render3D() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const cx = canvas.width / 2;
-  const cy = canvas.height / 2;
-  const fov = 400;
-
-  const projected = [];
-
-  for (let i = 0; i < nodes.length; i++) {
-    nodes[i].rotate(angleX * warpSpeed, angleY * warpSpeed);
-    projected.push(nodes[i].project(cx, cy, fov));
-  }
-
-  // Draw inter-connecting neural lines
-  for (let a = 0; a < projected.length; a++) {
-    for (let b = a + 1; b < projected.length; b++) {
-      const dx = projected[a].x - projected[b].x;
-      const dy = projected[a].y - projected[b].y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist < 55) {
-        ctx.strokeStyle = `rgba(0, 240, 255, ${0.35 * (1 - dist / 55)})`;
-        ctx.lineWidth = 0.8;
-        ctx.beginPath();
-        ctx.moveTo(projected[a].x, projected[a].y);
-        ctx.lineTo(projected[b].x, projected[b].y);
-        ctx.stroke();
+      if (dist < mouse.radius) {
+        const force = (mouse.radius - dist) / mouse.radius;
+        this.x -= (dx / dist) * force * 4;
+        this.y -= (dy / dist) * force * 4;
       }
     }
   }
 
-  // Draw nodes
-  for (let p of projected) {
-    ctx.fillStyle = `rgba(0, 255, 136, ${p.alpha})`;
+  draw() {
     ctx.beginPath();
-    ctx.arc(p.x, p.y, Math.max(1, p.scale * 2.5), 0, Math.PI * 2);
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
     ctx.fill();
   }
-
-  requestAnimationFrame(render3D);
-}
-render3D();
-
-// Mouse tracking shifts rotation vectors
-window.addEventListener("mousemove", (e) => {
-  const normX = (e.clientX / window.innerWidth) - 0.5;
-  const normY = (e.clientY / window.innerHeight) - 0.5;
-  angleX = normY * 0.02;
-  angleY = normX * 0.02;
-
-  // Reticle update
-  const ptr = document.getElementById("cursorPointer");
-  const glow = document.getElementById("cursorGlow");
-  ptr.style.left = `${e.clientX}px`;
-  ptr.style.top = `${e.clientY}px`;
-  glow.style.left = `${e.clientX}px`;
-  glow.style.top = `${e.clientY}px`;
-});
-
-/* ==========================================================
-   3. DRAGGABLE WINDOW SYSTEM & DOCK
-========================================================== */
-let topZ = 100;
-
-function makeDraggable(winEl) {
-  const header = winEl.querySelector(".win-header");
-  let isDragging = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  winEl.addEventListener("mousedown", () => {
-    topZ++;
-    winEl.style.zIndex = topZ;
-    document.querySelectorAll(".cyber-window").forEach(w => w.classList.remove("active-win"));
-    winEl.classList.add("active-win");
-  });
-
-  header.addEventListener("mousedown", (e) => {
-    isDragging = true;
-    offsetX = e.clientX - winEl.offsetLeft;
-    offsetY = e.clientY - winEl.offsetTop;
-    playTone(720, "sine", 0.05, 0.03);
-  });
-
-  window.addEventListener("mousemove", (e) => {
-    if (!isDragging) return;
-    winEl.style.left = `${e.clientX - offsetX}px`;
-    winEl.style.top = `${e.clientY - offsetY}px`;
-  });
-
-  window.addEventListener("mouseup", () => {
-    isDragging = false;
-  });
 }
 
-document.querySelectorAll(".cyber-window").forEach(makeDraggable);
-
-function openWindow(id) {
-  const win = document.getElementById(id);
-  win.style.display = "block";
-  topZ++;
-  win.style.zIndex = topZ;
-  document.querySelectorAll(".cyber-window").forEach(w => w.classList.remove("active-win"));
-  win.classList.add("active-win");
-  playTone(580, "triangle", 0.08);
-}
-
-function closeWindow(id) {
-  document.getElementById(id).style.display = "none";
-  playTone(280, "square", 0.08);
-}
-
-function minimizeWindow(id) {
-  closeWindow(id);
-}
-
-/* ==========================================================
-   4. CLI NEURAL TERMINAL ENGINE
-========================================================== */
-const termInput = document.getElementById("termInput");
-const termOutput = document.getElementById("termOutput");
-
-const COMMANDS = {
-  help: "AVAILABLE COMMANDS:\n  • status    - Check core integrity\n  • warp      - Accelerate quantum projection\n  • clear     - Clear terminal buffer\n  • pulse     - Test synthesize sound\n  • ping      - Measure loop latency",
-  status: "KERNEL METRICS:\n  - Uptime: 99.998%\n  - Flux Density: Optimal\n  - Quantum Nodes: 260 Online",
-  ping: "PONG! Loop latency: 1.2ms (Zero packet degradation)",
-  warp: () => {
-    warpSpeed = warpSpeed === 1 ? 5 : 1;
-    return `Warp Factor toggled to: ${warpSpeed}x`;
-  },
-  pulse: () => {
-    playNeuralChord();
-    return "Procedural audio pulse dispatched to hardware.";
-  },
-  clear: () => {
-    termOutput.innerHTML = "";
-    return "";
+function initSparks() {
+  particles = [];
+  const density = Math.floor((canvas.width * canvas.height) / 16000);
+  for (let i = 0; i < density; i++) {
+    particles.push(new SparkParticle());
   }
-};
+}
+initSparks();
 
-termInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    const raw = termInput.value.trim().toLowerCase();
-    termInput.value = "";
-    if (!raw) return;
+function connectSparks() {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      let dx = particles[i].x - particles[j].x;
+      let dy = particles[i].y - particles[j].y;
+      let dist = Math.sqrt(dx * dx + dy * dy);
 
-    playTone(900, "sine", 0.04, 0.04);
-
-    // Print command entered
-    const userLine = document.createElement("p");
-    userLine.className = "term-line";
-    userLine.innerHTML = `<span class="prompt-arrow">root@synapse:~$</span> ${raw}`;
-    termOutput.appendChild(userLine);
-
-    // Execute
-    const resLine = document.createElement("p");
-    resLine.className = "term-line system-msg";
-
-    if (COMMANDS[raw]) {
-      const response = typeof COMMANDS[raw] === "function" ? COMMANDS[raw]() : COMMANDS[raw];
-      resLine.innerText = response;
-    } else {
-      resLine.innerText = `Command not recognized: "${raw}". Type 'help' for available directives.`;
+      if (dist < 100) {
+        let opacity = 1 - dist / 100;
+        ctx.strokeStyle = `rgba(255, 183, 3, ${opacity * 0.15})`;
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.stroke();
+      }
     }
-
-    termOutput.appendChild(resLine);
-    termOutput.scrollTop = termOutput.scrollHeight;
   }
-});
-
-/* ==========================================================
-   5. REAL-TIME SYSTEM TELEMETRY SIMULATOR
-========================================================== */
-setInterval(() => {
-  // Random dynamic fluctuation for telemetry
-  const cpu = (10 + Math.random() * 8).toFixed(1);
-  document.getElementById("cpuLoad").innerText = `${cpu}%`;
-
-  // Clock
-  const now = new Date();
-  document.getElementById("sysClock").innerText = now.toTimeString().split(" ")[0];
-}, 1000);
-
-function triggerOverdrive() {
-  playTone(1100, "sawtooth", 0.4, 0.1);
-  warpSpeed = 7;
-  document.getElementById("fluxFill").style.width = "100%";
-  document.getElementById("fluxVal").innerText = "1420 THz (BURST)";
-
-  setTimeout(() => {
-    warpSpeed = 1;
-    document.getElementById("fluxFill").style.width = "84%";
-    document.getElementById("fluxVal").innerText = "840 THz";
-  }, 3500);
 }
 
-function purgeMemory() {
-  playTone(220, "square", 0.3, 0.08);
-  const mem = document.getElementById("memFill");
-  mem.style.width = "12%";
-  document.getElementById("memVal").innerText = "12%";
+function renderCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach((p) => {
+    p.update();
+    p.draw();
+  });
+  connectSparks();
+  requestAnimationFrame(renderCanvas);
+}
+renderCanvas();
 
-  setTimeout(() => {
-    mem.style.width = "48%";
-    document.getElementById("memVal").innerText = "48%";
-  }, 1200);
-                        }
+/* ==========================================================
+   3. OVERDRIVE ARENA (MINI GAME ENGINE)
+========================================================== */
+let score = 0;
+let timeLeft = 15;
+let combo = 1;
+let active = false;
+let gameTimer = null;
+
+const scoreVal = document.getElementById('scoreVal');
+const timerVal = document.getElementById('timerVal');
+const comboVal = document.getElementById('comboVal');
+const targetNode = document.getElementById('targetNode');
+const arenaField = document.getElementById('arenaField');
+const arenaModal = document.getElementById('arenaModal');
+const startBtn = document.getElementById('startBtn');
+
+function repositionNode() {
+  const rect = arenaField.getBoundingClientRect();
+  const maxX = rect.width - 70;
+  const maxY = rect.height - 70;
+
+  const posX = Math.floor(Math.random() * maxX) + 35;
+  const posY = Math.floor(Math.random() * maxY) + 35;
+
+  targetNode.style.left = `${posX}px`;
+  targetNode.style.top = `${posY}px`;
+}
+
+function startCircuit() {
+  score = 0;
+  combo = 1;
+  timeLeft = 15;
+  active = true;
+
+  scoreVal.innerText = score;
+  comboVal.innerText = `x${combo}`;
+  timerVal.innerText = `${timeLeft}s`;
+
+  arenaModal.classList.remove('active');
+  repositionNode();
+
+  gameTimer = setInterval(() => {
+    timeLeft--;
+    timerVal.innerText = `${timeLeft}s`;
+
+    if (timeLeft <= 0) {
+      endCircuit();
+    }
+  }, 1000);
+}
+
+function endCircuit() {
+  clearInterval(gameTimer);
+  active = false;
+  arenaModal.innerHTML = `
+    <h3>VOLTAGE EXHAUSTED</h3>
+    <p>Final Score: <strong>${score}</strong> | Highest Streak: <strong>x${combo}</strong></p>
+    <button class="spark-btn btn-glow" onclick="startCircuit()">Recharge & Restart</button>
+  `;
+  arenaModal.classList.add('active');
+}
+
+targetNode.addEventListener('click', () => {
+  if (!active) return;
+
+  score += 10 * combo;
+  combo++;
+  scoreVal.innerText = score;
+  comboVal.innerText = `x${combo}`;
+
+  // Spawn visual feedback
+  const burst = document.createElement('span');
+  burst.className = 'burst-float';
+  burst.innerText = `+${10 * (combo - 1)}`;
+  burst.style.left = `${targetNode.offsetLeft}px`;
+  burst.style.top = `${targetNode.offsetTop - 15}px`;
+  arenaField.appendChild(burst);
+
+  setTimeout(() => burst.remove(), 700);
+  repositionNode();
+});
+
+startBtn.addEventListener('click', startCircuit);

@@ -3,137 +3,151 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SYNAPSE // Autonomous Neural OS</title>
+  <title>SPARK // High Voltage Web Experience</title>
+  
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- Screen Scanline Overlay -->
-  <div class="crt-overlay"></div>
+  <!-- Electric Spark Canvas -->
+  <canvas id="sparkCanvas"></canvas>
 
-  <!-- Custom Cyberpunk Cursor -->
-  <div class="cursor-crosshair" id="cursorPointer"></div>
-  <div class="cursor-glow" id="cursorGlow"></div>
-
-  <!-- 3D Holographic Canvas Simulation -->
-  <canvas id="neuralCanvas"></canvas>
-
-  <!-- Top System Bar -->
-  <header class="top-nav">
-    <div class="sys-branding">
-      <i class="fa-solid fa-brain glow-icon"></i>
-      <span class="sys-title">SYNAPSE<span class="accent-text">.CORE</span></span>
-      <span class="sys-version">v4.0.8-HYPER</span>
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="brand">
+      <i class="fa-solid fa-bolt-lightning bolt-icon"></i>
+      <span>SPARK</span>
     </div>
-    
-    <div class="sys-telemetry">
-      <div class="telemetry-chip">
-        <span class="chip-label">QUANTUM CPU</span>
-        <span class="chip-value" id="cpuLoad">12.4%</span>
-      </div>
-      <div class="telemetry-chip">
-        <span class="chip-label">NEURAL SYNC</span>
-        <span class="chip-value pulse-green">99.8%</span>
-      </div>
-      <div class="telemetry-chip">
-        <span class="chip-label">SYS CLOCK</span>
-        <span class="chip-value" id="sysClock">00:00:00</span>
-      </div>
+
+    <nav class="nav-links">
+      <button class="nav-tab active" data-target="home">Ignite</button>
+      <button class="nav-tab" data-target="showcase">Matrix</button>
+      <button class="nav-tab" data-target="minigame">Overdrive</button>
+    </nav>
+
+    <div class="nav-indicator">
+      <span class="live-dot"></span>
+      <span class="volt-text">440V LIVE</span>
     </div>
   </header>
 
-  <!-- Central Workspace & Windows Container -->
-  <main class="desktop-arena" id="desktop">
+  <!-- View Wrapper -->
+  <main class="viewport-wrapper">
 
-    <!-- Dock / Command Launcher -->
-    <div class="cyber-dock">
-      <button class="dock-btn" onclick="openWindow('win-terminal')" title="Terminal CLI">
-        <i class="fa-solid fa-terminal"></i>
-      </button>
-      <button class="dock-btn" onclick="openWindow('win-telemetry')" title="Neural Matrix">
-        <i class="fa-solid fa-network-wired"></i>
-      </button>
-      <button class="dock-btn" onclick="openWindow('win-audio')" title="Synthesizer Engine">
-        <i class="fa-solid fa-wave-square"></i>
-      </button>
-      <button class="dock-btn" onclick="openWindow('win-blackhole')" title="Gravity Warp">
-        <i class="fa-solid fa-atom"></i>
-      </button>
-      <button class="dock-btn" id="audioToggleBtn" title="Toggle Synth Audio">
-        <i class="fa-solid fa-volume-high"></i>
-      </button>
-    </div>
-
-    <!-- WINDOW 1: Cyber Terminal -->
-    <div class="cyber-window" id="win-terminal" style="top: 14%; left: 8%; width: 520px;">
-      <div class="win-header">
-        <div class="win-title"><i class="fa-solid fa-terminal"></i> NEURAL_BASH // EXECUTION_PORT</div>
-        <div class="win-controls">
-          <button class="ctrl-btn minimize-btn" onclick="minimizeWindow('win-terminal')">-</button>
-          <button class="ctrl-btn close-btn" onclick="closeWindow('win-terminal')">×</button>
+    <!-- PAGE 1: HOME (IGNITE) -->
+    <section id="home" class="page-pane active">
+      <div class="pane-content hero-pane">
+        <div class="status-badge">⚡ NEXT-GEN VOLTAGE ENGINE</div>
+        <h1 class="main-heading">IGNITE THE DIGITAL HORIZON</h1>
+        <p class="hero-desc">
+          High-performance canvas physics, ultra-responsive architecture, and pure mathematical reactivity engineered into a single seamless experience.
+        </p>
+        
+        <div class="hero-cta-group">
+          <button class="spark-btn btn-glow" onclick="switchPage('minigame')">
+            Enter Overdrive <i class="fa-solid fa-arrow-right"></i>
+          </button>
+          <button class="spark-btn btn-ghost" onclick="switchPage('showcase')">
+            View Matrix
+          </button>
         </div>
-      </div>
-      <div class="win-body terminal-body" id="termOutput">
-        <p class="term-line system-msg">> [KERNEL] Synapse v4.0.8 initialized successfully.</p>
-        <p class="term-line system-msg">> [STATUS] Type <span class="cmd-highlight">help</span> to view available operations.</p>
-      </div>
-      <div class="term-input-wrapper">
-        <span class="prompt-arrow">root@synapse:~$</span>
-        <input type="text" id="termInput" autocomplete="off" spellcheck="false" autofocus />
-      </div>
-    </div>
 
-    <!-- WINDOW 2: Neural Telemetry & Diagnostics -->
-    <div class="cyber-window" id="win-telemetry" style="top: 18%; left: 52%; width: 480px;">
-      <div class="win-header">
-        <div class="win-title"><i class="fa-solid fa-chart-line"></i> DIAGNOSTIC_MATRIX</div>
-        <div class="win-controls">
-          <button class="ctrl-btn minimize-btn" onclick="minimizeWindow('win-telemetry')">-</button>
-          <button class="ctrl-btn close-btn" onclick="closeWindow('win-telemetry')">×</button>
-        </div>
-      </div>
-      <div class="win-body">
-        <div class="diag-group">
-          <div class="diag-header">
-            <span>SYNAPTIC CORE FLUX</span>
-            <span id="fluxVal">840 THz</span>
+        <div class="telemetry-bar">
+          <div class="telemetry-item">
+            <span class="val">0.02ms</span>
+            <span class="lbl">Latency</span>
           </div>
-          <div class="progress-track"><div class="progress-fill" id="fluxFill" style="width: 84%;"></div></div>
-        </div>
-        <div class="diag-group">
-          <div class="diag-header">
-            <span>MEMORIZATION VECTOR</span>
-            <span id="memVal">94%</span>
+          <div class="telemetry-divider"></div>
+          <div class="telemetry-item">
+            <span class="val">60 FPS</span>
+            <span class="lbl">Render Loop</span>
           </div>
-          <div class="progress-track"><div class="progress-fill fill-pink" id="memFill" style="width: 94%;"></div></div>
-        </div>
-        <div class="action-row">
-          <button class="cyber-btn" onclick="triggerOverdrive()">ACTIVATE OVERDRIVE</button>
-          <button class="cyber-btn btn-danger" onclick="purgeMemory()">PURGE HEAP</button>
+          <div class="telemetry-divider"></div>
+          <div class="telemetry-item">
+            <span class="val">Pure Vanilla</span>
+            <span class="lbl">Architecture</span>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- WINDOW 3: Synthesizer Studio -->
-    <div class="cyber-window" id="win-audio" style="top: 50%; left: 24%; width: 440px; display: none;">
-      <div class="win-header">
-        <div class="win-title"><i class="fa-solid fa-sliders"></i> PROCEDURAL_SYNTHESIZER</div>
-        <div class="win-controls">
-          <button class="ctrl-btn minimize-btn" onclick="minimizeWindow('win-audio')">-</button>
-          <button class="ctrl-btn close-btn" onclick="closeWindow('win-audio')">×</button>
+    <!-- PAGE 2: SHOWCASE (MATRIX) -->
+    <section id="showcase" class="page-pane">
+      <div class="pane-content">
+        <div class="pane-title-group">
+          <h2>SYSTEM MATRIX</h2>
+          <p>Modular capabilities built for raw speed and interaction.</p>
+        </div>
+
+        <div class="matrix-grid">
+          <div class="matrix-card">
+            <div class="card-glow"></div>
+            <div class="card-icon"><i class="fa-solid fa-microchip"></i></div>
+            <h3>Zero Dependency</h3>
+            <p>Runs purely on native web APIs with no bulky overhead, keeping the thread completely unblocked.</p>
+            <span class="tag">PERFORMANCE</span>
+          </div>
+
+          <div class="matrix-card">
+            <div class="card-glow"></div>
+            <div class="card-icon"><i class="fa-solid fa-wave-square"></i></div>
+            <h3>Dynamic Kinetic Physics</h3>
+            <p>Calculated vector velocities that dynamically bend and react towards cursor position in real time.</p>
+            <span class="tag">PHYSICS</span>
+          </div>
+
+          <div class="matrix-card">
+            <div class="card-glow"></div>
+            <div class="card-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <h3>Glass & Mesh UI</h3>
+            <p>Polished blur shaders and variable gradient boundaries tuned for instant eye-tracking contrast.</p>
+            <span class="tag">INTERFACE</span>
+          </div>
         </div>
       </div>
-      <div class="win-body">
-        <p class="section-desc">Procedural real-time Web Audio waveform generator. No audio assets required.</p>
-        <div class="slider-row">
-          <label>Oscillator Pitch (Hz)</label>
-          <input type="range" min="100" max="1800" value="440" class="cyber-slider" id="pitchSlider" />
+    </section>
+
+    <!-- PAGE 3: MINI GAME (OVERDRIVE) -->
+    <section id="minigame" class="page-pane">
+      <div class="pane-content">
+        <div class="pane-title-group">
+          <h2>OVERDRIVE ARENA</h2>
+          <p>Hit the spark node as many times as possible in 15 seconds.</p>
         </div>
-        <button class="cyber-btn btn-block" onclick="playNeuralChord()">TRIGGER HARMONIC SURGE</button>
+
+        <div class="game-container">
+          <div class="game-hud">
+            <div class="hud-box">
+              <span class="hud-lbl">ENERGY SCORE</span>
+              <span class="hud-val" id="scoreVal">0</span>
+            </div>
+            <div class="hud-box">
+              <span class="hud-lbl">VOLTAGE TIMER</span>
+              <span class="hud-val timer" id="timerVal">15s</span>
+            </div>
+            <div class="hud-box">
+              <span class="hud-lbl">COMBO SURGE</span>
+              <span class="hud-val surge" id="comboVal">x1</span>
+            </div>
+          </div>
+
+          <div class="arena-field" id="arenaField">
+            <button class="target-node" id="targetNode">
+              <i class="fa-solid fa-bolt"></i>
+            </button>
+            <div class="arena-modal active" id="arenaModal">
+              <h3>SYSTEM READY</h3>
+              <p>Test your reaction limits against the spark flux.</p>
+              <button class="spark-btn btn-glow" id="startBtn">Initiate Circuit</button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
 
   </main>
 

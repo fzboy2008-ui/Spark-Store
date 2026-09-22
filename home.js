@@ -1,5 +1,5 @@
 /* ==========================================================
-   PAGE ROUTER (SPA SWITCHER)
+   ROUTING & MATRIX BACKGROUND
 ========================================================== */
 const navTabs = document.querySelectorAll('.nav-tab');
 const pageViews = document.querySelectorAll('.page-view');
@@ -13,9 +13,10 @@ function switchPage(targetId) {
     view.classList.toggle('active', view.id === targetId);
   });
 
-  // Resize canvas when switching tabs
-  if (targetId === 'showcaseView' && typeof fitHoloCanvas === 'function') {
-    setTimeout(fitHoloCanvas, 50);
+  // Re-adjust canvases on tab switch
+  if (targetId === 'showcaseView') {
+    if (typeof fitHoloCanvas === 'function') setTimeout(fitHoloCanvas, 50);
+    if (typeof fitUserCanvas === 'function') setTimeout(fitUserCanvas, 50);
   }
 }
 
@@ -25,9 +26,7 @@ navTabs.forEach(tab => {
   });
 });
 
-/* ==========================================================
-   ANIMATED CYBER GRID MATRIX BACKGROUND
-========================================================== */
+/* Realtime Cyber Canvas Background */
 const bgCanvas = document.getElementById("sparkCanvas");
 if (bgCanvas) {
   const bgCtx = bgCanvas.getContext("2d");
@@ -65,7 +64,7 @@ if (bgCanvas) {
         let dx = mouse.x - this.x;
         let dy = mouse.y - this.y;
         let dist = Math.hypot(dx, dy);
-        if (dist < 130) {
+        if (dist < 120) {
           this.x -= (dx / dist) * 2;
           this.y -= (dy / dist) * 2;
         }
@@ -81,21 +80,20 @@ if (bgCanvas) {
 
   function initBgGrid() {
     bgParticles = [];
-    const count = Math.floor((bgCanvas.width * bgCanvas.height) / 14000);
+    const count = Math.floor((bgCanvas.width * bgCanvas.height) / 15000);
     for (let i = 0; i < count; i++) bgParticles.push(new CyberNode());
   }
   initBgGrid();
 
   function renderCyberBg() {
     bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-
     for (let a = 0; a < bgParticles.length; a++) {
       bgParticles[a].update();
       bgParticles[a].draw();
       for (let b = a + 1; b < bgParticles.length; b++) {
         let dist = Math.hypot(bgParticles[a].x - bgParticles[b].x, bgParticles[a].y - bgParticles[b].y);
-        if (dist < 90) {
-          bgCtx.strokeStyle = `rgba(0, 240, 255, ${0.25 * (1 - dist / 90)})`;
+        if (dist < 85) {
+          bgCtx.strokeStyle = `rgba(0, 240, 255, ${0.2 * (1 - dist / 85)})`;
           bgCtx.lineWidth = 0.8;
           bgCtx.beginPath();
           bgCtx.moveTo(bgParticles[a].x, bgParticles[a].y);
@@ -107,4 +105,4 @@ if (bgCanvas) {
     requestAnimationFrame(renderCyberBg);
   }
   renderCyberBg();
-    }
+}

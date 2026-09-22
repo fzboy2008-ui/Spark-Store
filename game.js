@@ -1,45 +1,62 @@
 /* ==========================================================
-   ARCADE MASTER ENGINE & TAB SWITCHER
+   ROBUST CANVAS SIZING HELPER
 ========================================================== */
-const gameSelectors = document.querySelectorAll(".game-selector-btn");
-const arcadeViews = document.querySelectorAll(".arcade-view");
+function ensureCanvasDimensions(canvas) {
+  if (!canvas) return false;
+  const parent = canvas.parentElement;
+  if (!parent) return false;
 
-function fitActiveGameCanvas() {
-  const activeView = document.querySelector(".arcade-view.active");
-  if (!activeView) return;
-  const canvas = activeView.querySelector("canvas");
-  if (canvas && canvas.parentElement) {
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
-  }
+  // Agar tab hidden ho to default dimensions do taaki 0x0 na ho
+  const w = parent.clientWidth || 800;
+  const h = parent.clientHeight || 460;
+
+  canvas.width = w;
+  canvas.height = h;
+  return true;
 }
-window.addEventListener("resize", fitActiveGameCanvas);
 
-if (gameSelectors.length) {
-  gameSelectors.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      gameSelectors.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      const target = btn.getAttribute("data-game");
-      arcadeViews.forEach((view) => {
-        view.classList.toggle("active", view.id === `${target}View`);
-      });
-      setTimeout(fitActiveGameCanvas, 40);
+/* ==========================================================
+   ARCADE TAB SWITCHER
+========================================================== */
+const gameTabBtns = document.querySelectorAll(".game-selector-btn");
+const arcadeScreens = document.querySelectorAll(".arcade-view");
+
+gameTabBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    gameTabBtns.forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    const targetGame = btn.getAttribute("data-game");
+    arcadeScreens.forEach((screen) => {
+      screen.classList.toggle("active", screen.id === `${targetGame}View`);
     });
-  });
-}
 
-// Global Blast Particles Array for Impact FX
-class BlastParticle {
+    // Stop all other running loops when switching tab
+    cancelAnimationFrame(fAnimId);
+    cancelAnimationFrame(rAnimId);
+    cancelAnimationFrame(sAnimId);
+    cancelAnimationFrame(bAnimId);
+    cancelAnimationFrame(oAnimId);
+
+    flappyActive = false;
+    runnerActive = false;
+    spaceActive = false;
+    bladeActive = false;
+    orbitActive = false;
+  });
+});
+
+/* Particle FX Class */
+class SparkFX {
   constructor(x, y, color) {
     this.x = x;
     this.y = y;
     this.color = color;
     this.radius = Math.random() * 3 + 2;
-    this.vx = (Math.random() - 0.5) * 8;
-    this.vy = (Math.random() - 0.5) * 8;
+    this.vx = (Math.random() - 0.5) * 6;
+    this.vy = (Math.random() - 0.5) * 6;
     this.alpha = 1;
-    this.decay = Math.random() * 0.03 + 0.02;
+    this.decay = 0.03;
   }
   update() {
     this.x += this.vx;
@@ -58,26 +75,29 @@ class BlastParticle {
 }
 
 /* ==========================================================
-   GAME 1: FLAPPY PHOENIX (PROCEDURAL ANIMATED BIRD)
+   GAME 1: FLAPPY PHOENIX
 ========================================================== */
 let flappyActive = false, fBirdY = 200, fBirdV = 0, fPipes = [], fScore = 0, fAnimId = null;
-let birdWingAngle = 0, birdExhaust = [];
+let birdWingAngle = 0;
 const fCanvas = document.getElementById("flappyCanvas");
 
 function startFlappyGame() {
   if (!fCanvas) return;
-  fitActiveGameCanvas();
+  ensureCanvasDimensions(fCanvas);
 
   fBirdY = fCanvas.height / 2;
   fBirdV = -5;
   fPipes = [];
   fScore = 0;
-  birdExhaust = [];
   flappyActive = true;
 
   document.getElementById("flappyScore").innerText = "0";
   document.getElementById("flappyDiff").innerText = "1.0x";
-  document.getElementById("flappyOverlay").classList.remove("active");
+  
+  // Hide overlay explicitly
+  const overlay = document.getElementById("flappyOverlay");
+  overlay.classList.remove("active");
+  overlay.style.display = "none";
 
   cancelAnimationFrame(fAnimId);
   loopFlappy();
@@ -85,17 +105,19 @@ function startFlappyGame() {
 
 function flapWing() {
   if (flappyActive) {
-    fBirdV = -6.2;
-    // Wing thrust bursts
-    for (let i = 0; i < 6; i++) {
-      birdExhaust.push(new BlastParticle(70, fBirdY, "#00d4ff"));
-    }
+    fBirdV = -6.5;
   } else {
     startFlappyGame();
   }
 }
 
-fCanvas?.addEventListener("pointerdown", (e) => { e.preventDefault(); flapWing(); });
+// Click on Canvas to Flap
+fCanvas?.addEventListener("click", flapWing);
+fCanvas?.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  flapWing();
+}, { passive: false });
+
 window.addEventListener("keydown", (e) => {
   if (e.code === "Space" && document.getElementById("flappyView")?.classList.contains("active")) {
     e.preventDefault();
@@ -103,52 +125,49 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-function drawAnimatedPhoenix(ctx, x, y, angle, wingCycle) {
+function drawAnimatedBird(ctx, x, y, vy, wingCycle) {
   ctx.save();
   ctx.translate(x, y);
+  const angle = Math.min(Math.max(vy * 0.05, -0.5), 0.6);
   ctx.rotate(angle);
 
-  // Flaming Tail Particles
+  // Flaming Tail
   ctx.fillStyle = "#ff003c";
   ctx.beginPath();
-  ctx.moveTo(-18, 0);
-  ctx.lineTo(-32, -6 + Math.sin(wingCycle) * 4);
-  ctx.lineTo(-32, 6 - Math.sin(wingCycle) * 4);
-  ctx.closePath();
+  ctx.moveTo(-16, 0);
+  ctx.lineTo(-30, -5 + Math.sin(wingCycle) * 4);
+  ctx.lineTo(-30, 5 - Math.sin(wingCycle) * 4);
   ctx.fill();
 
-  // Torso / Core Body (Cyan Luminescent Bird)
+  // Body Core
   ctx.fillStyle = "#00d4ff";
   ctx.shadowColor = "#00d4ff";
-  ctx.shadowBlur = 12;
+  ctx.shadowBlur = 10;
   ctx.beginPath();
-  ctx.ellipse(0, 0, 18, 12, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, 16, 11, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.shadowBlur = 0;
 
   // Animated Wing
-  const wingY = Math.sin(wingCycle) * 14;
+  const wingY = Math.sin(wingCycle) * 12;
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
   ctx.moveTo(-4, 0);
-  ctx.lineTo(6, wingY);
-  ctx.lineTo(14, 0);
-  ctx.closePath();
+  ctx.lineTo(4, wingY);
+  ctx.lineTo(12, 0);
   ctx.fill();
 
-  // Glowing Eye
+  // Eye & Beak
   ctx.fillStyle = "#ff003c";
   ctx.beginPath();
-  ctx.arc(8, -3, 3, 0, Math.PI * 2);
+  ctx.arc(8, -2, 2.5, 0, Math.PI * 2);
   ctx.fill();
 
-  // Sharp Plasma Beak
   ctx.fillStyle = "#ffbe0b";
   ctx.beginPath();
-  ctx.moveTo(16, -2);
-  ctx.lineTo(26, 1);
-  ctx.lineTo(16, 4);
-  ctx.closePath();
+  ctx.moveTo(14, -2);
+  ctx.lineTo(24, 1);
+  ctx.lineTo(14, 4);
   ctx.fill();
 
   ctx.restore();
@@ -159,27 +178,18 @@ function loopFlappy() {
   const ctx = fCanvas.getContext("2d");
   ctx.clearRect(0, 0, fCanvas.width, fCanvas.height);
 
-  const speed = 3.2 + Math.min(fScore * 0.16, 5.0);
+  const speed = 3.2 + Math.min(fScore * 0.15, 4.5);
   document.getElementById("flappyDiff").innerText = `${(speed / 3.2).toFixed(1)}x`;
 
-  fBirdV += 0.32;
+  fBirdV += 0.35;
   fBirdY += fBirdV;
   birdWingAngle += 0.25;
 
-  // Exhaust Update
-  birdExhaust.forEach((p, idx) => {
-    p.update();
-    p.draw(ctx);
-    if (p.alpha <= 0) birdExhaust.splice(idx, 1);
-  });
+  drawAnimatedBird(ctx, 80, fBirdY, fBirdV, birdWingAngle);
 
-  // Render Bird
-  const pitchAngle = Math.min(Math.max(fBirdV * 0.06, -0.6), 0.7);
-  drawAnimatedPhoenix(ctx, 80, fBirdY, pitchAngle, birdWingAngle);
-
-  // Gates Generation
+  // Spawn Gates
   if (fPipes.length === 0 || fPipes[fPipes.length - 1].x < fCanvas.width - 220) {
-    const gap = Math.max(120 - fScore * 1.5, 90);
+    const gap = Math.max(125 - fScore * 1.5, 95);
     const topH = Math.random() * (fCanvas.height - gap - 100) + 40;
     fPipes.push({ x: fCanvas.width, top: topH, bottom: topH + gap, passed: false });
   }
@@ -188,14 +198,14 @@ function loopFlappy() {
     let p = fPipes[i];
     p.x -= speed;
 
-    // Laser Boundary Pillars
+    // Neon Pillars
     ctx.fillStyle = "#ff003c";
-    ctx.fillRect(p.x, 0, 48, p.top);
+    ctx.fillRect(p.x, 0, 46, p.top);
     ctx.fillStyle = "#00d4ff";
-    ctx.fillRect(p.x, p.bottom, 48, fCanvas.height - p.bottom);
+    ctx.fillRect(p.x, p.bottom, 46, fCanvas.height - p.bottom);
 
-    // Collision Check with hitbox padding
-    if (80 + 16 > p.x && 80 - 16 < p.x + 48) {
+    // Collision Check
+    if (80 + 14 > p.x && 80 - 14 < p.x + 46) {
       if (fBirdY - 10 < p.top || fBirdY + 10 > p.bottom) {
         return endFlappy();
       }
@@ -208,6 +218,7 @@ function loopFlappy() {
     }
   }
 
+  // Bounds
   if (fBirdY > fCanvas.height - 15 || fBirdY < 15) return endFlappy();
 
   fPipes = fPipes.filter((p) => p.x > -60);
@@ -216,27 +227,34 @@ function loopFlappy() {
 
 function endFlappy() {
   flappyActive = false;
-  const o = document.getElementById("flappyOverlay");
-  o.innerHTML = `<h3>ENERGY SEVERED</h3><p>Cleared Gateways: <strong>${fScore}</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startFlappyGame()">Flight Again</button>`;
-  o.classList.add("active");
+  const overlay = document.getElementById("flappyOverlay");
+  overlay.style.display = "flex";
+  overlay.innerHTML = `
+    <h3>ENERGY SEVERED</h3>
+    <p>Cleared Gateways: <strong>${fScore}</strong></p>
+    <button class="spark-btn btn-primary btn-launch" onclick="startFlappyGame()">Flight Again</button>
+  `;
 }
 
 /* ==========================================================
-   GAME 2: NEON SHINOBI RUNNER (DOUBLE JUMP + PARTICLES)
+   GAME 2: NEON SHINOBI RUNNER
 ========================================================== */
 let runnerActive = false, rY = 0, rV = 0, rJumpsLeft = 2, rObs = [], rScore = 0, rAnimId = null;
-let runCycle = 0, runnerDust = [];
+let runCycle = 0;
 const rCanvas = document.getElementById("runnerCanvas");
 
 function startRunnerGame() {
   if (!rCanvas) return;
-  fitActiveGameCanvas();
+  ensureCanvasDimensions(rCanvas);
 
-  rY = 0; rV = 0; rJumpsLeft = 2; rObs = []; rScore = 0; runnerDust = [];
+  rY = 0; rV = 0; rJumpsLeft = 2; rObs = []; rScore = 0;
   runnerActive = true;
   document.getElementById("runnerScore").innerText = "0m";
   document.getElementById("jumpStatus").innerText = "DOUBLE READY";
-  document.getElementById("runnerOverlay").classList.remove("active");
+
+  const overlay = document.getElementById("runnerOverlay");
+  overlay.classList.remove("active");
+  overlay.style.display = "none";
 
   cancelAnimationFrame(rAnimId);
   loopRunner();
@@ -245,16 +263,18 @@ function startRunnerGame() {
 function runnerJumpAction() {
   if (!runnerActive) return startRunnerGame();
   if (rJumpsLeft > 0) {
-    rV = 11;
+    rV = 11.5;
     rJumpsLeft--;
     document.getElementById("jumpStatus").innerText = rJumpsLeft === 1 ? "1 JUMP LEFT" : "DEPLETED";
-    for (let i = 0; i < 8; i++) {
-      runnerDust.push(new BlastParticle(70, rCanvas.height - 40 - rY, "#00d4ff"));
-    }
   }
 }
 
-rCanvas?.addEventListener("pointerdown", (e) => { e.preventDefault(); runnerJumpAction(); });
+rCanvas?.addEventListener("click", runnerJumpAction);
+rCanvas?.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  runnerJumpAction();
+}, { passive: false });
+
 window.addEventListener("keydown", (e) => {
   if (e.code === "Space" && document.getElementById("runnerView")?.classList.contains("active")) {
     e.preventDefault();
@@ -262,44 +282,43 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-function drawAnimatedShinobi(ctx, x, y, cycle, inAir) {
+function drawShinobi(ctx, x, y, cycle, inAir) {
   ctx.save();
   ctx.translate(x, y);
 
-  // Scarf / Cyber Trail
+  // Red Scarf
   ctx.strokeStyle = "#ff003c";
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 3.5;
   ctx.beginPath();
-  ctx.moveTo(-10, -22);
-  ctx.quadraticCurveTo(-26, -22 + Math.sin(cycle) * 6, -38, -18);
+  ctx.moveTo(-8, -20);
+  ctx.lineTo(-24, -20 + Math.sin(cycle) * 5);
+  ctx.lineTo(-34, -16);
   ctx.stroke();
 
   // Torso
   ctx.fillStyle = "#00d4ff";
-  ctx.fillRect(-8, -26, 16, 20);
+  ctx.fillRect(-8, -24, 16, 18);
 
-  // Cyber Visor / Head
+  // Head
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
-  ctx.arc(0, -32, 8, 0, Math.PI * 2);
+  ctx.arc(0, -30, 7, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#ff003c";
-  ctx.fillRect(-2, -34, 8, 3); // Glow visor
+  ctx.fillRect(-2, -32, 7, 3);
 
-  // Running Limbs
+  // Limbs
   ctx.strokeStyle = "#00d4ff";
-  ctx.lineWidth = 3.5;
+  ctx.lineWidth = 3;
   if (!inAir) {
-    const leg1 = Math.sin(cycle) * 12;
-    const leg2 = -Math.sin(cycle) * 12;
-    ctx.beginPath(); ctx.moveTo(-4, -6); ctx.lineTo(-8, 6 + leg1); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(4, -6); ctx.lineTo(8, 6 + leg2); ctx.stroke();
+    const l1 = Math.sin(cycle) * 11;
+    const l2 = -Math.sin(cycle) * 11;
+    ctx.beginPath(); ctx.moveTo(-4, -6); ctx.lineTo(-8, 6 + l1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(4, -6); ctx.lineTo(8, 6 + l2); ctx.stroke();
   } else {
-    // Tucked Ninja Jump
-    ctx.beginPath(); ctx.moveTo(-4, -6); ctx.lineTo(-12, 0); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(4, -6); ctx.lineTo(12, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-4, -6); ctx.lineTo(-12, 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(4, -6); ctx.lineTo(12, 2); ctx.stroke();
   }
-
   ctx.restore();
 }
 
@@ -309,11 +328,11 @@ function loopRunner() {
   ctx.clearRect(0, 0, rCanvas.width, rCanvas.height);
 
   const groundY = rCanvas.height - 40;
-  const speed = 5.6 + Math.min((rScore / 40) * 0.45, 6.5);
+  const speed = 5.8 + Math.min((rScore / 40) * 0.45, 6.5);
 
   rY += rV;
   if (rY > 0) {
-    rV -= 0.52;
+    rV -= 0.54;
   } else {
     rY = 0; rV = 0; rJumpsLeft = 2;
     document.getElementById("jumpStatus").innerText = "DOUBLE READY";
@@ -321,25 +340,18 @@ function loopRunner() {
 
   runCycle += 0.25;
 
-  // Render Neon Ground
+  // Ground
   ctx.strokeStyle = "rgba(0, 212, 255, 0.4)";
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(rCanvas.width, groundY); ctx.stroke();
 
-  // Dust FX
-  runnerDust.forEach((d, idx) => {
-    d.update();
-    d.draw(ctx);
-    if (d.alpha <= 0) runnerDust.splice(idx, 1);
-  });
+  // Draw Shinobi
+  drawShinobi(ctx, 70, groundY - rY, runCycle, rY > 0);
 
-  // Render Shinobi
-  drawAnimatedShinobi(ctx, 70, groundY - rY, runCycle, rY > 0);
-
-  // Spawning Spikes/Barriers
+  // Spikes
   if (rObs.length === 0 || rObs[rObs.length - 1].x < rCanvas.width - 240) {
     if (Math.random() < 0.6) {
-      rObs.push({ x: rCanvas.width, w: 22, h: Math.random() * 28 + 26 });
+      rObs.push({ x: rCanvas.width, w: 22, h: Math.random() * 26 + 26 });
     }
   }
 
@@ -350,12 +362,15 @@ function loopRunner() {
     ctx.fillStyle = "#ff003c";
     ctx.fillRect(o.x, groundY - o.h, o.w, o.h);
 
-    // Collision Check
     if (70 + 10 > o.x && 70 - 10 < o.x + o.w && rY < o.h) {
       runnerActive = false;
-      const ov = document.getElementById("runnerOverlay");
-      ov.innerHTML = `<h3>SHINOBI FALLEN</h3><p>Distance Cleared: <strong>${Math.floor(rScore / 4)}m</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startRunnerGame()">Run Again</button>`;
-      ov.classList.add("active");
+      const overlay = document.getElementById("runnerOverlay");
+      overlay.style.display = "flex";
+      overlay.innerHTML = `
+        <h3>SHINOBI FALLEN</h3>
+        <p>Distance: <strong>${Math.floor(rScore / 4)}m</strong></p>
+        <button class="spark-btn btn-primary btn-launch" onclick="startRunnerGame()">Run Again</button>
+      `;
       return;
     }
   }
@@ -367,7 +382,7 @@ function loopRunner() {
 }
 
 /* ==========================================================
-   GAME 3: VOID STRIKER ULTRA (AUTO-FIRE + ABILITY STREAK)
+   GAME 3: VOID STRIKER ULTRA
 ========================================================== */
 let spaceActive = false, sShipX = 200, sBullets = [], sEnemies = [], sScore = 0, sStreak = 0;
 let sAnimId = null, sBlastFx = [], lastShotTime = 0;
@@ -375,7 +390,7 @@ const sCanvas = document.getElementById("spaceCanvas");
 
 function startSpaceGame() {
   if (!sCanvas) return;
-  fitActiveGameCanvas();
+  ensureCanvasDimensions(sCanvas);
 
   sShipX = sCanvas.width / 2;
   sBullets = [];
@@ -388,7 +403,10 @@ function startSpaceGame() {
   document.getElementById("spaceScore").innerText = "0";
   document.getElementById("spaceCombo").innerText = "x0";
   document.getElementById("abilityMeter").innerText = "NORMAL";
-  document.getElementById("spaceOverlay").classList.remove("active");
+
+  const overlay = document.getElementById("spaceOverlay");
+  overlay.classList.remove("active");
+  overlay.style.display = "none";
 
   cancelAnimationFrame(sAnimId);
   loopSpace();
@@ -400,10 +418,10 @@ function updateShipPos(clientX) {
 }
 
 sCanvas?.addEventListener("pointermove", (e) => updateShipPos(e.clientX));
-sCanvas?.addEventListener("pointerdown", (e) => {
-  if (!spaceActive) startSpaceGame();
-  else updateShipPos(e.clientX);
-});
+sCanvas?.addEventListener("touchmove", (e) => {
+  e.preventDefault();
+  updateShipPos(e.touches[0].clientX);
+}, { passive: false });
 
 function loopSpace() {
   if (!spaceActive) return;
@@ -411,9 +429,9 @@ function loopSpace() {
   ctx.clearRect(0, 0, sCanvas.width, sCanvas.height);
 
   const now = Date.now();
-  // Auto-Laser Firing Loop
-  const fireRate = sStreak >= 15 ? 130 : 210; // Overdrive fire rate
-  if (now - lastShotTime > fireRate) {
+  // Continuous Auto-Fire
+  const rate = sStreak >= 15 ? 130 : 210;
+  if (now - lastShotTime > rate) {
     lastShotTime = now;
     if (sStreak >= 15) {
       document.getElementById("abilityMeter").innerText = "OVERDRIVE ⚡";
@@ -422,18 +440,18 @@ function loopSpace() {
       sBullets.push({ x: sShipX + 6, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
       sBullets.push({ x: sShipX + 16, y: sCanvas.height - 45, vx: 1.2, color: "#ff003c" });
     } else if (sStreak >= 8) {
-      document.getElementById("abilityMeter").innerText = "TRIPLE SPREAD";
+      document.getElementById("abilityMeter").innerText = "TRIPLE BEAM";
       sBullets.push({ x: sShipX - 12, y: sCanvas.height - 45, vx: -1.4, color: "#ff003c" });
       sBullets.push({ x: sShipX, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
       sBullets.push({ x: sShipX + 12, y: sCanvas.height - 45, vx: 1.4, color: "#ff003c" });
     } else {
-      document.getElementById("abilityMeter").innerText = "DUAL BEAM";
+      document.getElementById("abilityMeter").innerText = "DUAL LASER";
       sBullets.push({ x: sShipX - 8, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
       sBullets.push({ x: sShipX + 8, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
     }
   }
 
-  // Draw Fighter Jet
+  // Draw Player
   ctx.fillStyle = "#00d4ff";
   ctx.beginPath();
   ctx.moveTo(sShipX, sCanvas.height - 48);
@@ -441,7 +459,7 @@ function loopSpace() {
   ctx.lineTo(sShipX + 20, sCanvas.height - 12);
   ctx.fill();
 
-  // Lasers
+  // Bullets
   sBullets.forEach((b) => {
     b.y -= 10;
     b.x += b.vx;
@@ -449,24 +467,24 @@ function loopSpace() {
     ctx.fillRect(b.x - 2, b.y, 4, 15);
   });
 
-  // Spawn Enemy Ships
-  if (Math.random() < 0.038 + Math.min(sScore * 0.0002, 0.04)) {
+  // Spawn Enemy
+  if (Math.random() < 0.04) {
     sEnemies.push({
       x: Math.random() * (sCanvas.width - 40) + 20,
       y: -20,
       r: 15,
-      speed: 2.6 + Math.min(sScore * 0.008, 3.8)
+      speed: 2.6 + Math.min(sScore * 0.008, 4)
     });
   }
 
-  // Particle Explosions
+  // FX update
   sBlastFx.forEach((p, idx) => {
     p.update();
     p.draw(ctx);
     if (p.alpha <= 0) sBlastFx.splice(idx, 1);
   });
 
-  // Enemies Update
+  // Enemy update & Collision
   for (let eIdx = sEnemies.length - 1; eIdx >= 0; eIdx--) {
     let en = sEnemies[eIdx];
     en.y += en.speed;
@@ -476,11 +494,10 @@ function loopSpace() {
     ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
     ctx.fill();
 
-    // Hit Detection
     sBullets.forEach((b, bIdx) => {
       if (Math.hypot(b.x - en.x, b.y - en.y) < en.r + 5) {
         for (let k = 0; k < 12; k++) {
-          sBlastFx.push(new BlastParticle(en.x, en.y, "#ff003c"));
+          sBlastFx.push(new SparkFX(en.x, en.y, "#ff003c"));
         }
         sEnemies.splice(eIdx, 1);
         sBullets.splice(bIdx, 1);
@@ -491,10 +508,10 @@ function loopSpace() {
       }
     });
 
-    // Enemy Escaped! Streak Reset Penalty
+    // Miss Penalty: Ability Reset
     if (en.y > sCanvas.height) {
       sEnemies.splice(eIdx, 1);
-      sStreak = 0; // Ability reset when enemy escapes
+      sStreak = 0;
       document.getElementById("spaceCombo").innerText = "x0 (RESET!)";
       document.getElementById("abilityMeter").innerText = "NORMAL";
     }
@@ -505,14 +522,14 @@ function loopSpace() {
 }
 
 /* ==========================================================
-   GAME 4: CYBER BLADE SLASH (INTERACTIVE SWIPE & PARTICLES)
+   GAME 4: CYBER BLADE SLASH
 ========================================================== */
 let bladeActive = false, bladeScore = 0, bladeTargets = [], bladeTrail = [], bAnimId = null;
 const bCanvas = document.getElementById("bladeCanvas");
 
 function startBladeGame() {
   if (!bCanvas) return;
-  fitActiveGameCanvas();
+  ensureCanvasDimensions(bCanvas);
 
   bladeScore = 0;
   bladeTargets = [];
@@ -520,7 +537,9 @@ function startBladeGame() {
   bladeActive = true;
 
   document.getElementById("bladeScore").innerText = "0";
-  document.getElementById("bladeOverlay").classList.remove("active");
+  const overlay = document.getElementById("bladeOverlay");
+  overlay.classList.remove("active");
+  overlay.style.display = "none";
 
   cancelAnimationFrame(bAnimId);
   loopBlade();
@@ -532,12 +551,11 @@ function handleBladeSwipe(clientX, clientY) {
   const y = clientY - rect.top;
   bladeTrail.push({ x, y, alpha: 1 });
 
-  // Slice Target Check
   for (let i = bladeTargets.length - 1; i >= 0; i--) {
     let t = bladeTargets[i];
     if (Math.hypot(t.x - x, t.y - y) < t.r) {
       for (let k = 0; k < 14; k++) {
-        bladeTrail.push(new BlastParticle(t.x, t.y, t.color));
+        bladeTrail.push(new SparkFX(t.x, t.y, t.color));
       }
       bladeTargets.splice(i, 1);
       bladeScore++;
@@ -549,13 +567,16 @@ function handleBladeSwipe(clientX, clientY) {
 bCanvas?.addEventListener("pointermove", (e) => {
   if (bladeActive) handleBladeSwipe(e.clientX, e.clientY);
 });
+bCanvas?.addEventListener("touchmove", (e) => {
+  e.preventDefault();
+  if (bladeActive) handleBladeSwipe(e.touches[0].clientX, e.touches[0].clientY);
+}, { passive: false });
 
 function loopBlade() {
   if (!bladeActive) return;
   const ctx = bCanvas.getContext("2d");
   ctx.clearRect(0, 0, bCanvas.width, bCanvas.height);
 
-  // Spawn Launching Quantum Cores
   if (Math.random() < 0.04) {
     bladeTargets.push({
       x: Math.random() * (bCanvas.width - 80) + 40,
@@ -567,27 +588,22 @@ function loopBlade() {
     });
   }
 
-  // Update Targets
   for (let i = bladeTargets.length - 1; i >= 0; i--) {
     let t = bladeTargets[i];
     t.x += t.vx;
     t.y += t.vy;
-    t.vy += 0.28; // Gravity
+    t.vy += 0.28;
 
     ctx.fillStyle = t.color;
-    ctx.shadowColor = t.color;
-    ctx.shadowBlur = 12;
     ctx.beginPath();
     ctx.arc(t.x, t.y, t.r, 0, Math.PI * 2);
     ctx.fill();
-    ctx.shadowBlur = 0;
 
     if (t.y > bCanvas.height + 60 && t.vy > 0) {
       bladeTargets.splice(i, 1);
     }
   }
 
-  // Draw Glowing Katana Trail
   if (bladeTrail.length > 1) {
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 4;
@@ -596,7 +612,7 @@ function loopBlade() {
       let pt = bladeTrail[i];
       if (i === 0) ctx.moveTo(pt.x, pt.y);
       else ctx.lineTo(pt.x, pt.y);
-      pt.alpha -= 0.04;
+      pt.alpha -= 0.05;
     }
     ctx.stroke();
   }
@@ -606,14 +622,14 @@ function loopBlade() {
 }
 
 /* ==========================================================
-   GAME 5: QUANTUM ORBIT SHIELD (360-DEGREE ROTATING DEFENSE)
+   GAME 5: QUANTUM ORBIT SHIELD
 ========================================================== */
 let orbitActive = false, orbitScore = 0, coreHp = 100, shieldAngle = 0, incomingLasers = [], oAnimId = null;
 const oCanvas = document.getElementById("orbitCanvas");
 
 function startOrbitGame() {
   if (!oCanvas) return;
-  fitActiveGameCanvas();
+  ensureCanvasDimensions(oCanvas);
 
   orbitScore = 0;
   coreHp = 100;
@@ -623,18 +639,27 @@ function startOrbitGame() {
 
   document.getElementById("orbitScore").innerText = "0";
   document.getElementById("coreHealth").innerText = "100%";
-  document.getElementById("orbitOverlay").classList.remove("active");
+
+  const overlay = document.getElementById("orbitOverlay");
+  overlay.classList.remove("active");
+  overlay.style.display = "none";
 
   cancelAnimationFrame(oAnimId);
   loopOrbit();
 }
 
-oCanvas?.addEventListener("pointermove", (e) => {
+function updateShieldAngle(clientX, clientY) {
   const rect = oCanvas.getBoundingClientRect();
   const cx = oCanvas.width / 2;
   const cy = oCanvas.height / 2;
-  shieldAngle = Math.atan2(e.clientY - rect.top - cy, e.clientX - rect.left - cx);
-});
+  shieldAngle = Math.atan2(clientY - rect.top - cy, clientX - rect.left - cx);
+}
+
+oCanvas?.addEventListener("pointermove", (e) => updateShieldAngle(e.clientX, e.clientY));
+oCanvas?.addEventListener("touchmove", (e) => {
+  e.preventDefault();
+  updateShieldAngle(e.touches[0].clientX, e.touches[0].clientY);
+}, { passive: false });
 
 function loopOrbit() {
   if (!orbitActive) return;
@@ -644,38 +669,30 @@ function loopOrbit() {
   const cx = oCanvas.width / 2;
   const cy = oCanvas.height / 2;
 
-  // Central Vulnerable Core
+  // Center Core
   ctx.fillStyle = "#00d4ff";
-  ctx.shadowColor = "#00d4ff";
-  ctx.shadowBlur = 16;
   ctx.beginPath();
   ctx.arc(cx, cy, 24, 0, Math.PI * 2);
   ctx.fill();
-  ctx.shadowBlur = 0;
 
-  // Rotating Arc Shield (Blue-Red Beam)
+  // Shield Arc
   ctx.strokeStyle = "#ffffff";
   ctx.lineWidth = 6;
-  ctx.shadowColor = "#00d4ff";
-  ctx.shadowBlur = 10;
   ctx.beginPath();
   ctx.arc(cx, cy, 58, shieldAngle - 0.6, shieldAngle + 0.6);
   ctx.stroke();
-  ctx.shadowBlur = 0;
 
-  // Spawn Incoming Lasers from screen edge
+  // Spawn Lasers
   if (Math.random() < 0.045) {
     const ang = Math.random() * Math.PI * 2;
     const dist = Math.hypot(cx, cy) + 40;
     incomingLasers.push({
       x: cx + Math.cos(ang) * dist,
       y: cy + Math.sin(ang) * dist,
-      targetAngle: ang,
       speed: 3.2 + Math.min(orbitScore * 0.1, 4.0)
     });
   }
 
-  // Update & Check Deflections
   for (let i = incomingLasers.length - 1; i >= 0; i--) {
     let l = incomingLasers[i];
     const angleToCore = Math.atan2(cy - l.y, cx - l.x);
@@ -689,7 +706,7 @@ function loopOrbit() {
 
     const distToCore = Math.hypot(cx - l.x, cy - l.y);
 
-    // Shield Deflection Check
+    // Deflect check
     if (distToCore <= 62 && distToCore >= 52) {
       const hitAngle = Math.atan2(l.y - cy, l.x - cx);
       let diff = Math.abs(shieldAngle - hitAngle);
@@ -711,9 +728,13 @@ function loopOrbit() {
       document.getElementById("coreHealth").innerText = `${coreHp}%`;
       if (coreHp <= 0) {
         orbitActive = false;
-        const ov = document.getElementById("orbitOverlay");
-        ov.innerHTML = `<h3>CORE COMPROMISED</h3><p>Lasers Deflected: <strong>${orbitScore}</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startOrbitGame()">Reactivate</button>`;
-        ov.classList.add("active");
+        const overlay = document.getElementById("orbitOverlay");
+        overlay.style.display = "flex";
+        overlay.innerHTML = `
+          <h3>CORE COMPROMISED</h3>
+          <p>Lasers Deflected: <strong>${orbitScore}</strong></p>
+          <button class="spark-btn btn-primary btn-launch" onclick="startOrbitGame()">Reactivate</button>
+        `;
         return;
       }
     }

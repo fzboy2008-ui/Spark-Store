@@ -13,7 +13,7 @@
   <!-- Cyber Matrix Space Canvas -->
   <canvas id="sparkCanvas"></canvas>
 
-  <!-- Top Fixed Navbar -->
+  <!-- Top Navbar -->
   <header class="navbar">
     <div class="brand">
       <i class="fa-solid fa-bolt-lightning bolt-glow"></i>
@@ -32,7 +32,7 @@
 
   <main class="page-container">
 
-    <!-- ================= PAGE 1: HOME (OWNER) ================= -->
+    <!-- ================= PAGE 1: HOME ================= -->
     <section id="homeView" class="page-view active">
       <div class="owner-card-wrap glow-border-wrap">
         <div class="glow-inner owner-inner">
@@ -45,7 +45,7 @@
           <h1 class="owner-name">SPARK FOUNDER</h1>
           <p class="owner-role">Lead Architect & Systems Engineer</p>
           <p class="owner-bio">
-            Welcome to the central node of <strong>SPARK</strong>. Engineered with dual-pole red-blue quantum shaders, adaptive arcade engines, and interactive geometry matrices.
+            Welcome to the central node of <strong>SPARK</strong>. Engineered with dual-pole red-blue quantum shaders, high-frame-rate arcade engines, and interactive visual matrices.
           </p>
 
           <div class="owner-metrics">
@@ -59,13 +59,13 @@
             </div>
             <div class="metric-pill">
               <span class="m-val">5 ARMED</span>
-              <span class="m-lbl">Game Cores</span>
+              <span class="m-lbl">Arcade Engines</span>
             </div>
           </div>
 
           <div class="owner-actions">
             <button class="spark-btn btn-primary" onclick="switchPage('gameView')">
-              <i class="fa-solid fa-play"></i> <span>Play 5 Mini Games</span>
+              <i class="fa-solid fa-play"></i> <span>Enter Arcade Arena</span>
             </button>
             <button class="spark-btn btn-ghost" onclick="switchPage('showcaseView')">
               <span>Open Quantum Lab</span> <i class="fa-solid fa-arrow-right"></i>
@@ -75,7 +75,7 @@
       </div>
     </section>
 
-    <!-- ================= PAGE 2: SHOWCASE (QUANTUM LAB & CREATOR) ================= -->
+    <!-- ================= PAGE 2: SHOWCASE ================= -->
     <section id="showcaseView" class="page-view">
       <div class="section-title">
         <h2>QUANTUM CORE & DESIGN STUDIO</h2>
@@ -143,111 +143,103 @@
     <!-- ================= PAGE 3: ARCADE ARENA ================= -->
     <section id="gameView" class="page-view">
       <div class="section-title">
-        <h2>SPARK RETRO ARENA</h2>
-        <p>Big viewport arcade matrix with progressive difficulty scaling</p>
+        <h2>SPARK ARCADE ARENA</h2>
+        <p>Full 60FPS physics, dynamic ability meters, streak resets, and visual fx</p>
       </div>
 
-      <!-- Game Tabs -->
+      <!-- 5 Games Selector -->
       <div class="game-select-bar">
-        <button class="game-selector-btn active" data-game="flappy"><i class="fa-solid fa-dove"></i> Flappy Bird</button>
-        <button class="game-selector-btn" data-game="dino"><i class="fa-solid fa-dragon"></i> Dino Runner</button>
-        <button class="game-selector-btn" data-game="space"><i class="fa-solid fa-shuttle-space"></i> Space Striker</button>
-        <button class="game-selector-btn" data-game="tower"><i class="fa-solid fa-cubes-stacked"></i> Tower Jump</button>
-        <button class="game-selector-btn" data-game="snake"><i class="fa-solid fa-worm"></i> Cyber Snake</button>
+        <button class="game-selector-btn active" data-game="flappy"><i class="fa-solid fa-feather-pointed"></i> 1. Phoenix Flight</button>
+        <button class="game-selector-btn" data-game="runner"><i class="fa-solid fa-person-running"></i> 2. Neon Shinobi</button>
+        <button class="game-selector-btn" data-game="space"><i class="fa-solid fa-shuttle-space"></i> 3. Void Striker</button>
+        <button class="game-selector-btn" data-game="blade"><i class="fa-solid fa-wand-magic"></i> 4. Cyber Blade</button>
+        <button class="game-selector-btn" data-game="orbit"><i class="fa-solid fa-shield-halved"></i> 5. Orbit Shield</button>
       </div>
 
-      <!-- Game Screen Wrapper -->
       <div class="glow-border-wrap mega-game-wrap">
         <div class="glow-inner mega-game-inner">
 
-          <!-- 1. FLAPPY BIRD -->
+          <!-- 1. FLAPPY PHOENIX -->
           <div class="arcade-view active" id="flappyView">
             <div class="arcade-topbar">
               <div class="topbar-stat">SCORE: <span id="flappyScore">0</span></div>
-              <div class="topbar-stat">SPEED: <span class="mono-red" id="flappyDiff">1.0x</span></div>
-              <button class="spark-btn btn-sm btn-primary" onclick="flapWing()">Flap (Space / Click)</button>
+              <div class="topbar-stat">SURGE SPEED: <span class="mono-cyan" id="flappyDiff">1.0x</span></div>
+              <button class="spark-btn btn-sm btn-primary" onclick="flapWing()">Flap (Space / Tap)</button>
             </div>
             <div class="canvas-stage big-stage">
               <canvas id="flappyCanvas"></canvas>
               <div class="arcade-overlay active" id="flappyOverlay">
-                <h3>FLAPPY SPARK</h3>
-                <p>Click, tap, or hit <strong>Spacebar</strong> to leap through the crimson pillars!</p>
-                <button class="spark-btn btn-primary btn-launch" onclick="startFlappyGame()">START MISSION</button>
+                <h3>PHOENIX FLIGHT</h3>
+                <p>Maneuver the animated plasma bird through quantum gateway pillars!</p>
+                <button class="spark-btn btn-primary btn-launch" onclick="startFlappyGame()">LAUNCH BIRD</button>
               </div>
             </div>
           </div>
 
-          <!-- 2. DINO RUNNER -->
-          <div class="arcade-view" id="dinoView">
+          <!-- 2. NEON SHINOBI RUNNER -->
+          <div class="arcade-view" id="runnerView">
             <div class="arcade-topbar">
-              <div class="topbar-stat">DISTANCE: <span id="dinoScore">0m</span></div>
-              <div class="topbar-stat">VELOCITY: <span class="mono-cyan" id="dinoSpeedDisplay">1.0x</span></div>
-              <button class="spark-btn btn-sm btn-primary" onclick="jumpDinoAction()">Jump (Space / Click)</button>
+              <div class="topbar-stat">DISTANCE: <span id="runnerScore">0m</span></div>
+              <div class="topbar-stat">JUMPS: <span class="mono-cyan" id="jumpStatus">DOUBLE READY</span></div>
+              <button class="spark-btn btn-sm btn-primary" onclick="runnerJumpAction()">Jump (Space / Tap)</button>
             </div>
             <div class="canvas-stage big-stage">
-              <canvas id="dinoCanvas"></canvas>
-              <div class="arcade-overlay active" id="dinoOverlay">
-                <h3>DINO HIGH-VOLTAGE</h3>
-                <p>Jump over moving cyber barriers before they collide with your core!</p>
-                <button class="spark-btn btn-primary btn-launch" onclick="startDinoGame()">LAUNCH RUNNER</button>
+              <canvas id="runnerCanvas"></canvas>
+              <div class="arcade-overlay active" id="runnerOverlay">
+                <h3>NEON SHINOBI</h3>
+                <p>Run, leap, and perform mid-air <strong>Double Jumps</strong> over laser spikes!</p>
+                <button class="spark-btn btn-primary btn-launch" onclick="startRunnerGame()">START RUNNER</button>
               </div>
             </div>
           </div>
 
-          <!-- 3. SPACE SHIP (AUTO-FIRE) -->
+          <!-- 3. VOID STRIKER ULTRA -->
           <div class="arcade-view" id="spaceView">
             <div class="arcade-topbar">
               <div class="topbar-stat">SCORE: <span id="spaceScore">0</span></div>
-              <div class="topbar-stat">CANNONS: <span class="mono-red" id="laserLevel">LEVEL 1 (SINGLE)</span></div>
-              <div class="topbar-stat hide-mob">AUTO-LASER: <span class="mono-green">ONLINE</span></div>
+              <div class="topbar-stat">STREAK: <span class="mono-cyan" id="spaceCombo">x0</span></div>
+              <div class="topbar-stat">ABILITY: <span class="mono-red" id="abilityMeter">NORMAL</span></div>
             </div>
             <div class="canvas-stage big-stage">
               <canvas id="spaceCanvas"></canvas>
               <div class="arcade-overlay active" id="spaceOverlay">
-                <h3>SPACE STRIKER</h3>
-                <p>Lasers fire automatically! Move mouse or swipe finger to direct plasma.</p>
-                <button class="spark-btn btn-primary btn-launch" onclick="startSpaceGame()">LAUNCH DEFENDER</button>
+                <h3>VOID STRIKER ULTRA</h3>
+                <p>Continuous auto-lasers! Chain uninterrupted hits to trigger <strong>Overdrive</strong>. Missing enemies resets your ability!</p>
+                <button class="spark-btn btn-primary btn-launch" onclick="startSpaceGame()">LAUNCH SHIP</button>
               </div>
             </div>
           </div>
 
-          <!-- 4. TOWER JUMP -->
-          <div class="arcade-view" id="towerView">
+          <!-- 4. CYBER BLADE SLASH -->
+          <div class="arcade-view" id="bladeView">
             <div class="arcade-topbar">
-              <div class="topbar-stat">ALTITUDE: <span id="towerHeight">0m</span></div>
-              <div class="tower-ctrl-btns">
-                <button class="spark-btn btn-sm" onpointerdown="setTowerMove(-1)" onpointerup="setTowerMove(0)">◀ Left</button>
-                <button class="spark-btn btn-sm" onpointerdown="setTowerMove(1)" onpointerup="setTowerMove(0)">Right ▶</button>
-              </div>
+              <div class="topbar-stat">SLICED: <span id="bladeScore">0</span></div>
+              <div class="topbar-stat">BLADE: <span class="mono-red">PLASMA KATANA</span></div>
+              <div class="topbar-stat">COMBO: <span class="mono-cyan" id="bladeCombo">x1</span></div>
             </div>
             <div class="canvas-stage big-stage">
-              <canvas id="towerCanvas"></canvas>
-              <div class="arcade-overlay active" id="towerOverlay">
-                <h3>TOWER CLIMB</h3>
-                <p>Jump on descending neon blocks! Use <strong>A / D</strong>, Arrows, or the buttons.</p>
-                <button class="spark-btn btn-primary btn-launch" onclick="startTowerGame()">CLIMB TOWER</button>
+              <canvas id="bladeCanvas"></canvas>
+              <div class="arcade-overlay active" id="bladeOverlay">
+                <h3>CYBER BLADE SLASH</h3>
+                <p>Swipe/drag cursor or finger across launching quantum orbs to slice them in half!</p>
+                <button class="spark-btn btn-primary btn-launch" onclick="startBladeGame()">DRAW BLADE</button>
               </div>
             </div>
           </div>
 
-          <!-- 5. CYBER SNAKE -->
-          <div class="arcade-view" id="snakeView">
+          <!-- 5. QUANTUM ORBIT SHIELD -->
+          <div class="arcade-view" id="orbitView">
             <div class="arcade-topbar">
-              <div class="topbar-stat">ORBS: <span id="snakeScore">0</span></div>
-              <div class="topbar-stat">SPEED: <span class="mono-cyan" id="snakeSpeedVal">1.0x</span></div>
-              <div class="snake-ctrl-btns">
-                <button class="spark-btn btn-sm" onclick="turnSnake('UP')">▲</button>
-                <button class="spark-btn btn-sm" onclick="turnSnake('LEFT')">◀</button>
-                <button class="spark-btn btn-sm" onclick="turnSnake('RIGHT')">▶</button>
-                <button class="spark-btn btn-sm" onclick="turnSnake('DOWN')">▼</button>
-              </div>
+              <div class="topbar-stat">DEFLECTED: <span id="orbitScore">0</span></div>
+              <div class="topbar-stat">CORE INTEGRITY: <span class="mono-cyan" id="coreHealth">100%</span></div>
+              <div class="topbar-stat hide-mob">SHIELD: <span class="mono-green">ROTATING</span></div>
             </div>
             <div class="canvas-stage big-stage">
-              <canvas id="snakeCanvas"></canvas>
-              <div class="arcade-overlay active" id="snakeOverlay">
-                <h3>CYBER SNAKE</h3>
-                <p>Control the quantum beam with <strong>W A S D</strong>, Arrow Keys, or on-screen buttons.</p>
-                <button class="spark-btn btn-primary btn-launch" onclick="startSnakeGame()">START SNAKE</button>
+              <canvas id="orbitCanvas"></canvas>
+              <div class="arcade-overlay active" id="orbitOverlay">
+                <h3>QUANTUM ORBIT SHIELD</h3>
+                <p>Move mouse / finger around the central core to rotate the energy shield and deflect incoming red attacks!</p>
+                <button class="spark-btn btn-primary btn-launch" onclick="startOrbitGame()">ACTIVATE CORE</button>
               </div>
             </div>
           </div>

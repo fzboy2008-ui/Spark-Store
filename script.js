@@ -1,41 +1,71 @@
 /* ==========================================================
-   1. CUSTOM GLOW CURSOR WITH TRAIL
+   1. PROCEDURAL AUDIO SYNTHESIZER (ZERO ASSET AUDIO ENGINE)
 ========================================================== */
-const cursorDot = document.getElementById("cursorDot");
-const cursorOutline = document.getElementById("cursorOutline");
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+let soundEnabled = true;
 
-window.addEventListener("mousemove", (e) => {
-  const { clientX: x, clientY: y } = e;
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new AudioContext();
+  }
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+}
 
-  cursorDot.style.left = `${x}px`;
-  cursorDot.style.top = `${y}px`;
+// Generates procedural sci-fi sound frequencies
+function playTone(freq = 440, type = "sine", duration = 0.12, gainValue = 0.08) {
+  if (!soundEnabled) return;
+  initAudio();
 
-  cursorOutline.animate(
-    { left: `${x}px`, top: `${y}px` },
-    { duration: 400, fill: "forwards" }
-  );
-});
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
 
-// Cursor Hover Expansion
-document.querySelectorAll("button, a, .tilt-card, .showcase-card, .social-card").forEach((el) => {
-  el.addEventListener("mouseenter", () => {
-    cursorOutline.style.transform = "translate(-50%, -50%) scale(1.6)";
-    cursorOutline.style.borderColor = "var(--neon-pink)";
-  });
-  el.addEventListener("mouseleave", () => {
-    cursorOutline.style.transform = "translate(-50%, -50%) scale(1)";
-    cursorOutline.style.borderColor = "var(--neon-cyan)";
-  });
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+    // Envelope
+    gain.gain.setValueAtTime(gainValue, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch (err) {
+    // Ignore context locks
+  }
+}
+
+function playNeuralChord() {
+  const pitch = document.getElementById("pitchSlider") ? +document.getElementById("pitchSlider").value : 440;
+  playTone(pitch, "sawtooth", 0.35, 0.06);
+  setTimeout(() => playTone(pitch * 1.5, "sine", 0.4, 0.05), 80);
+  setTimeout(() => playTone(pitch * 2.0, "triangle", 0.5, 0.04), 160);
+}
+
+document.getElementById("audioToggleBtn").addEventListener("click", () => {
+  soundEnabled = !soundEnabled;
+  const icon = document.querySelector("#audioToggleBtn i");
+  icon.className = soundEnabled ? "fa-solid fa-volume-high" : "fa-solid fa-volume-xmark";
+  if (soundEnabled) playTone(880, "triangle", 0.1);
 });
 
 /* ==========================================================
-   2. INTERACTIVE CANVAS BACKGROUND (PHYSICS PARTICLES)
+   2. 3D PROJECTION ENGINE (HYPER-SPHERE)
 ========================================================== */
-const canvas = document.getElementById("bgCanvas");
+const canvas = document.getElementById("neuralCanvas");
 const ctx = canvas.getContext("2d");
 
-let particlesArray = [];
-let mousePos = { x: null, y: null, radius: 150 };
+let nodes = [];
+const TOTAL_NODES = 260;
+const RADIUS = 280;
+let angleX = 0.002;
+let angleY = 0.003;
+let warpSpeed = 1;
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -44,296 +74,254 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-window.addEventListener("mousemove", (e) => {
-  mousePos.x = e.x;
-  mousePos.y = e.y;
-});
-
-class Particle {
+class HyperNode {
   constructor() {
-    this.x = Math.random() * canvas.width;
-    this.y = Math.random() * canvas.height;
-    this.size = Math.random() * 2.5 + 1;
-    this.speedX = (Math.random() - 0.5) * 1.2;
-    this.speedY = (Math.random() - 0.5) * 1.2;
-    this.color = Math.random() > 0.5 ? "rgba(0, 240, 255, " : "rgba(157, 78, 221, ";
+    // Golden Spiral Sphere generation
+    this.theta = Math.random() * Math.PI * 2;
+    this.phi = Math.acos(Math.random() * 2 - 1);
+    this.x = RADIUS * Math.sin(this.phi) * Math.cos(this.theta);
+    this.y = RADIUS * Math.sin(this.phi) * Math.sin(this.theta);
+    this.z = RADIUS * Math.cos(this.phi);
   }
 
-  update() {
-    this.x += this.speedX;
-    this.y += this.speedY;
+  rotate(rx, ry) {
+    // Rotation on Y
+    let cosY = Math.cos(ry);
+    let sinY = Math.sin(ry);
+    let x1 = this.x * cosY - this.z * sinY;
+    let z1 = this.z * cosY + this.x * sinY;
 
-    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+    // Rotation on X
+    let cosX = Math.cos(rx);
+    let sinX = Math.sin(rx);
+    let y2 = this.y * cosX - z1 * sinX;
+    let z2 = z1 * cosX + this.y * sinX;
 
-    // Mouse Interaction
-    let dx = mousePos.x - this.x;
-    let dy = mousePos.y - this.y;
-    let distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance < mousePos.radius) {
-      const force = (mousePos.radius - distance) / mousePos.radius;
-      const directionX = dx / distance;
-      const directionY = dy / distance;
-      this.x -= directionX * force * 3;
-      this.y -= directionY * force * 3;
-    }
+    this.x = x1;
+    this.y = y2;
+    this.z = z2;
   }
 
-  draw() {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fillStyle = this.color + "0.6)";
-    ctx.fill();
-  }
-}
-
-function initParticles() {
-  particlesArray = [];
-  const count = Math.floor((canvas.width * canvas.height) / 14000);
-  for (let i = 0; i < count; i++) {
-    particlesArray.push(new Particle());
+  project(cx, cy, fov) {
+    const scale = fov / (fov + this.z);
+    return {
+      x: this.x * scale + cx,
+      y: this.y * scale + cy,
+      scale: scale,
+      alpha: Math.max(0.1, (this.z + RADIUS) / (2 * RADIUS))
+    };
   }
 }
-initParticles();
 
-function connectParticles() {
-  for (let a = 0; a < particlesArray.length; a++) {
-    for (let b = a; b < particlesArray.length; b++) {
-      let dx = particlesArray[a].x - particlesArray[b].x;
-      let dy = particlesArray[a].y - particlesArray[b].y;
-      let dist = Math.sqrt(dx * dx + dy * dy);
+for (let i = 0; i < TOTAL_NODES; i++) {
+  nodes.push(new HyperNode());
+}
 
-      if (dist < 110) {
-        let opacity = 1 - dist / 110;
-        ctx.strokeStyle = `rgba(0, 240, 255, ${opacity * 0.15})`;
-        ctx.lineWidth = 1;
+function render3D() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const fov = 400;
+
+  const projected = [];
+
+  for (let i = 0; i < nodes.length; i++) {
+    nodes[i].rotate(angleX * warpSpeed, angleY * warpSpeed);
+    projected.push(nodes[i].project(cx, cy, fov));
+  }
+
+  // Draw inter-connecting neural lines
+  for (let a = 0; a < projected.length; a++) {
+    for (let b = a + 1; b < projected.length; b++) {
+      const dx = projected[a].x - projected[b].x;
+      const dy = projected[a].y - projected[b].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 55) {
+        ctx.strokeStyle = `rgba(0, 240, 255, ${0.35 * (1 - dist / 55)})`;
+        ctx.lineWidth = 0.8;
         ctx.beginPath();
-        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+        ctx.moveTo(projected[a].x, projected[a].y);
+        ctx.lineTo(projected[b].x, projected[b].y);
         ctx.stroke();
       }
     }
   }
-}
 
-function animateCanvas() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particlesArray.forEach((p) => {
-    p.update();
-    p.draw();
-  });
-  connectParticles();
-  requestAnimationFrame(animateCanvas);
-}
-animateCanvas();
-
-/* ==========================================================
-   3. SPA PAGE NAVIGATION SYSTEM
-========================================================== */
-const navButtons = document.querySelectorAll(".nav-btn");
-const pageViews = document.querySelectorAll(".page-view");
-
-function switchPage(targetId) {
-  // Update Buttons
-  navButtons.forEach((btn) => {
-    btn.classList.toggle("active", btn.getAttribute("data-target") === targetId);
-  });
-
-  // Animate & Switch View
-  pageViews.forEach((view) => {
-    if (view.id === targetId) {
-      view.classList.add("active");
-    } else {
-      view.classList.remove("active");
-    }
-  });
-
-  // Trigger counters if navigating to stats
-  if (targetId === "stats") {
-    animateCounters();
+  // Draw nodes
+  for (let p of projected) {
+    ctx.fillStyle = `rgba(0, 255, 136, ${p.alpha})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, Math.max(1, p.scale * 2.5), 0, Math.PI * 2);
+    ctx.fill();
   }
+
+  requestAnimationFrame(render3D);
+}
+render3D();
+
+// Mouse tracking shifts rotation vectors
+window.addEventListener("mousemove", (e) => {
+  const normX = (e.clientX / window.innerWidth) - 0.5;
+  const normY = (e.clientY / window.innerHeight) - 0.5;
+  angleX = normY * 0.02;
+  angleY = normX * 0.02;
+
+  // Reticle update
+  const ptr = document.getElementById("cursorPointer");
+  const glow = document.getElementById("cursorGlow");
+  ptr.style.left = `${e.clientX}px`;
+  ptr.style.top = `${e.clientY}px`;
+  glow.style.left = `${e.clientX}px`;
+  glow.style.top = `${e.clientY}px`;
+});
+
+/* ==========================================================
+   3. DRAGGABLE WINDOW SYSTEM & DOCK
+========================================================== */
+let topZ = 100;
+
+function makeDraggable(winEl) {
+  const header = winEl.querySelector(".win-header");
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  winEl.addEventListener("mousedown", () => {
+    topZ++;
+    winEl.style.zIndex = topZ;
+    document.querySelectorAll(".cyber-window").forEach(w => w.classList.remove("active-win"));
+    winEl.classList.add("active-win");
+  });
+
+  header.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    offsetX = e.clientX - winEl.offsetLeft;
+    offsetY = e.clientY - winEl.offsetTop;
+    playTone(720, "sine", 0.05, 0.03);
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    winEl.style.left = `${e.clientX - offsetX}px`;
+    winEl.style.top = `${e.clientY - offsetY}px`;
+  });
+
+  window.addEventListener("mouseup", () => {
+    isDragging = false;
+  });
 }
 
-navButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const target = btn.getAttribute("data-target");
-    switchPage(target);
-  });
-});
+document.querySelectorAll(".cyber-window").forEach(makeDraggable);
 
-/* ==========================================================
-   4. 3D TILT EFFECT ON CARDS
-========================================================== */
-document.querySelectorAll("[data-tilt]").forEach((card) => {
-  card.addEventListener("mousemove", (e) => {
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-
-    const rotX = -(y / (rect.height / 2)) * 12;
-    const rotY = (x / (rect.width / 2)) * 12;
-
-    card.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.04, 1.04, 1.04)`;
-  });
-
-  card.addEventListener("mouseleave", () => {
-    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
-  });
-});
-
-/* ==========================================================
-   5. SHOWCASE FILTER SYSTEM
-========================================================== */
-const filterButtons = document.querySelectorAll(".filter-btn");
-const showcaseCards = document.querySelectorAll(".showcase-card");
-
-filterButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    filterButtons.forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-
-    const category = btn.getAttribute("data-filter");
-
-    showcaseCards.forEach((card) => {
-      const match = category === "all" || card.getAttribute("data-category") === category;
-      if (match) {
-        card.style.display = "block";
-        card.style.animation = "pageIn 0.4s ease forwards";
-      } else {
-        card.style.display = "none";
-      }
-    });
-  });
-});
-
-/* ==========================================================
-   6. CYBER CLICKER MINI GAME LOGIC
-========================================================== */
-let score = 0;
-let timeLeft = 15;
-let combo = 1;
-let gameInterval = null;
-let isPlaying = false;
-
-const gameScoreEl = document.getElementById("gameScore");
-const gameTimeEl = document.getElementById("gameTime");
-const gameComboEl = document.getElementById("gameCombo");
-const coreTarget = document.getElementById("coreTarget");
-const gameOverlay = document.getElementById("gameOverlay");
-const startGameBtn = document.getElementById("startGameBtn");
-const gameArena = document.getElementById("gameArena");
-
-function moveTarget() {
-  const arenaRect = gameArena.getBoundingClientRect();
-  const maxX = arenaRect.width - 80;
-  const maxY = arenaRect.height - 80;
-
-  const randomX = Math.floor(Math.random() * maxX) + 40;
-  const randomY = Math.floor(Math.random() * maxY) + 40;
-
-  coreTarget.style.left = `${randomX}px`;
-  coreTarget.style.top = `${randomY}px`;
+function openWindow(id) {
+  const win = document.getElementById(id);
+  win.style.display = "block";
+  topZ++;
+  win.style.zIndex = topZ;
+  document.querySelectorAll(".cyber-window").forEach(w => w.classList.remove("active-win"));
+  win.classList.add("active-win");
+  playTone(580, "triangle", 0.08);
 }
 
-function startGame() {
-  score = 0;
-  combo = 1;
-  timeLeft = 15;
-  isPlaying = true;
+function closeWindow(id) {
+  document.getElementById(id).style.display = "none";
+  playTone(280, "square", 0.08);
+}
 
-  gameScoreEl.innerText = score;
-  gameComboEl.innerText = `x${combo}`;
-  gameTimeEl.innerText = `${timeLeft}s`;
+function minimizeWindow(id) {
+  closeWindow(id);
+}
 
-  gameOverlay.classList.remove("active");
-  moveTarget();
+/* ==========================================================
+   4. CLI NEURAL TERMINAL ENGINE
+========================================================== */
+const termInput = document.getElementById("termInput");
+const termOutput = document.getElementById("termOutput");
 
-  gameInterval = setInterval(() => {
-    timeLeft--;
-    gameTimeEl.innerText = `${timeLeft}s`;
+const COMMANDS = {
+  help: "AVAILABLE COMMANDS:\n  • status    - Check core integrity\n  • warp      - Accelerate quantum projection\n  • clear     - Clear terminal buffer\n  • pulse     - Test synthesize sound\n  • ping      - Measure loop latency",
+  status: "KERNEL METRICS:\n  - Uptime: 99.998%\n  - Flux Density: Optimal\n  - Quantum Nodes: 260 Online",
+  ping: "PONG! Loop latency: 1.2ms (Zero packet degradation)",
+  warp: () => {
+    warpSpeed = warpSpeed === 1 ? 5 : 1;
+    return `Warp Factor toggled to: ${warpSpeed}x`;
+  },
+  pulse: () => {
+    playNeuralChord();
+    return "Procedural audio pulse dispatched to hardware.";
+  },
+  clear: () => {
+    termOutput.innerHTML = "";
+    return "";
+  }
+};
 
-    if (timeLeft <= 0) {
-      endGame();
+termInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    const raw = termInput.value.trim().toLowerCase();
+    termInput.value = "";
+    if (!raw) return;
+
+    playTone(900, "sine", 0.04, 0.04);
+
+    // Print command entered
+    const userLine = document.createElement("p");
+    userLine.className = "term-line";
+    userLine.innerHTML = `<span class="prompt-arrow">root@synapse:~$</span> ${raw}`;
+    termOutput.appendChild(userLine);
+
+    // Execute
+    const resLine = document.createElement("p");
+    resLine.className = "term-line system-msg";
+
+    if (COMMANDS[raw]) {
+      const response = typeof COMMANDS[raw] === "function" ? COMMANDS[raw]() : COMMANDS[raw];
+      resLine.innerText = response;
+    } else {
+      resLine.innerText = `Command not recognized: "${raw}". Type 'help' for available directives.`;
     }
-  }, 1000);
-}
 
-function endGame() {
-  clearInterval(gameInterval);
-  isPlaying = false;
-  gameOverlay.innerHTML = `
-    <h3>TIME'S UP!</h3>
-    <p>Final Score: <strong>${score}</strong> | Best Combo: <strong>x${combo}</strong></p>
-    <button class="btn btn-primary" onclick="startGame()">Play Again</button>
-  `;
-  gameOverlay.classList.add("active");
-}
-
-coreTarget.addEventListener("click", (e) => {
-  if (!isPlaying) return;
-
-  score += 10 * combo;
-  combo++;
-  gameScoreEl.innerText = score;
-  gameComboEl.innerText = `x${combo}`;
-
-  // Spawn dynamic float score
-  const floatText = document.createElement("span");
-  floatText.className = "float-score";
-  floatText.innerText = `+${10 * combo}`;
-  floatText.style.left = `${coreTarget.offsetLeft + 10}px`;
-  floatText.style.top = `${coreTarget.offsetTop - 10}px`;
-  gameArena.appendChild(floatText);
-
-  setTimeout(() => floatText.remove(), 800);
-  moveTarget();
+    termOutput.appendChild(resLine);
+    termOutput.scrollTop = termOutput.scrollHeight;
+  }
 });
 
-startGameBtn.addEventListener("click", startGame);
-
 /* ==========================================================
-   7. ANIMATED NUMBER COUNTERS
+   5. REAL-TIME SYSTEM TELEMETRY SIMULATOR
 ========================================================== */
-function animateCounters() {
-  const counters = document.querySelectorAll(".counter");
-  counters.forEach((counter) => {
-    counter.innerText = "0";
-    const target = +counter.getAttribute("data-count");
-    const speed = target / 50;
+setInterval(() => {
+  // Random dynamic fluctuation for telemetry
+  const cpu = (10 + Math.random() * 8).toFixed(1);
+  document.getElementById("cpuLoad").innerText = `${cpu}%`;
 
-    const updateCount = () => {
-      const count = +counter.innerText;
-      if (count < target) {
-        counter.innerText = Math.ceil(count + speed);
-        setTimeout(updateCount, 25);
-      } else {
-        counter.innerText = target;
-      }
-    };
-    updateCount();
-  });
-}
+  // Clock
+  const now = new Date();
+  document.getElementById("sysClock").innerText = now.toTimeString().split(" ")[0];
+}, 1000);
 
-/* ==========================================================
-   8. CONTACT FORM SUBMISSION FEEDBACK
-========================================================== */
-const contactForm = document.getElementById("contactForm");
-const formFeedback = document.getElementById("formFeedback");
-
-contactForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  formFeedback.style.color = "var(--neon-cyan)";
-  formFeedback.innerText = "⚡ TRANSMITTING PACKET...";
+function triggerOverdrive() {
+  playTone(1100, "sawtooth", 0.4, 0.1);
+  warpSpeed = 7;
+  document.getElementById("fluxFill").style.width = "100%";
+  document.getElementById("fluxVal").innerText = "1420 THz (BURST)";
 
   setTimeout(() => {
-    formFeedback.style.color = "#4ade80";
-    formFeedback.innerText = "✓ TRANSMISSION RECEIVED BY SERVER CORE!";
-    contactForm.reset();
+    warpSpeed = 1;
+    document.getElementById("fluxFill").style.width = "84%";
+    document.getElementById("fluxVal").innerText = "840 THz";
+  }, 3500);
+}
 
-    setTimeout(() => {
-      formFeedback.innerText = "";
-    }, 4000);
+function purgeMemory() {
+  playTone(220, "square", 0.3, 0.08);
+  const mem = document.getElementById("memFill");
+  mem.style.width = "12%";
+  document.getElementById("memVal").innerText = "12%";
+
+  setTimeout(() => {
+    mem.style.width = "48%";
+    document.getElementById("memVal").innerText = "48%";
   }, 1200);
-});
-                          
+                        }

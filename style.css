@@ -876,6 +876,99 @@ html, body {
 .mono-green { color: var(--neon-green); font-family: var(--font-mono); }
 
 /* ==========================================================
+   AUTH IDENTITY MODAL
+========================================================== */
+.auth-modal-backdrop {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(3, 4, 10, 0.95); backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center; z-index: 9999;
+}
+.auth-box { max-width: 400px; width: 90%; }
+.auth-inner { padding: 30px 20px; text-align: center; }
+.auth-sub { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 20px; }
+.auth-inputs { display: flex; flex-direction: column; gap: 12px; }
+.auth-inputs input {
+  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.3);
+  padding: 12px 16px; border-radius: 14px; color: #fff; font-family: var(--font-mono); outline: none;
+}
+.auth-inputs input:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 212, 255, 0.4); }
+.btn-block { width: 100%; }
+.auth-error { color: var(--neon-red); font-size: 0.82rem; min-height: 18px; }
+
+/* ==========================================================
+   SEA BATTLE EXACT DOCK & GRID
+========================================================== */
+.sb-container-pro { width: 100%; display: flex; flex-direction: column; align-items: center; }
+.sb-pass-screen {
+  background: rgba(224, 122, 95, 0.95); padding: 40px 20px; border-radius: 18px;
+  text-align: center; color: #fff; max-width: 460px; display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+.sb-green-btn { background: #2a9d8f !important; color: #fff !important; }
+
+.sb-deploy-stage { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.sb-dock-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 12px 0; }
+.sb-dock-ship {
+  background: #1e293b; border: 1px solid var(--neon-blue); color: #fff;
+  padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; cursor: pointer;
+}
+.sb-dock-ship.active { background: var(--neon-blue); color: #000; font-weight: bold; }
+.sb-dock-ship.placed { opacity: 0.3; pointer-events: none; }
+
+.sb-grid-pro {
+  display: grid; grid-template-columns: repeat(8, 38px); grid-template-rows: repeat(8, 38px);
+  gap: 3px; background: #3b82f6; padding: 6px; border-radius: 10px; border: 2px solid #1d4ed8;
+}
+.sb-cell-pro {
+  background: #60a5fa; border-radius: 3px; cursor: pointer; transition: all 0.15s;
+}
+.sb-cell-pro:hover { background: #93c5fd; }
+.sb-cell-pro.occupied { background: #0284c7; box-shadow: inset 0 0 4px #000; }
+.sb-cell-pro.hit { background: #ef4444 !important; }
+.sb-cell-pro.miss { background: #1e293b !important; }
+
+.sb-radar-wrapper { position: relative; display: flex; justify-content: center; padding: 15px 0; }
+.sb-actions-row { display: flex; gap: 10px; margin-top: 14px; }
+
+/* ==========================================================
+   CHESS GHOST MOVE PRINTS & PROMOTION
+========================================================== */
+.ghost-move-dot {
+  width: 10px; height: 10px; border-radius: 50%; background: #00ff88;
+  box-shadow: 0 0 10px #00ff88; pointer-events: none;
+}
+.pawn-promo-modal {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(3, 4, 10, 0.9); z-index: 100; display: flex; align-items: center; justify-content: center;
+}
+.promo-box { background: var(--panel-bg); border: 2px solid var(--neon-blue); padding: 20px; border-radius: 14px; text-align: center; }
+.promo-choices { display: flex; gap: 8px; margin-top: 14px; }
+.promo-btn {
+  background: rgba(0, 212, 255, 0.15); border: 1px solid var(--neon-blue);
+  color: #fff; font-family: var(--font-orbitron); padding: 8px 14px; border-radius: 8px; cursor: pointer;
+}
+.promo-btn:hover { background: var(--neon-blue); color: #000; }
+
+/* ==========================================================
+   TIC TAC TOE SLASH STRIKE
+========================================================== */
+.ttt-wrapper-relative { position: relative; }
+.ttt-slash-line {
+  position: absolute; background: #ffffff; box-shadow: 0 0 15px #fff;
+  pointer-events: none; border-radius: 4px; display: none;
+}
+.strike-v0 { left: 34px; top: 0; width: 6px; height: 100%; }
+.strike-v1 { left: 114px; top: 0; width: 6px; height: 100%; }
+.strike-v2 { left: 194px; top: 0; width: 6px; height: 100%; }
+.strike-h0 { top: 34px; left: 0; height: 6px; width: 100%; }
+.strike-h1 { top: 114px; left: 0; height: 6px; width: 100%; }
+.strike-h2 { top: 194px; left: 0; height: 6px; width: 100%; }
+.strike-d0 { top: 0; left: 0; width: 6px; height: 140%; transform: rotate(-45deg); transform-origin: top left; }
+.strike-d1 { top: 0; right: 0; width: 6px; height: 140%; transform: rotate(45deg); transform-origin: top right; }
+
+/* Chrome Dino Pixel Art Stage Background */
+.dino-stage-bg { background: #f7f7f7 !important; border-color: #d1d5db !important; }
+            
+/* ==========================================================
    MOBILE RESPONSIVENESS OVERRIDES
 ========================================================== */
 @media (max-width: 600px) {

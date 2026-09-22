@@ -1,5 +1,5 @@
 /* ==========================================================
-   ROUTING & MATRIX BACKGROUND
+   NAVIGATION ROUTER & DYNAMIC RESIZE TRIGGERS
 ========================================================== */
 const navTabs = document.querySelectorAll('.nav-tab');
 const pageViews = document.querySelectorAll('.page-view');
@@ -13,10 +13,12 @@ function switchPage(targetId) {
     view.classList.toggle('active', view.id === targetId);
   });
 
-  // Re-adjust canvases on tab switch
+  // Re-fit canvas elements when tabs open
   if (targetId === 'showcaseView') {
-    if (typeof fitHoloCanvas === 'function') setTimeout(fitHoloCanvas, 50);
-    if (typeof fitUserCanvas === 'function') setTimeout(fitUserCanvas, 50);
+    if (typeof fitHoloCanvas === 'function') setTimeout(fitHoloCanvas, 60);
+    if (typeof fitUserCanvas === 'function') setTimeout(fitUserCanvas, 60);
+  } else if (targetId === 'gameView') {
+    if (typeof fitActiveGameCanvas === 'function') setTimeout(fitActiveGameCanvas, 60);
   }
 }
 
@@ -26,7 +28,9 @@ navTabs.forEach(tab => {
   });
 });
 
-/* Realtime Cyber Canvas Background */
+/* ==========================================================
+   BLUE & RED DUAL-POLE CYBER MATRIX BACKGROUND
+========================================================== */
 const bgCanvas = document.getElementById("sparkCanvas");
 if (bgCanvas) {
   const bgCtx = bgCanvas.getContext("2d");
@@ -49,10 +53,10 @@ if (bgCanvas) {
     constructor() {
       this.x = Math.random() * bgCanvas.width;
       this.y = Math.random() * bgCanvas.height;
-      this.vx = (Math.random() - 0.5) * 1.2;
-      this.vy = (Math.random() - 0.5) * 1.2;
+      this.vx = (Math.random() - 0.5) * 1.1;
+      this.vy = (Math.random() - 0.5) * 1.1;
       this.radius = Math.random() * 2 + 1;
-      this.color = Math.random() > 0.5 ? "#ffbe0b" : "#00f0ff";
+      this.color = Math.random() > 0.5 ? "#00d4ff" : "#ff003c";
     }
     update() {
       this.x += this.vx;
@@ -65,8 +69,8 @@ if (bgCanvas) {
         let dy = mouse.y - this.y;
         let dist = Math.hypot(dx, dy);
         if (dist < 120) {
-          this.x -= (dx / dist) * 2;
-          this.y -= (dy / dist) * 2;
+          this.x -= (dx / dist) * 2.2;
+          this.y -= (dy / dist) * 2.2;
         }
       }
     }
@@ -93,7 +97,9 @@ if (bgCanvas) {
       for (let b = a + 1; b < bgParticles.length; b++) {
         let dist = Math.hypot(bgParticles[a].x - bgParticles[b].x, bgParticles[a].y - bgParticles[b].y);
         if (dist < 85) {
-          bgCtx.strokeStyle = `rgba(0, 240, 255, ${0.2 * (1 - dist / 85)})`;
+          bgCtx.strokeStyle = bgParticles[a].color === "#00d4ff" 
+            ? `rgba(0, 212, 255, ${0.22 * (1 - dist / 85)})` 
+            : `rgba(255, 0, 60, ${0.22 * (1 - dist / 85)})`;
           bgCtx.lineWidth = 0.8;
           bgCtx.beginPath();
           bgCtx.moveTo(bgParticles[a].x, bgParticles[a].y);

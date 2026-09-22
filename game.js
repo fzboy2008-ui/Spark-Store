@@ -1,8 +1,19 @@
 /* ==========================================================
-   GAME SWITCHER
+   GAME SWITCHER & AUTO-RESIZE CONTROLLER
 ========================================================== */
 const gameSelectors = document.querySelectorAll(".game-selector-btn");
 const arcadeViews = document.querySelectorAll(".arcade-view");
+
+function fitActiveGameCanvas() {
+  const activeView = document.querySelector(".arcade-view.active");
+  if (!activeView) return;
+  const canvas = activeView.querySelector("canvas");
+  if (canvas && canvas.parentElement) {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+  }
+}
+window.addEventListener("resize", fitActiveGameCanvas);
 
 if (gameSelectors.length) {
   gameSelectors.forEach((btn) => {
@@ -13,23 +24,23 @@ if (gameSelectors.length) {
       arcadeViews.forEach((view) => {
         view.classList.toggle("active", view.id === `${target}View`);
       });
+      setTimeout(fitActiveGameCanvas, 40);
     });
   });
 }
 
 /* ==========================================================
-   1. FLAPPY BIRD (DYNAMIC DIFFICULTY SCALING)
+   1. FLAPPY BIRD (BLUE & RED PILLARS)
 ========================================================== */
 let flappyActive = false, fBirdY = 200, fBirdV = 0, fPipes = [], fScore = 0, fAnimId = null;
 const fCanvas = document.getElementById("flappyCanvas");
 
 function startFlappyGame() {
   if (!fCanvas) return;
-  fCanvas.width = fCanvas.parentElement.clientWidth;
-  fCanvas.height = fCanvas.parentElement.clientHeight;
+  fitActiveGameCanvas();
 
   fBirdY = fCanvas.height / 2;
-  fBirdV = -5;
+  fBirdV = -5.2;
   fPipes = [];
   fScore = 0;
   flappyActive = true;
@@ -60,22 +71,24 @@ function loopFlappy() {
   const ctx = fCanvas.getContext("2d");
   ctx.clearRect(0, 0, fCanvas.width, fCanvas.height);
 
-  // Difficulty scaling speed: score barhne se speed increase hoti hai
-  const currentSpeed = 2.8 + Math.min(fScore * 0.15, 4.0);
-  document.getElementById("flappyDiff").innerText = `${(currentSpeed / 2.8).toFixed(1)}x`;
+  const currentSpeed = 3.0 + Math.min(fScore * 0.16, 4.5);
+  document.getElementById("flappyDiff").innerText = `${(currentSpeed / 3.0).toFixed(1)}x`;
 
   fBirdV += 0.32;
   fBirdY += fBirdV;
 
-  // Draw Cyber Bird
-  ctx.fillStyle = "#ffbe0b";
+  // Blue Core Bird with Red Engine Trail
+  ctx.fillStyle = "#00d4ff";
+  ctx.shadowColor = "#00d4ff";
+  ctx.shadowBlur = 10;
   ctx.beginPath();
   ctx.arc(80, fBirdY, 15, 0, Math.PI * 2);
   ctx.fill();
+  ctx.shadowBlur = 0;
 
-  // Pipe spawn
-  if (fPipes.length === 0 || fPipes[fPipes.length - 1].x < fCanvas.width - 200) {
-    const gap = Math.max(105 - fScore * 1.5, 80); // Gap narrows as score rises
+  // Spawn Red & Blue Gate Pillars
+  if (fPipes.length === 0 || fPipes[fPipes.length - 1].x < fCanvas.width - 210) {
+    const gap = Math.max(115 - fScore * 1.5, 85);
     const topH = Math.random() * (fCanvas.height - gap - 100) + 40;
     fPipes.push({ x: fCanvas.width, top: topH, bottom: topH + gap, passed: false });
   }
@@ -84,10 +97,15 @@ function loopFlappy() {
     let p = fPipes[i];
     p.x -= currentSpeed;
 
-    ctx.fillStyle = "#00f0ff";
+    // Top Pillar: Neon Red
+    ctx.fillStyle = "#ff003c";
     ctx.fillRect(p.x, 0, 48, p.top);
+
+    // Bottom Pillar: Neon Blue
+    ctx.fillStyle = "#00d4ff";
     ctx.fillRect(p.x, p.bottom, 48, fCanvas.height - p.bottom);
 
+    // Collision Check
     if (80 + 15 > p.x && 80 - 15 < p.x + 48) {
       if (fBirdY - 15 < p.top || fBirdY + 15 > p.bottom) {
         return endFlappy();
@@ -110,20 +128,19 @@ function loopFlappy() {
 function endFlappy() {
   flappyActive = false;
   const o = document.getElementById("flappyOverlay");
-  o.innerHTML = `<h3>ENERGY LOST</h3><p>Score: <strong>${fScore}</strong></p><button class="spark-btn btn-primary" onclick="startFlappyGame()">Flight Again</button>`;
+  o.innerHTML = `<h3>ENERGY SEVERED</h3><p>Score: <strong>${fScore}</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startFlappyGame()">Flight Again</button>`;
   o.classList.add("active");
 }
 
 /* ==========================================================
-   2. DINO RUNNER (ADAPTIVE VELOCITY SCALING)
+   2. DINO RUNNER (RED BARRIERS + ADAPTIVE VELOCITY)
 ========================================================== */
 let dinoActive = false, dinoY = 0, dinoV = 0, dinoObs = [], dScore = 0, dAnimId = null;
 const dCanvas = document.getElementById("dinoCanvas");
 
 function startDinoGame() {
   if (!dCanvas) return;
-  dCanvas.width = dCanvas.parentElement.clientWidth;
-  dCanvas.height = dCanvas.parentElement.clientHeight;
+  fitActiveGameCanvas();
 
   dinoY = 0; dinoV = 0; dinoObs = []; dScore = 0; dinoActive = true;
   document.getElementById("dinoScore").innerText = "0m";
@@ -134,7 +151,7 @@ function startDinoGame() {
 }
 
 function jumpDinoAction() {
-  if (dinoActive && dinoY === 0) dinoV = 10.5;
+  if (dinoActive && dinoY === 0) dinoV = 10.8;
   else if (!dinoActive) startDinoGame();
 }
 
@@ -152,26 +169,29 @@ function loopDino() {
   ctx.clearRect(0, 0, dCanvas.width, dCanvas.height);
 
   const groundY = dCanvas.height - 40;
-  const currentSpeed = 5.0 + Math.min((dScore / 40) * 0.4, 6.0);
-  document.getElementById("dinoSpeedDisplay").innerText = `${(currentSpeed / 5.0).toFixed(1)}x`;
+  const currentSpeed = 5.2 + Math.min((dScore / 40) * 0.45, 6.5);
+  document.getElementById("dinoSpeedDisplay").innerText = `${(currentSpeed / 5.2).toFixed(1)}x`;
 
   dinoY += dinoV;
-  if (dinoY > 0) dinoV -= 0.48; else { dinoY = 0; dinoV = 0; }
+  if (dinoY > 0) dinoV -= 0.5; else { dinoY = 0; dinoV = 0; }
 
-  // Neon Floor
-  ctx.strokeStyle = "rgba(0, 240, 255, 0.4)";
+  // Ground Line
+  ctx.strokeStyle = "rgba(0, 212, 255, 0.4)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(0, groundY);
   ctx.lineTo(dCanvas.width, groundY);
   ctx.stroke();
 
-  // Dino
-  ctx.fillStyle = "#ff007f";
+  // Dino (Blue Neon Core)
+  ctx.fillStyle = "#00d4ff";
+  ctx.shadowColor = "#00d4ff";
+  ctx.shadowBlur = 8;
   ctx.fillRect(60, groundY - dinoY - 36, 36, 36);
+  ctx.shadowBlur = 0;
 
-  // Dynamic Spawning
-  if (dinoObs.length === 0 || dinoObs[dinoObs.length - 1].x < dCanvas.width - (220 - Math.min(dScore / 10, 60))) {
+  // Spawn Red Barriers
+  if (dinoObs.length === 0 || dinoObs[dinoObs.length - 1].x < dCanvas.width - (220 - Math.min(dScore / 10, 70))) {
     if (Math.random() < 0.6) {
       dinoObs.push({ x: dCanvas.width, w: 24, h: Math.random() * 26 + 28 });
     }
@@ -181,13 +201,16 @@ function loopDino() {
     let o = dinoObs[i];
     o.x -= currentSpeed;
 
-    ctx.fillStyle = "#ffbe0b";
+    ctx.fillStyle = "#ff003c";
+    ctx.shadowColor = "#ff003c";
+    ctx.shadowBlur = 6;
     ctx.fillRect(o.x, groundY - o.h, o.w, o.h);
+    ctx.shadowBlur = 0;
 
     if (60 + 36 > o.x && 60 < o.x + o.w && dinoY < o.h) {
       dinoActive = false;
       const ov = document.getElementById("dinoOverlay");
-      ov.innerHTML = `<h3>GRID COLLISION</h3><p>Distance Cleared: <strong>${Math.floor(dScore / 4)}m</strong></p><button class="spark-btn btn-primary" onclick="startDinoGame()">Run Again</button>`;
+      ov.innerHTML = `<h3>GRID COLLISION</h3><p>Distance: <strong>${Math.floor(dScore / 4)}m</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startDinoGame()">Run Again</button>`;
       ov.classList.add("active");
       return;
     }
@@ -200,7 +223,7 @@ function loopDino() {
 }
 
 /* ==========================================================
-   3. SPACE SHIP (AUTO-LASER + LEVEL PROGRESSION)
+   3. SPACE SHIP (AUTO-LASER & WEAPON PROGRESSION)
 ========================================================== */
 let spaceActive = false, shipX = 200, spaceBullets = [], spaceEnemies = [], sScore = 0, sAnimId = null;
 let lastAutoShot = 0;
@@ -208,8 +231,7 @@ const sCanvas = document.getElementById("spaceCanvas");
 
 function startSpaceGame() {
   if (!sCanvas) return;
-  sCanvas.width = sCanvas.parentElement.clientWidth;
-  sCanvas.height = sCanvas.parentElement.clientHeight;
+  fitActiveGameCanvas();
 
   shipX = sCanvas.width / 2;
   spaceBullets = [];
@@ -225,9 +247,15 @@ function startSpaceGame() {
   loopSpace();
 }
 
-sCanvas?.addEventListener("pointermove", (e) => {
+function updateShipPos(clientX) {
   const rect = sCanvas.getBoundingClientRect();
-  shipX = e.clientX - rect.left;
+  shipX = Math.max(25, Math.min(sCanvas.width - 25, clientX - rect.left));
+}
+
+sCanvas?.addEventListener("pointermove", (e) => updateShipPos(e.clientX));
+sCanvas?.addEventListener("pointerdown", (e) => {
+  if (!spaceActive) startSpaceGame();
+  else updateShipPos(e.clientX);
 });
 
 function loopSpace() {
@@ -236,64 +264,70 @@ function loopSpace() {
   ctx.clearRect(0, 0, sCanvas.width, sCanvas.height);
 
   const now = Date.now();
-  // Auto-Laser Fire Rate (Every 220ms automatically)
-  if (now - lastAutoShot > 220) {
+  // Auto-Laser Firing (Every 200ms)
+  if (now - lastAutoShot > 200) {
     lastAutoShot = now;
-    // Weapon Upgrades based on score
     if (sScore >= 300) {
       document.getElementById("laserLevel").innerText = "LEVEL 4 (QUAD PLASMA)";
-      spaceBullets.push({ x: shipX - 16, y: sCanvas.height - 45, vx: -1.2 });
-      spaceBullets.push({ x: shipX - 6, y: sCanvas.height - 45, vx: 0 });
-      spaceBullets.push({ x: shipX + 6, y: sCanvas.height - 45, vx: 0 });
-      spaceBullets.push({ x: shipX + 16, y: sCanvas.height - 45, vx: 1.2 });
+      spaceBullets.push({ x: shipX - 16, y: sCanvas.height - 45, vx: -1.2, color: "#ff003c" });
+      spaceBullets.push({ x: shipX - 6, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
+      spaceBullets.push({ x: shipX + 6, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
+      spaceBullets.push({ x: shipX + 16, y: sCanvas.height - 45, vx: 1.2, color: "#ff003c" });
     } else if (sScore >= 180) {
-      document.getElementById("laserLevel").innerText = "LEVEL 3 (TRIPLE SPREAD)";
-      spaceBullets.push({ x: shipX - 12, y: sCanvas.height - 45, vx: -1.5 });
-      spaceBullets.push({ x: shipX, y: sCanvas.height - 45, vx: 0 });
-      spaceBullets.push({ x: shipX + 12, y: sCanvas.height - 45, vx: 1.5 });
+      document.getElementById("laserLevel").innerText = "LEVEL 3 (TRIPLE)";
+      spaceBullets.push({ x: shipX - 12, y: sCanvas.height - 45, vx: -1.4, color: "#ff003c" });
+      spaceBullets.push({ x: shipX, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
+      spaceBullets.push({ x: shipX + 12, y: sCanvas.height - 45, vx: 1.4, color: "#ff003c" });
     } else if (sScore >= 80) {
       document.getElementById("laserLevel").innerText = "LEVEL 2 (DUAL TWIN)";
-      spaceBullets.push({ x: shipX - 8, y: sCanvas.height - 45, vx: 0 });
-      spaceBullets.push({ x: shipX + 8, y: sCanvas.height - 45, vx: 0 });
+      spaceBullets.push({ x: shipX - 8, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
+      spaceBullets.push({ x: shipX + 8, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
     } else {
       document.getElementById("laserLevel").innerText = "LEVEL 1 (SINGLE)";
-      spaceBullets.push({ x: shipX, y: sCanvas.height - 45, vx: 0 });
+      spaceBullets.push({ x: shipX, y: sCanvas.height - 45, vx: 0, color: "#00d4ff" });
     }
   }
 
-  // Draw Ship
-  ctx.fillStyle = "#00f0ff";
+  // Draw Player Ship (Blue fighter with Red wings)
+  ctx.fillStyle = "#00d4ff";
   ctx.beginPath();
-  ctx.moveTo(shipX, sCanvas.height - 45);
+  ctx.moveTo(shipX, sCanvas.height - 48);
   ctx.lineTo(shipX - 18, sCanvas.height - 12);
   ctx.lineTo(shipX + 18, sCanvas.height - 12);
   ctx.fill();
 
-  // Move Bullets
-  ctx.fillStyle = "#ffbe0b";
+  ctx.fillStyle = "#ff003c";
+  ctx.fillRect(shipX - 22, sCanvas.height - 20, 6, 12);
+  ctx.fillRect(shipX + 16, sCanvas.height - 20, 6, 12);
+
+  // Bullets
   spaceBullets.forEach((b) => {
-    b.y -= 8.5;
+    b.y -= 9;
     b.x += (b.vx || 0);
+    ctx.fillStyle = b.color;
+    ctx.shadowColor = b.color;
+    ctx.shadowBlur = 8;
     ctx.fillRect(b.x - 2, b.y, 4, 14);
   });
+  ctx.shadowBlur = 0;
 
-  // Spawn Enemy Ships (Faster as score scales)
-  const spawnRate = 0.035 + Math.min(sScore * 0.0002, 0.05);
+  // Spawn Enemy Ships
+  const spawnRate = 0.038 + Math.min(sScore * 0.0002, 0.05);
   if (Math.random() < spawnRate) {
     spaceEnemies.push({
       x: Math.random() * (sCanvas.width - 40) + 20,
       y: -20,
       r: 15,
-      speed: 2.5 + Math.min(sScore * 0.008, 3.5)
+      speed: 2.5 + Math.min(sScore * 0.008, 3.8)
     });
   }
 
-  // Enemy Collisions
+  // Collisions
   for (let eIdx = spaceEnemies.length - 1; eIdx >= 0; eIdx--) {
     let en = spaceEnemies[eIdx];
     en.y += en.speed;
 
-    ctx.fillStyle = "#ff007f";
+    ctx.fillStyle = "#ff003c";
     ctx.beginPath();
     ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
     ctx.fill();
@@ -310,7 +344,7 @@ function loopSpace() {
     if (en.y > sCanvas.height) {
       spaceActive = false;
       const ov = document.getElementById("spaceOverlay");
-      ov.innerHTML = `<h3>BASE INFILTRATED</h3><p>Score: <strong>${sScore}</strong></p><button class="spark-btn btn-primary" onclick="startSpaceGame()">Relaunch Defender</button>`;
+      ov.innerHTML = `<h3>BASE INFILTRATED</h3><p>Destroyed Ships: <strong>${sScore / 10}</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startSpaceGame()">Launch Again</button>`;
       ov.classList.add("active");
       return;
     }
@@ -321,7 +355,7 @@ function loopSpace() {
 }
 
 /* ==========================================================
-   4. TOWER JUMP (INCREASING ALTITUDE SPEED)
+   4. TOWER JUMP (NEON BLUE & RED LEDGES)
 ========================================================== */
 let towerActive = false, tPlayer = { x: 200, y: 250, vx: 0, vy: -7 };
 let tBlocks = [], tAltitude = 0, tAnimId = null;
@@ -329,8 +363,7 @@ const tCanvas = document.getElementById("towerCanvas");
 
 function startTowerGame() {
   if (!tCanvas) return;
-  tCanvas.width = tCanvas.parentElement.clientWidth;
-  tCanvas.height = tCanvas.parentElement.clientHeight;
+  fitActiveGameCanvas();
 
   tPlayer = { x: tCanvas.width / 2, y: tCanvas.height - 40, vx: 0, vy: -8 };
   tBlocks = [];
@@ -342,7 +375,8 @@ function startTowerGame() {
       x: Math.random() * (tCanvas.width - 80),
       y: tCanvas.height - i * 55,
       w: 80,
-      h: 12
+      h: 12,
+      color: i % 2 === 0 ? "#00d4ff" : "#ff003c"
     });
   }
 
@@ -353,7 +387,7 @@ function startTowerGame() {
   loopTower();
 }
 
-function setTowerMove(dir) { tPlayer.vx = dir * 5.2; }
+function setTowerMove(dir) { tPlayer.vx = dir * 5.4; }
 window.addEventListener("keydown", (e) => {
   if (e.key === "ArrowLeft" || e.key === "a") setTowerMove(-1);
   if (e.key === "ArrowRight" || e.key === "d") setTowerMove(1);
@@ -365,14 +399,13 @@ function loopTower() {
   const ctx = tCanvas.getContext("2d");
   ctx.clearRect(0, 0, tCanvas.width, tCanvas.height);
 
-  tPlayer.vy += 0.25;
+  tPlayer.vy += 0.26;
   tPlayer.x += tPlayer.vx;
   tPlayer.y += tPlayer.vy;
 
   if (tPlayer.x < 0) tPlayer.x = tCanvas.width;
   if (tPlayer.x > tCanvas.width) tPlayer.x = 0;
 
-  // Narrower blocks as altitude rises
   const currentBlockW = Math.max(80 - Math.floor(tAltitude / 30), 45);
 
   tBlocks.forEach((b) => {
@@ -383,7 +416,7 @@ function loopTower() {
       tPlayer.y + 14 >= b.y &&
       tPlayer.y + 14 <= b.y + 16
     ) {
-      tPlayer.vy = -8.2;
+      tPlayer.vy = -8.4;
       tAltitude += 10;
       document.getElementById("towerHeight").innerText = `${tAltitude}m`;
     }
@@ -401,16 +434,23 @@ function loopTower() {
     });
   }
 
-  ctx.fillStyle = "#ffbe0b";
-  tBlocks.forEach((b) => ctx.fillRect(b.x, b.y, b.w, b.h));
+  // Draw Blocks
+  tBlocks.forEach((b) => {
+    ctx.fillStyle = b.color;
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+  });
 
-  ctx.fillStyle = "#00f0ff";
+  // Draw Core
+  ctx.fillStyle = "#ffffff";
+  ctx.shadowColor = "#00d4ff";
+  ctx.shadowBlur = 10;
   ctx.fillRect(tPlayer.x - 9, tPlayer.y, 18, 18);
+  ctx.shadowBlur = 0;
 
   if (tPlayer.y > tCanvas.height) {
     towerActive = false;
     const ov = document.getElementById("towerOverlay");
-    ov.innerHTML = `<h3>MATRIX DROP</h3><p>Peak Altitude: <strong>${tAltitude}m</strong></p><button class="spark-btn btn-primary" onclick="startTowerGame()">Climb Again</button>`;
+    ov.innerHTML = `<h3>MATRIX DROP</h3><p>Altitude: <strong>${tAltitude}m</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startTowerGame()">Climb Again</button>`;
     ov.classList.add("active");
     return;
   }
@@ -419,21 +459,16 @@ function loopTower() {
 }
 
 /* ==========================================================
-   5. CYBER SNAKE (DYNAMIC ACCELERATION)
+   5. CYBER SNAKE (BLUE BODY + RED ORBS)
 ========================================================== */
-let snakeActive = false;
-let snake = [];
-let food = { x: 0, y: 0 };
-let snakeDir = 'RIGHT';
-let snakeScore = 0;
-let snakeInterval = null;
+let snakeActive = false, snake = [], food = { x: 0, y: 0 }, snakeDir = 'RIGHT';
+let snakeScore = 0, snakeInterval = null;
 const snCanvas = document.getElementById("snakeCanvas");
 const GRID_SIZE = 16;
 
 function startSnakeGame() {
   if (!snCanvas) return;
-  snCanvas.width = snCanvas.parentElement.clientWidth;
-  snCanvas.height = snCanvas.parentElement.clientHeight;
+  fitActiveGameCanvas();
 
   snake = [
     { x: 5 * GRID_SIZE, y: 5 * GRID_SIZE },
@@ -487,12 +522,12 @@ function runSnakeLoop(speed) {
     if (snakeDir === 'UP') head.y -= GRID_SIZE;
     if (snakeDir === 'DOWN') head.y += GRID_SIZE;
 
-    // Wall collision
+    // Boundary Collisions
     if (head.x < 0 || head.x >= snCanvas.width || head.y < 0 || head.y >= snCanvas.height) {
       return endSnake();
     }
 
-    // Body collision
+    // Body Collisions
     for (let segment of snake) {
       if (head.x === segment.x && head.y === segment.y) {
         return endSnake();
@@ -501,12 +536,10 @@ function runSnakeLoop(speed) {
 
     snake.unshift(head);
 
-    // Eat food
     if (head.x === food.x && head.y === food.y) {
       snakeScore++;
       document.getElementById("snakeScore").innerText = snakeScore;
       spawnFood();
-      // Increase speed every 3 orbs
       if (snakeScore % 3 === 0 && speed > 50) {
         clearInterval(snakeInterval);
         const newSpeed = Math.max(120 - snakeScore * 4, 45);
@@ -525,16 +558,16 @@ function renderSnake() {
   const ctx = snCanvas.getContext("2d");
   ctx.clearRect(0, 0, snCanvas.width, snCanvas.height);
 
-  // Draw Food
-  ctx.fillStyle = "#ff007f";
-  ctx.shadowColor = "#ff007f";
+  // Red Energy Orb
+  ctx.fillStyle = "#ff003c";
+  ctx.shadowColor = "#ff003c";
   ctx.shadowBlur = 10;
   ctx.fillRect(food.x, food.y, GRID_SIZE - 2, GRID_SIZE - 2);
 
-  // Draw Snake
+  // Blue Neon Snake
   ctx.shadowBlur = 0;
   snake.forEach((seg, idx) => {
-    ctx.fillStyle = idx === 0 ? "#ffbe0b" : "#00f0ff";
+    ctx.fillStyle = idx === 0 ? "#ffffff" : "#00d4ff";
     ctx.fillRect(seg.x, seg.y, GRID_SIZE - 2, GRID_SIZE - 2);
   });
 }
@@ -543,6 +576,6 @@ function endSnake() {
   snakeActive = false;
   clearInterval(snakeInterval);
   const ov = document.getElementById("snakeOverlay");
-  ov.innerHTML = `<h3>ENERGY SEVERED</h3><p>Total Orbs: <strong>${snakeScore}</strong></p><button class="spark-btn btn-primary" onclick="startSnakeGame()">Slither Again</button>`;
+  ov.innerHTML = `<h3>ENERGY SEVERED</h3><p>Orbs Collected: <strong>${snakeScore}</strong></p><button class="spark-btn btn-primary btn-launch" onclick="startSnakeGame()">Slither Again</button>`;
   ov.classList.add("active");
 }

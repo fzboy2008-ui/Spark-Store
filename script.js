@@ -1,437 +1,339 @@
-/* =========================================================
-   SPARK PROJECT
-   Main JavaScript
-   ========================================================= */
+/* ==========================================================
+   1. CUSTOM GLOW CURSOR WITH TRAIL
+========================================================== */
+const cursorDot = document.getElementById("cursorDot");
+const cursorOutline = document.getElementById("cursorOutline");
 
+window.addEventListener("mousemove", (e) => {
+  const { clientX: x, clientY: y } = e;
 
-/* ---------------------------------------------------------
-   LOADER
-   --------------------------------------------------------- */
+  cursorDot.style.left = `${x}px`;
+  cursorDot.style.top = `${y}px`;
 
-window.addEventListener("load", () => {
-
-    const loader = document.getElementById("loader");
-
-    setTimeout(() => {
-        loader.classList.add("hide");
-    }, 700);
-
+  cursorOutline.animate(
+    { left: `${x}px`, top: `${y}px` },
+    { duration: 400, fill: "forwards" }
+  );
 });
 
+// Cursor Hover Expansion
+document.querySelectorAll("button, a, .tilt-card, .showcase-card, .social-card").forEach((el) => {
+  el.addEventListener("mouseenter", () => {
+    cursorOutline.style.transform = "translate(-50%, -50%) scale(1.6)";
+    cursorOutline.style.borderColor = "var(--neon-pink)";
+  });
+  el.addEventListener("mouseleave", () => {
+    cursorOutline.style.transform = "translate(-50%, -50%) scale(1)";
+    cursorOutline.style.borderColor = "var(--neon-cyan)";
+  });
+});
 
-/* ---------------------------------------------------------
-   MOBILE MENU
-   --------------------------------------------------------- */
+/* ==========================================================
+   2. INTERACTIVE CANVAS BACKGROUND (PHYSICS PARTICLES)
+========================================================== */
+const canvas = document.getElementById("bgCanvas");
+const ctx = canvas.getContext("2d");
 
-const menuToggle = document.getElementById("menuToggle");
-const navMenu = document.getElementById("navMenu");
+let particlesArray = [];
+let mousePos = { x: null, y: null, radius: 150 };
 
-menuToggle.addEventListener("click", () => {
-    navMenu.classList.toggle("open");
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
 
-    if (navMenu.classList.contains("open")) {
-        menuToggle.textContent = "×";
+window.addEventListener("mousemove", (e) => {
+  mousePos.x = e.x;
+  mousePos.y = e.y;
+});
+
+class Particle {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 2.5 + 1;
+    this.speedX = (Math.random() - 0.5) * 1.2;
+    this.speedY = (Math.random() - 0.5) * 1.2;
+    this.color = Math.random() > 0.5 ? "rgba(0, 240, 255, " : "rgba(157, 78, 221, ";
+  }
+
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+
+    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+
+    // Mouse Interaction
+    let dx = mousePos.x - this.x;
+    let dy = mousePos.y - this.y;
+    let distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < mousePos.radius) {
+      const force = (mousePos.radius - distance) / mousePos.radius;
+      const directionX = dx / distance;
+      const directionY = dy / distance;
+      this.x -= directionX * force * 3;
+      this.y -= directionY * force * 3;
+    }
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.color + "0.6)";
+    ctx.fill();
+  }
+}
+
+function initParticles() {
+  particlesArray = [];
+  const count = Math.floor((canvas.width * canvas.height) / 14000);
+  for (let i = 0; i < count; i++) {
+    particlesArray.push(new Particle());
+  }
+}
+initParticles();
+
+function connectParticles() {
+  for (let a = 0; a < particlesArray.length; a++) {
+    for (let b = a; b < particlesArray.length; b++) {
+      let dx = particlesArray[a].x - particlesArray[b].x;
+      let dy = particlesArray[a].y - particlesArray[b].y;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 110) {
+        let opacity = 1 - dist / 110;
+        ctx.strokeStyle = `rgba(0, 240, 255, ${opacity * 0.15})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+        ctx.stroke();
+      }
+    }
+  }
+}
+
+function animateCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particlesArray.forEach((p) => {
+    p.update();
+    p.draw();
+  });
+  connectParticles();
+  requestAnimationFrame(animateCanvas);
+}
+animateCanvas();
+
+/* ==========================================================
+   3. SPA PAGE NAVIGATION SYSTEM
+========================================================== */
+const navButtons = document.querySelectorAll(".nav-btn");
+const pageViews = document.querySelectorAll(".page-view");
+
+function switchPage(targetId) {
+  // Update Buttons
+  navButtons.forEach((btn) => {
+    btn.classList.toggle("active", btn.getAttribute("data-target") === targetId);
+  });
+
+  // Animate & Switch View
+  pageViews.forEach((view) => {
+    if (view.id === targetId) {
+      view.classList.add("active");
     } else {
-        menuToggle.textContent = "☰";
+      view.classList.remove("active");
     }
+  });
+
+  // Trigger counters if navigating to stats
+  if (targetId === "stats") {
+    animateCounters();
+  }
+}
+
+navButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const target = btn.getAttribute("data-target");
+    switchPage(target);
+  });
 });
 
+/* ==========================================================
+   4. 3D TILT EFFECT ON CARDS
+========================================================== */
+document.querySelectorAll("[data-tilt]").forEach((card) => {
+  card.addEventListener("mousemove", (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
 
-/* Close mobile menu after clicking a link */
+    const rotX = -(y / (rect.height / 2)) * 12;
+    const rotY = (x / (rect.width / 2)) * 12;
 
-document.querySelectorAll("#navMenu a").forEach(link => {
+    card.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.04, 1.04, 1.04)`;
+  });
 
-    link.addEventListener("click", () => {
-        navMenu.classList.remove("open");
-        menuToggle.textContent = "☰";
+  card.addEventListener("mouseleave", () => {
+    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+  });
+});
+
+/* ==========================================================
+   5. SHOWCASE FILTER SYSTEM
+========================================================== */
+const filterButtons = document.querySelectorAll(".filter-btn");
+const showcaseCards = document.querySelectorAll(".showcase-card");
+
+filterButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    filterButtons.forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    const category = btn.getAttribute("data-filter");
+
+    showcaseCards.forEach((card) => {
+      const match = category === "all" || card.getAttribute("data-category") === category;
+      if (match) {
+        card.style.display = "block";
+        card.style.animation = "pageIn 0.4s ease forwards";
+      } else {
+        card.style.display = "none";
+      }
     });
-
+  });
 });
 
+/* ==========================================================
+   6. CYBER CLICKER MINI GAME LOGIC
+========================================================== */
+let score = 0;
+let timeLeft = 15;
+let combo = 1;
+let gameInterval = null;
+let isPlaying = false;
 
-/* ---------------------------------------------------------
-   SMOOTH SCROLL
-   --------------------------------------------------------- */
+const gameScoreEl = document.getElementById("gameScore");
+const gameTimeEl = document.getElementById("gameTime");
+const gameComboEl = document.getElementById("gameCombo");
+const coreTarget = document.getElementById("coreTarget");
+const gameOverlay = document.getElementById("gameOverlay");
+const startGameBtn = document.getElementById("startGameBtn");
+const gameArena = document.getElementById("gameArena");
 
-function scrollToSection(id) {
+function moveTarget() {
+  const arenaRect = gameArena.getBoundingClientRect();
+  const maxX = arenaRect.width - 80;
+  const maxY = arenaRect.height - 80;
 
-    const section = document.getElementById(id);
+  const randomX = Math.floor(Math.random() * maxX) + 40;
+  const randomY = Math.floor(Math.random() * maxY) + 40;
 
-    if (!section) return;
-
-    section.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
-
+  coreTarget.style.left = `${randomX}px`;
+  coreTarget.style.top = `${randomY}px`;
 }
 
+function startGame() {
+  score = 0;
+  combo = 1;
+  timeLeft = 15;
+  isPlaying = true;
 
-/* ---------------------------------------------------------
-   SCROLL REVEAL
-   --------------------------------------------------------- */
+  gameScoreEl.innerText = score;
+  gameComboEl.innerText = `x${combo}`;
+  gameTimeEl.innerText = `${timeLeft}s`;
 
-const revealElements = document.querySelectorAll(".reveal");
+  gameOverlay.classList.remove("active");
+  moveTarget();
 
-const revealObserver = new IntersectionObserver(
-    (entries) => {
+  gameInterval = setInterval(() => {
+    timeLeft--;
+    gameTimeEl.innerText = `${timeLeft}s`;
 
-        entries.forEach((entry) => {
-
-            if (entry.isIntersecting) {
-
-                entry.target.classList.add("visible");
-
-                revealObserver.unobserve(entry.target);
-
-            }
-
-        });
-
-    },
-    {
-        threshold: 0.12
+    if (timeLeft <= 0) {
+      endGame();
     }
-);
+  }, 1000);
+}
 
-revealElements.forEach((element) => {
-    revealObserver.observe(element);
+function endGame() {
+  clearInterval(gameInterval);
+  isPlaying = false;
+  gameOverlay.innerHTML = `
+    <h3>TIME'S UP!</h3>
+    <p>Final Score: <strong>${score}</strong> | Best Combo: <strong>x${combo}</strong></p>
+    <button class="btn btn-primary" onclick="startGame()">Play Again</button>
+  `;
+  gameOverlay.classList.add("active");
+}
+
+coreTarget.addEventListener("click", (e) => {
+  if (!isPlaying) return;
+
+  score += 10 * combo;
+  combo++;
+  gameScoreEl.innerText = score;
+  gameComboEl.innerText = `x${combo}`;
+
+  // Spawn dynamic float score
+  const floatText = document.createElement("span");
+  floatText.className = "float-score";
+  floatText.innerText = `+${10 * combo}`;
+  floatText.style.left = `${coreTarget.offsetLeft + 10}px`;
+  floatText.style.top = `${coreTarget.offsetTop - 10}px`;
+  gameArena.appendChild(floatText);
+
+  setTimeout(() => floatText.remove(), 800);
+  moveTarget();
 });
 
+startGameBtn.addEventListener("click", startGame);
 
-/* ---------------------------------------------------------
-   ACTIVE NAVIGATION
-   --------------------------------------------------------- */
+/* ==========================================================
+   7. ANIMATED NUMBER COUNTERS
+========================================================== */
+function animateCounters() {
+  const counters = document.querySelectorAll(".counter");
+  counters.forEach((counter) => {
+    counter.innerText = "0";
+    const target = +counter.getAttribute("data-count");
+    const speed = target / 50;
 
-const sections = document.querySelectorAll("main section");
-const navLinks = document.querySelectorAll("#navMenu a");
-
-const sectionObserver = new IntersectionObserver(
-    (entries) => {
-
-        entries.forEach((entry) => {
-
-            if (entry.isIntersecting) {
-
-                const currentId = entry.target.id;
-
-                navLinks.forEach(link => {
-
-                    link.classList.remove("active");
-
-                    if (link.getAttribute("href") === "#" + currentId) {
-                        link.classList.add("active");
-                    }
-
-                });
-
-            }
-
-        });
-
-    },
-    {
-        rootMargin: "-35% 0px -55% 0px"
-    }
-);
-
-sections.forEach(section => {
-    sectionObserver.observe(section);
-});
-
-
-/* ---------------------------------------------------------
-   SHOP QUANTITY
-   --------------------------------------------------------- */
-
-let quantity = 1;
-
-const pricePerItem = 1;
-
-const quantityElement = document.getElementById("quantity");
-const totalElement = document.getElementById("total");
-
-const checkoutQuantity =
-    document.getElementById("checkoutQuantity");
-
-const checkoutTotal =
-    document.getElementById("checkoutTotal");
-
-
-function changeQuantity(amount) {
-
-    quantity += amount;
-
-    /*
-       Prevent quantity from going below 1.
-       Maximum is currently 99 for demo purposes.
-    */
-
-    if (quantity < 1) {
-        quantity = 1;
-    }
-
-    if (quantity > 99) {
-        quantity = 99;
-    }
-
-    updateCart();
-
+    const updateCount = () => {
+      const count = +counter.innerText;
+      if (count < target) {
+        counter.innerText = Math.ceil(count + speed);
+        setTimeout(updateCount, 25);
+      } else {
+        counter.innerText = target;
+      }
+    };
+    updateCount();
+  });
 }
 
+/* ==========================================================
+   8. CONTACT FORM SUBMISSION FEEDBACK
+========================================================== */
+const contactForm = document.getElementById("contactForm");
+const formFeedback = document.getElementById("formFeedback");
 
-function updateCart() {
+contactForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  formFeedback.style.color = "var(--neon-cyan)";
+  formFeedback.innerText = "⚡ TRANSMITTING PACKET...";
 
-    const total = quantity * pricePerItem;
-
-    quantityElement.textContent = quantity;
-
-    totalElement.textContent = "₹" + total;
-
-    checkoutQuantity.textContent = quantity;
-
-    checkoutTotal.textContent = "₹" + total;
-
-}
-
-
-/* ---------------------------------------------------------
-   CHECKOUT
-   --------------------------------------------------------- */
-
-const checkoutModal =
-    document.getElementById("checkoutModal");
-
-
-function openCheckout() {
-
-    updateCart();
-
-    checkoutModal.classList.add("show");
-
-    document.body.style.overflow = "hidden";
-
-}
-
-
-function closeCheckout() {
-
-    checkoutModal.classList.remove("show");
-
-    document.body.style.overflow = "";
-
-}
-
-
-/* ---------------------------------------------------------
-   DEMO PAYMENT
-   --------------------------------------------------------- */
-
-const successModal =
-    document.getElementById("successModal");
-
-const orderId =
-    document.getElementById("orderId");
-
-
-function demoPayment() {
-
-    /*
-       This is ONLY a frontend demonstration.
-
-       No real payment is processed here.
-
-       In the production version this function should:
-       1. Create an order on the backend.
-       2. Open a real payment gateway.
-       3. Verify the payment on the backend.
-       4. Wait for a verified webhook.
-       5. Mark the order as PAID.
-    */
-
-    const button =
-        document.querySelector(".confirm-button");
-
-    button.disabled = true;
-
-    button.innerHTML = `
-        <span>Processing...</span>
-        <span>⏳</span>
-    `;
+  setTimeout(() => {
+    formFeedback.style.color = "#4ade80";
+    formFeedback.innerText = "✓ TRANSMISSION RECEIVED BY SERVER CORE!";
+    contactForm.reset();
 
     setTimeout(() => {
-
-        checkoutModal.classList.remove("show");
-
-        const randomNumber =
-            Math.floor(100000 + Math.random() * 900000);
-
-        orderId.textContent =
-            "SPK-" + randomNumber;
-
-        successModal.classList.add("show");
-
-        button.disabled = false;
-
-        button.innerHTML = `
-            <span>Continue to Payment</span>
-            <span>→</span>
-        `;
-
-    }, 1200);
-
-}
-
-
-function closeSuccess() {
-
-    successModal.classList.remove("show");
-
-    document.body.style.overflow = "";
-
-}
-
-
-/* ---------------------------------------------------------
-   CLOSE MODALS WHEN CLICKING OUTSIDE
-   --------------------------------------------------------- */
-
-checkoutModal.addEventListener("click", (event) => {
-
-    if (event.target === checkoutModal) {
-        closeCheckout();
-    }
-
+      formFeedback.innerText = "";
+    }, 4000);
+  }, 1200);
 });
-
-
-successModal.addEventListener("click", (event) => {
-
-    if (event.target === successModal) {
-        closeSuccess();
-    }
-
-});
-
-
-/* ---------------------------------------------------------
-   ESC KEY
-   --------------------------------------------------------- */
-
-document.addEventListener("keydown", (event) => {
-
-    if (event.key === "Escape") {
-
-        closeCheckout();
-        closeSuccess();
-
-    }
-
-});
-
-
-/* ---------------------------------------------------------
-   MOUSE PARALLAX EFFECT
-   --------------------------------------------------------- */
-
-const heroVisual =
-    document.querySelector(".hero-visual");
-
-if (heroVisual && window.innerWidth > 900) {
-
-    heroVisual.addEventListener("mousemove", (event) => {
-
-        const rect =
-            heroVisual.getBoundingClientRect();
-
-        const x =
-            event.clientX - rect.left;
-
-        const y =
-            event.clientY - rect.top;
-
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-
-        const moveX =
-            (x - centerX) / 35;
-
-        const moveY =
-            (y - centerY) / 35;
-
-        heroVisual.style.transform =
-            `translate(${moveX}px, ${moveY}px)`;
-
-    });
-
-
-    heroVisual.addEventListener("mouseleave", () => {
-
-        heroVisual.style.transform =
-            "translate(0, 0)";
-
-    });
-
-}
-
-
-/* ---------------------------------------------------------
-   RANDOM FLOATING PARTICLES
-   --------------------------------------------------------- */
-
-function createParticle() {
-
-    const particle =
-        document.createElement("span");
-
-    particle.style.position = "fixed";
-    particle.style.width = "2px";
-    particle.style.height = "2px";
-    particle.style.borderRadius = "50%";
-    particle.style.background = "rgba(190,150,255,0.6)";
-    particle.style.pointerEvents = "none";
-    particle.style.zIndex = "-1";
-
-    particle.style.left =
-        Math.random() * 100 + "vw";
-
-    particle.style.top =
-        Math.random() * 100 + "vh";
-
-    particle.style.opacity =
-        Math.random() * 0.7;
-
-    const duration =
-        5 + Math.random() * 8;
-
-    particle.style.transition =
-        `transform ${duration}s linear, opacity ${duration}s linear`;
-
-    document.body.appendChild(particle);
-
-    requestAnimationFrame(() => {
-
-        particle.style.transform =
-            `translate(${(Math.random() - 0.5) * 150}px, -${100 + Math.random() * 250}px)`;
-
-        particle.style.opacity = "0";
-
-    });
-
-    setTimeout(() => {
-        particle.remove();
-    }, duration * 1000);
-
-}
-
-
-/* Create particles periodically */
-
-setInterval(createParticle, 700);
-
-
-/* ---------------------------------------------------------
-   INITIAL CART STATE
-   --------------------------------------------------------- */
-
-updateCart();
+                          

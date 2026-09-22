@@ -10,8 +10,11 @@ let rotX = 0.006, rotY = 0.008;
 
 function fitHoloCanvas() {
   if (!holoCanvas) return;
-  holoCanvas.width = holoCanvas.parentElement.clientWidth;
-  holoCanvas.height = holoCanvas.parentElement.clientHeight;
+  const parent = holoCanvas.parentElement;
+  if (parent && parent.clientWidth > 0) {
+    holoCanvas.width = parent.clientWidth;
+    holoCanvas.height = parent.clientHeight || 330;
+  }
 }
 window.addEventListener("resize", fitHoloCanvas);
 
@@ -58,6 +61,7 @@ if (holoCanvas) {
       });
     });
 
+    // Dynamic Connections
     for (let a = 0; a < projected.length; a++) {
       for (let b = a + 1; b < projected.length; b++) {
         let dist = Math.hypot(projected[a].x - projected[b].x, projected[a].y - projected[b].y);
@@ -105,8 +109,8 @@ function morphTo(shape) {
   const geoMode = document.getElementById('geoMode');
 
   if (shape === 'sphere') {
-    geoMode.innerText = "HYPER-SPHERE";
-    formDisplay.innerText = "SPHERE (300 TENSORS)";
+    if (geoMode) geoMode.innerText = "HYPER-SPHERE";
+    if (formDisplay) formDisplay.innerText = "SPHERE (300 TENSORS)";
     for (let i = 0; i < TOTAL_SHAPE_NODES; i++) {
       const phi = Math.acos(-1 + (2 * i) / TOTAL_SHAPE_NODES);
       const theta = Math.sqrt(TOTAL_SHAPE_NODES * Math.PI) * phi;
@@ -115,8 +119,8 @@ function morphTo(shape) {
       morphNodes[i].tz = R * Math.cos(phi);
     }
   } else if (shape === 'torus') {
-    geoMode.innerText = "TOROIDAL RING";
-    formDisplay.innerText = "DONUT VORTEX";
+    if (geoMode) geoMode.innerText = "TOROIDAL RING";
+    if (formDisplay) formDisplay.innerText = "DONUT VORTEX";
     const R1 = 90, R2 = 35;
     for (let i = 0; i < TOTAL_SHAPE_NODES; i++) {
       const u = Math.random() * Math.PI * 2;
@@ -126,8 +130,8 @@ function morphTo(shape) {
       morphNodes[i].tz = R2 * Math.sin(v);
     }
   } else if (shape === 'cube') {
-    geoMode.innerText = "TESSERACT CUBE";
-    formDisplay.innerText = "QUANTUM CUBE";
+    if (geoMode) geoMode.innerText = "TESSERACT CUBE";
+    if (formDisplay) formDisplay.innerText = "QUANTUM CUBE";
     const S = 80;
     for (let i = 0; i < TOTAL_SHAPE_NODES; i++) {
       morphNodes[i].tx = (Math.random() - 0.5) * 2 * S;
@@ -135,8 +139,8 @@ function morphTo(shape) {
       morphNodes[i].tz = (Math.random() - 0.5) * 2 * S;
     }
   } else if (shape === 'vortex') {
-    geoMode.innerText = "BLACKHOLE VORTEX";
-    formDisplay.innerText = "WARP SPIRAL";
+    if (geoMode) geoMode.innerText = "BLACKHOLE VORTEX";
+    if (formDisplay) formDisplay.innerText = "WARP SPIRAL";
     for (let i = 0; i < TOTAL_SHAPE_NODES; i++) {
       const t = (i / TOTAL_SHAPE_NODES) * Math.PI * 8;
       const rad = (i / TOTAL_SHAPE_NODES) * 120;
@@ -157,8 +161,11 @@ let showConnectors = true;
 
 function fitUserCanvas() {
   if (!uCanvas) return;
-  uCanvas.width = uCanvas.parentElement.clientWidth;
-  uCanvas.height = uCanvas.parentElement.clientHeight;
+  const parent = uCanvas.parentElement;
+  if (parent && parent.clientWidth > 0) {
+    uCanvas.width = parent.clientWidth;
+    uCanvas.height = parent.clientHeight || 290;
+  }
 }
 window.addEventListener("resize", fitUserCanvas);
 

@@ -13,7 +13,7 @@
 
   <canvas id="sparkCanvas"></canvas>
 
-  <!-- Player Login / Register Modal -->
+  <!-- Player Identity Modal -->
   <div class="auth-modal-backdrop" id="authModal">
     <div class="glow-border-wrap auth-box">
       <div class="glow-inner auth-inner">
@@ -66,7 +66,7 @@
           <h1 class="owner-name">SPARK FOUNDER</h1>
           <p class="owner-role">Lead Architect & Systems Engineer</p>
           <p class="owner-bio">
-            Welcome to the central node of <strong>SPARK</strong>. Engineered with strict legal-rule chess engines, Sea Battle fleet radar, and Chrome pixel runner engines.
+            Welcome to the central node of <strong>SPARK</strong>. Engineered with single-player blueprint universes, 2-player multiplayer duels, and 3D holographic CAD studios.
           </p>
 
           <div class="owner-actions" style="margin-top: 15px;">
@@ -78,56 +78,59 @@
       </div>
     </section>
 
-    <!-- PAGE 2: SHOWCASE (3D CAD MODELLER RESTORED) -->
+    <!-- PAGE 2: SHOWCASE (5 HOLOGRAMS + CREATOR + AUDIO MATRIX) -->
     <section id="showcaseView" class="page-view">
       <div class="section-title">
-        <h2>3D HOLOGRAM CAD & QUANTUM STUDIO</h2>
-        <p>Interactive 3D blueprint modeler, vector synthesis and real-time particle sandbox</p>
+        <h2>QUANTUM LAB & HOLOGRAM CREATOR</h2>
+        <p>5 Dynamic 3D Blueprint Holograms, Custom CAD Builder & Audio Vector Synthesizer</p>
       </div>
 
       <div class="showcase-layout">
+        <!-- 5 Hologram Viewer -->
         <div class="glow-border-wrap hologram-card">
           <div class="glow-inner hologram-inner">
             <div class="panel-header">
-              <span><i class="fa-solid fa-cubes"></i> 3D BLUEPRINT CAD ARCHITECT</span>
-              <span class="mono-cyan" id="cadMeshType">SPHERE LATTICE</span>
+              <span><i class="fa-solid fa-cubes"></i> 3D BLUEPRINT HOLOGRAM MATRIX</span>
+              <span class="mono-cyan" id="cadMeshType">STARFIGHTER JET</span>
             </div>
 
             <div class="hologram-viewport" id="holoViewport">
               <canvas id="aiHologramCanvas" width="500" height="330"></canvas>
               <div class="holo-hud">
-                <div>PROJECTION: <strong class="mono-red" id="cadCoords">EULER 3D (300 VERTS)</strong></div>
-                <div>RENDER: <span class="mono-cyan">WIREFRAME BLUEPRINT</span></div>
-                <div>CONTROL: <span class="mono-green">DRAG ROTATE</span></div>
+                <div>MODEL: <strong class="mono-red" id="cadCoords">CYBER JET (320 NODES)</strong></div>
+                <div>RENDER: <span class="mono-cyan">ROTATING BLUEPRINT</span></div>
+                <div>GESTURE: <span class="mono-green">TOUCH / MOUSE SPIN</span></div>
               </div>
             </div>
 
+            <!-- 5 Hologram Options -->
             <div class="shape-switch-row">
-              <button class="shape-btn active" onclick="setCADModel('sphere')"><i class="fa-solid fa-circle-dot"></i> Sphere</button>
-              <button class="shape-btn" onclick="setCADModel('cube')"><i class="fa-solid fa-cube"></i> Tesseract</button>
-              <button class="shape-btn" onclick="setCADModel('torus')"><i class="fa-solid fa-ring"></i> Torus</button>
-              <button class="shape-btn" onclick="setCADModel('helix')"><i class="fa-solid fa-dna"></i> Helix</button>
-              <button class="shape-btn" onclick="setCADModel('jet')"><i class="fa-solid fa-jet-fighter"></i> Jet</button>
+              <button class="shape-btn active" onclick="setCADModel('jet')"><i class="fa-solid fa-jet-fighter"></i> Jet</button>
+              <button class="shape-btn" onclick="setCADModel('tesseract')"><i class="fa-solid fa-cube"></i> Tesseract</button>
+              <button class="shape-btn" onclick="setCADModel('helix')"><i class="fa-solid fa-dna"></i> DNA Helix</button>
+              <button class="shape-btn" onclick="setCADModel('drone')"><i class="fa-solid fa-drone"></i> Drone</button>
+              <button class="shape-btn" onclick="setCADModel('torus')"><i class="fa-solid fa-ring"></i> Wormhole</button>
             </div>
           </div>
         </div>
 
+        <!-- Custom Hologram Creator Studio -->
         <div class="glow-border-wrap sandbox-card">
           <div class="glow-inner sandbox-inner">
             <div class="panel-header">
-              <span><i class="fa-solid fa-palette"></i> TOUCH BLUEPRINT CANVAS</span>
-              <span class="mono-red">INTERACTIVE</span>
+              <span><i class="fa-solid fa-wand-magic-sparkles"></i> CREATE HOLOGRAM MATRIX</span>
+              <span class="mono-red">CREATOR ACTIVE</span>
             </div>
-            <p class="sandbox-tip">Drag across the matrix to design live energy circuits and vector constellations.</p>
+            <p class="sandbox-tip">Drag finger/mouse to generate 3D point vertices and knit holographic energy lattices.</p>
             <div class="user-sandbox-box">
               <canvas id="userCanvas" width="400" height="290"></canvas>
               <div class="canvas-controls-bar">
-                <button class="spark-btn btn-sm" onclick="clearUserDesign()"><i class="fa-solid fa-trash"></i> Clear</button>
-                <button class="spark-btn btn-sm btn-ghost" onclick="toggleConnectors()"><i class="fa-solid fa-bezier-curve"></i> Beams</button>
+                <button class="spark-btn btn-sm" onclick="clearUserDesign()"><i class="fa-solid fa-trash"></i> Reset</button>
+                <button class="spark-btn btn-sm btn-ghost" onclick="toggleConnectors()"><i class="fa-solid fa-bezier-curve"></i> Connect</button>
               </div>
             </div>
             <div class="palette-row">
-              <span>LINE BEAM:</span>
+              <span>HOLOGRAM COLOR:</span>
               <button class="color-dot c-blue active" onclick="setDrawColor('#00d4ff')"></button>
               <button class="color-dot c-red" onclick="setDrawColor('#ff003c')"></button>
               <button class="color-dot c-green" onclick="setDrawColor('#00ff88')"></button>
@@ -137,36 +140,33 @@
       </div>
     </section>
 
-    <!-- PAGE 3: ARCADE ARENA -->
+    <!-- PAGE 3: ARCADE ARENA (SINGLE PLAYER VS MULTIPLAYER) -->
     <section id="gameView" class="page-view">
       <div class="section-title">
         <h2>SPARK ARCADE NEXUS</h2>
-        <p>Featuring Real-time Auto Queue Matchmaking & High-Precision Engines</p>
+        <p>Switch between Solo Quests and Multiplayer Battlegrounds</p>
       </div>
 
-      <!-- Mode Selector: 1P, 2P, 3P -->
-      <div class="mode-select-cards">
-        <button class="tier-card active" id="tierBtn1P" onclick="switchPlayerTier('1P')">
+      <!-- MAIN DUAL-TIER SELECTOR -->
+      <div class="mode-select-cards" style="grid-template-columns: 1fr 1fr;">
+        <button class="tier-card active" id="tierBtn1P" onclick="switchMainTier('1P')">
           <i class="fa-solid fa-user"></i>
-          <div><h3>1 PLAYER</h3><p>Single Solo Campaign</p></div>
+          <div><h3>SINGLE PLAYER</h3><p>5 Action & Logic Quests</p></div>
         </button>
-        <button class="tier-card" id="tierBtn2P" onclick="switchPlayerTier('2P')">
+        <button class="tier-card" id="tierBtnMulti" onclick="switchMainTier('MULTI')">
           <i class="fa-solid fa-user-group"></i>
-          <div><h3>2 PLAYERS</h3><p>Online & Offline Match</p></div>
+          <div><h3>MULTIPLAYER</h3><p>Online Queue & 1-Phone Pass</p></div>
         </button>
-        <div class="tier-card coming-soon-card">
-          <span class="cs-badge">COMING SOON</span>
-          <i class="fa-solid fa-users"></i>
-          <div><h3>3 PLAYERS</h3><p>Tri-Core Battle</p></div>
-        </div>
       </div>
 
-      <!-- ================= TIER 1: SINGLE PLAYER ================= -->
-      <div class="tier-container active" id="tier1P">
+      <!-- ================= SINGLE PLAYER TIER ================= -->
+      <div class="tier-container active" id="tierSingle">
         <div class="game-select-bar">
           <button class="game-selector-btn active" data-game="space"><i class="fa-solid fa-jet-fighter"></i> Space Striker</button>
           <button class="game-selector-btn" data-game="flappy"><i class="fa-solid fa-feather-pointed"></i> Flappy Phoenix</button>
           <button class="game-selector-btn" data-game="dino"><i class="fa-solid fa-dragon"></i> Chrome Dino</button>
+          <button class="game-selector-btn" data-game="colorsort"><i class="fa-solid fa-flask"></i> Bolt Color Sort</button>
+          <button class="game-selector-btn" data-game="mathquiz"><i class="fa-solid fa-calculator"></i> Cyber Math Quiz</button>
         </div>
 
         <div class="glow-border-wrap mega-game-wrap">
@@ -183,40 +183,68 @@
                 <canvas id="spaceCanvas"></canvas>
                 <div class="arcade-overlay" id="spaceOverlay">
                   <h3>SPACE STRIKER</h3>
-                  <p>Touch & drag to steer the starfighter! Auto-lasers active. Shoot balls for laser upgrades!</p>
-                  <button class="spark-btn btn-primary btn-launch" onclick="startSpaceGame()">LAUNCH DEFENDER</button>
+                  <p>Touch & drag to steer ship! Shoot yellow/green orbs for Dual-Lasers and Speed Surges!</p>
+                  <button class="spark-btn btn-primary btn-launch" onclick="startSpaceGame()">LAUNCH SHIP</button>
                 </div>
               </div>
             </div>
 
-            <!-- 2. FLAPPY PHOENIX -->
+            <!-- 2. FLAPPY PHOENIX WITH BLUEPRINT CITY & 3D GLOW PILLARS -->
             <div class="arcade-view" id="flappyView">
               <div class="arcade-topbar">
                 <div class="topbar-stat">SCORE: <span id="flappyScore">0</span></div>
-                <button class="spark-btn btn-sm btn-primary" onclick="flapWing()">Flap (Space / Tap)</button>
+                <div class="topbar-stat">ENVIRONMENT: <span class="mono-cyan">CYBER CITY 🌆</span></div>
+                <button class="spark-btn btn-sm btn-primary" onclick="flapWing()">Flap (Space/Tap)</button>
               </div>
               <div class="canvas-stage big-stage">
                 <canvas id="flappyCanvas"></canvas>
                 <div class="arcade-overlay" id="flappyOverlay">
                   <h3>FLAPPY PHOENIX</h3>
-                  <p>Blueprint cyber phoenix flying smoothly through the grid!</p>
+                  <p>Fly over the blueprint cyber city skyline and dodge 3D glowing energy pillars!</p>
                   <button class="spark-btn btn-primary btn-launch" onclick="startFlappyGame()">FLY NOW</button>
                 </div>
               </div>
             </div>
 
-            <!-- 3. CHROME DINO (EXACT PIXEL ART) -->
+            <!-- 3. CHROME DINO WITH BLUEPRINT CLOUDS & CACTI -->
             <div class="arcade-view" id="dinoView">
               <div class="arcade-topbar">
-                <div class="topbar-stat">SCORE: <span id="dinoScore">00000</span></div>
-                <button class="spark-btn btn-sm btn-primary" onclick="jumpDinoAction()">Jump (Space / Tap)</button>
+                <div class="topbar-stat">DISTANCE: <span id="dinoScore">00000</span></div>
+                <button class="spark-btn btn-sm btn-primary" onclick="jumpDinoAction()">Jump (Space/Tap)</button>
               </div>
               <div class="canvas-stage big-stage dino-stage-bg">
                 <canvas id="dinoCanvas"></canvas>
                 <div class="arcade-overlay" id="dinoOverlay">
                   <h3>CHROME DINO RUNNER</h3>
-                  <p>Original No-Internet pixel runner with cactus hurdles & smooth pacing!</p>
+                  <p>Jump over cacti with blueprint cloud skies! Tap screen or hit Space to jump.</p>
                   <button class="spark-btn btn-primary btn-launch" onclick="startDinoGame()">START RUNNER</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. BOLT COLOR SORT PUZZLE -->
+            <div class="arcade-view" id="colorsortView">
+              <div class="arcade-topbar">
+                <div class="topbar-stat">STATUS: <span class="mono-cyan" id="csStatus">SORT COLORS TO MATCH TUBES</span></div>
+                <button class="spark-btn btn-sm btn-ghost" onclick="initColorSortGame()"><i class="fa-solid fa-rotate-left"></i> Restart</button>
+              </div>
+              <div class="cs-tubes-wrapper" id="csTubesContainer"></div>
+            </div>
+
+            <!-- 5. CYBER MATH QUIZ -->
+            <div class="arcade-view" id="mathquizView">
+              <div class="arcade-topbar">
+                <div class="topbar-stat">SCORE: <span id="mqScore">0</span></div>
+                <div class="topbar-stat">TIMER: <span class="mono-red" id="mqTimer">10s</span></div>
+                <div class="topbar-stat">STREAK: <span class="mono-gold" id="mqStreak">x0</span></div>
+              </div>
+              <div class="mq-quiz-card">
+                <div class="mq-equation" id="mqEquation">7 × 8 = ?</div>
+                <div class="mq-answers-grid" id="mqAnswersGrid"></div>
+                <div class="arcade-overlay active" id="mqOverlay">
+                  <h3>CYBER MATH QUIZ</h3>
+                  <p>Answer mental calculations as fast as possible to build streak multipliers!</p>
+                  <button class="spark-btn btn-primary btn-launch" onclick="startMathQuizGame()">START QUIZ</button>
                 </div>
               </div>
             </div>
@@ -225,15 +253,15 @@
         </div>
       </div>
 
-      <!-- ================= TIER 2: 2 PLAYERS ================= -->
-      <div class="tier-container" id="tier2P">
+      <!-- ================= MULTIPLAYER TIER ================= -->
+      <div class="tier-container" id="tierMulti">
         <div class="sub-mode-bar">
           <div class="sub-mode-toggle">
             <button class="sub-btn active" id="modeOfflineBtn" onclick="setMultiplayerMode('offline')">
-              <i class="fa-solid fa-mobile-screen"></i> Offline (Pass Screen)
+              <i class="fa-solid fa-mobile-screen"></i> 1 Phone (Pass Screen)
             </button>
             <button class="sub-btn" id="modeOnlineBtn" onclick="setMultiplayerMode('online')">
-              <i class="fa-solid fa-globe"></i> Online Auto-Queue
+              <i class="fa-solid fa-globe"></i> 2 Phones (Auto Queue)
             </button>
           </div>
 
@@ -246,65 +274,23 @@
         </div>
 
         <div class="game-select-bar">
-          <button class="game-selector-btn active" data-game="seabattle"><i class="fa-solid fa-anchor"></i> Sea Battle</button>
-          <button class="game-selector-btn" data-game="chess"><i class="fa-solid fa-chess"></i> Strict Chess</button>
+          <button class="game-selector-btn active" data-game="chess"><i class="fa-solid fa-chess"></i> Strict Chess</button>
+          <button class="game-selector-btn" data-game="tankwar"><i class="fa-solid fa-shield-halved"></i> Cyber Tank War</button>
+          <button class="game-selector-btn" data-game="seabattle"><i class="fa-solid fa-anchor"></i> Sea Battle</button>
           <button class="game-selector-btn" data-game="tictac"><i class="fa-solid fa-xmark"></i> Tic Tac Toe</button>
         </div>
 
         <div class="glow-border-wrap mega-game-wrap">
           <div class="glow-inner mega-game-inner">
 
-            <!-- 1. SEA BATTLE EXACT TO SCREENSHOTS -->
-            <div class="arcade-view active" id="seabattleView">
-              <div class="sb-container-pro" id="sbContainer">
-                
-                <!-- Step A: Privacy Pass Screen Notice -->
-                <div class="sb-pass-screen" id="sbPassScreen" style="display: none;">
-                  <h2 id="sbPassTitle">Hide the screen from your friend and place your ships</h2>
-                  <button class="spark-btn btn-primary sb-green-btn" onclick="dismissPassScreen()">OK</button>
-                </div>
-
-                <!-- Step B: Deploy Stage -->
-                <div class="sb-deploy-stage" id="sbDeployStage">
-                  <h3 id="sbDeployHeadline">Deploy your ships</h3>
-                  <p class="sb-sub">Tap ship in dock, then tap grid cell to position. Tap placed ship to rotate.</p>
-                  
-                  <div class="sb-dock-row" id="sbShipDock">
-                    <!-- 5 Ships rendered via JS -->
-                  </div>
-
-                  <div class="sb-grid-pro" id="sbDeployGrid"></div>
-
-                  <div class="sb-actions-row">
-                    <button class="spark-btn btn-ghost btn-sm" onclick="randomDeployShips()"><i class="fa-solid fa-dice"></i> RANDOM</button>
-                    <button class="spark-btn btn-primary sb-green-btn btn-sm" id="sbSaveBtn" onclick="savePlayerDeployment()"><i class="fa-solid fa-bolt"></i> SAVE</button>
-                  </div>
-                </div>
-
-                <!-- Step C: Battle Radar Stage -->
-                <div class="sb-battle-stage" id="sbBattleStage" style="display: none;">
-                  <div class="sb-battle-hud">
-                    <span class="sb-hud-tag" id="sbTurnTag">YOUR TURN!</span>
-                    <span class="sb-hud-counter" id="sbSinkCounter">SUNK: 0 / 5</span>
-                  </div>
-                  <div class="sb-radar-wrapper">
-                    <div class="sb-radar-cannon"></div>
-                    <div class="sb-grid-pro" id="sbRadarGrid"></div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <!-- 2. REAL STRICT CHESS (PROMOTION & GHOST MOVES) -->
-            <div class="arcade-view" id="chessView">
+            <!-- 1. STRICT CHESS -->
+            <div class="arcade-view active" id="chessView">
               <div class="arcade-topbar">
                 <div class="topbar-stat">TURN: <span class="mono-cyan" id="chessTurn">WHITE</span></div>
                 <div class="topbar-stat">STATUS: <span class="mono-green" id="chessStatus">MATCH ACTIVE</span></div>
                 <button class="spark-btn btn-sm btn-ghost" onclick="resetChessBoard()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
               </div>
 
-              <!-- Pawn Promotion Modal -->
               <div class="pawn-promo-modal" id="pawnPromoModal" style="display: none;">
                 <div class="promo-box">
                   <h4>CHOOSE PROMOTION PIECE</h4>
@@ -322,10 +308,59 @@
               </div>
             </div>
 
-            <!-- 3. TIC TAC TOE WITH SLASH STRIKE -->
+            <!-- 2. CYBER TANK WAR -->
+            <div class="arcade-view" id="tankwarView">
+              <div class="arcade-topbar">
+                <div class="topbar-stat">P1 BLUE HP: <span class="mono-cyan" id="p1TankHp">100</span></div>
+                <div class="topbar-stat">P2 RED HP: <span class="mono-red" id="p2TankHp">100</span></div>
+                <button class="spark-btn btn-sm btn-primary" onclick="startTankWar()">Start Tank Battle</button>
+              </div>
+              <div class="canvas-stage big-stage">
+                <canvas id="tankCanvas"></canvas>
+                <div class="arcade-overlay active" id="tankOverlay">
+                  <h3>CYBER TANK WAR</h3>
+                  <p>Player 1: W A S D to drive, Space to fire | Player 2: Arrow keys to drive, Enter to fire.</p>
+                  <button class="spark-btn btn-primary btn-launch" onclick="startTankWar()">BATTLE COMMENCE</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. SEA BATTLE -->
+            <div class="arcade-view" id="seabattleView">
+              <div class="sb-container-pro" id="sbContainer">
+                <div class="sb-pass-screen" id="sbPassScreen" style="display: none;">
+                  <h2 id="sbPassTitle">Hide the screen from your friend and place your ships</h2>
+                  <button class="spark-btn btn-primary sb-green-btn" onclick="dismissPassScreen()">OK</button>
+                </div>
+
+                <div class="sb-deploy-stage" id="sbDeployStage">
+                  <h3 id="sbDeployHeadline">Deploy your ships</h3>
+                  <p class="sb-sub">Tap ship in dock, then tap grid cell to position. Tap placed ship to rotate.</p>
+                  <div class="sb-dock-row" id="sbShipDock"></div>
+                  <div class="sb-grid-pro" id="sbDeployGrid"></div>
+                  <div class="sb-actions-row">
+                    <button class="spark-btn btn-ghost btn-sm" onclick="randomDeployShips()"><i class="fa-solid fa-dice"></i> RANDOM</button>
+                    <button class="spark-btn btn-primary sb-green-btn btn-sm" id="sbSaveBtn" onclick="savePlayerDeployment()"><i class="fa-solid fa-bolt"></i> SAVE</button>
+                  </div>
+                </div>
+
+                <div class="sb-battle-stage" id="sbBattleStage" style="display: none;">
+                  <div class="sb-battle-hud">
+                    <span class="sb-hud-tag" id="sbTurnTag">YOUR TURN!</span>
+                    <span class="sb-hud-counter" id="sbSinkCounter">HITS: 0 / 17</span>
+                  </div>
+                  <div class="sb-radar-wrapper">
+                    <div class="sb-grid-pro" id="sbRadarGrid"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. TIC TAC TOE WITH AUTO-RESET ON DRAW -->
             <div class="arcade-view" id="tictacView">
               <div class="arcade-topbar">
                 <div class="topbar-stat">TURN: <span class="mono-cyan" id="tttTurn">PLAYER 1 (O)</span></div>
+                <div class="topbar-stat">STATUS: <span class="mono-gold" id="tttStatus">READY</span></div>
                 <button class="spark-btn btn-sm btn-ghost" onclick="resetTTT2P()">Clear</button>
               </div>
               <div class="ttt-2p-stage">

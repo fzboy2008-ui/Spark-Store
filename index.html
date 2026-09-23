@@ -66,7 +66,7 @@
           <h1 class="owner-name">SPARK FOUNDER</h1>
           <p class="owner-role">Lead Architect & Systems Engineer</p>
           <p class="owner-bio">
-            Welcome to the central node of <strong>SPARK</strong>. Engineered with single-player blueprint universes, 2-player multiplayer duels, and 3D holographic CAD studios.
+            Welcome to the central node of <strong>SPARK</strong>. Engineered with 3D astrophysics holograms, real-time procedural Web Audio, and arcade battlegrounds.
           </p>
 
           <div class="owner-actions" style="margin-top: 15px;">
@@ -78,80 +78,98 @@
       </div>
     </section>
 
-    <!-- PAGE 2: SHOWCASE (5 HOLOGRAMS + CREATOR + AUDIO MATRIX) -->
+    <!-- PAGE 2: SHOWCASE (3 MODES: VIEWER, CREATOR, HARMONIC SYNTH) -->
     <section id="showcaseView" class="page-view">
       <div class="section-title">
-        <h2>QUANTUM LAB & HOLOGRAM CREATOR</h2>
-        <p>5 Dynamic 3D Blueprint Holograms, Custom CAD Builder & Audio Vector Synthesizer</p>
+        <h2>3D QUANTUM LAB & CREATOR</h2>
+        <p>Hologram Viewer, Live 3D Mesh Creator, and Quantum Harmonic Synthesizer</p>
       </div>
 
       <div class="showcase-layout">
-        <!-- 5 Hologram Viewer -->
+        <!-- 1. Hologram Viewer (Galaxy, Vortex, Black Hole, Spark) -->
         <div class="glow-border-wrap hologram-card">
           <div class="glow-inner hologram-inner">
             <div class="panel-header">
-              <span><i class="fa-solid fa-cubes"></i> 3D BLUEPRINT HOLOGRAM MATRIX</span>
-              <span class="mono-cyan" id="cadMeshType">STARFIGHTER JET</span>
+              <span><i class="fa-solid fa-atom"></i> 1. HOLOGRAM VIEWER</span>
+              <span class="mono-cyan" id="cadMeshType">GALAXY SPIRAL</span>
             </div>
 
             <div class="hologram-viewport" id="holoViewport">
               <canvas id="aiHologramCanvas" width="500" height="330"></canvas>
               <div class="holo-hud">
-                <div>MODEL: <strong class="mono-red" id="cadCoords">CYBER JET (320 NODES)</strong></div>
-                <div>RENDER: <span class="mono-cyan">ROTATING BLUEPRINT</span></div>
-                <div>GESTURE: <span class="mono-green">TOUCH / MOUSE SPIN</span></div>
+                <div>STRUCTURE: <strong class="mono-red" id="cadCoords">SPIRAL ARMS (340 VERTS)</strong></div>
+                <div>RENDER MODE: <span class="mono-cyan">ASTROPHYSICS BLUEPRINT</span></div>
+                <div>CONTROL: <span class="mono-green">DRAG / TOUCH ROTATE</span></div>
               </div>
             </div>
 
-            <!-- 5 Hologram Options -->
-            <div class="shape-switch-row">
-              <button class="shape-btn active" onclick="setCADModel('jet')"><i class="fa-solid fa-jet-fighter"></i> Jet</button>
-              <button class="shape-btn" onclick="setCADModel('tesseract')"><i class="fa-solid fa-cube"></i> Tesseract</button>
-              <button class="shape-btn" onclick="setCADModel('helix')"><i class="fa-solid fa-dna"></i> DNA Helix</button>
-              <button class="shape-btn" onclick="setCADModel('drone')"><i class="fa-solid fa-drone"></i> Drone</button>
-              <button class="shape-btn" onclick="setCADModel('torus')"><i class="fa-solid fa-ring"></i> Wormhole</button>
+            <!-- 4 Specific Hologram Buttons -->
+            <div class="shape-switch-row" style="grid-template-columns: repeat(4, 1fr);">
+              <button class="shape-btn active" onclick="setCADModel('galaxy')"><i class="fa-solid fa-sun"></i> Galaxy</button>
+              <button class="shape-btn" onclick="setCADModel('vortex')"><i class="fa-solid fa-tornado"></i> Vortex</button>
+              <button class="shape-btn" onclick="setCADModel('blackhole')"><i class="fa-solid fa-circle-notch"></i> Black Hole</button>
+              <button class="shape-btn" onclick="setCADModel('spark')"><i class="fa-solid fa-bolt"></i> Spark</button>
             </div>
           </div>
         </div>
 
-        <!-- Custom Hologram Creator Studio -->
+        <!-- 2. Live Hologram Creator -->
         <div class="glow-border-wrap sandbox-card">
           <div class="glow-inner sandbox-inner">
             <div class="panel-header">
-              <span><i class="fa-solid fa-wand-magic-sparkles"></i> CREATE HOLOGRAM MATRIX</span>
-              <span class="mono-red">CREATOR ACTIVE</span>
+              <span><i class="fa-solid fa-wand-magic-sparkles"></i> 2. HOLOGRAM CREATOR</span>
+              <span class="mono-red">CREATIVE BUILDER</span>
             </div>
-            <p class="sandbox-tip">Drag finger/mouse to generate 3D point vertices and knit holographic energy lattices.</p>
+            <p class="sandbox-tip">Drag across the canvas to weave custom 3D geometric nodes.</p>
             <div class="user-sandbox-box">
               <canvas id="userCanvas" width="400" height="290"></canvas>
               <div class="canvas-controls-bar">
                 <button class="spark-btn btn-sm" onclick="clearUserDesign()"><i class="fa-solid fa-trash"></i> Reset</button>
-                <button class="spark-btn btn-sm btn-ghost" onclick="toggleConnectors()"><i class="fa-solid fa-bezier-curve"></i> Connect</button>
+                <button class="spark-btn btn-sm btn-ghost" onclick="toggleConnectors()"><i class="fa-solid fa-bezier-curve"></i> Beams</button>
               </div>
             </div>
             <div class="palette-row">
-              <span>HOLOGRAM COLOR:</span>
+              <span>ACTIVE BEAM:</span>
               <button class="color-dot c-blue active" onclick="setDrawColor('#00d4ff')"></button>
               <button class="color-dot c-red" onclick="setDrawColor('#ff003c')"></button>
               <button class="color-dot c-green" onclick="setDrawColor('#00ff88')"></button>
             </div>
           </div>
         </div>
+
+        <!-- 3. New 3rd Option: Quantum Audio Harmonic Visualizer -->
+        <div class="glow-border-wrap" style="grid-column: 1 / -1;">
+          <div class="glow-inner">
+            <div class="panel-header">
+              <span><i class="fa-solid fa-wave-square"></i> 3. QUANTUM HARMONIC SYNTHESIZER</span>
+              <span class="mono-cyan" id="synthStatus">AUDIO ENGINE ACTIVE</span>
+            </div>
+            <p class="sandbox-tip">Real-time procedural Web Audio synthesizer with animated frequency spectrum waves.</p>
+            <div style="position: relative; height: 160px; background: #020306; border-radius: 14px; overflow: hidden; border: 1px dashed rgba(0, 212, 255, 0.25);">
+              <canvas id="synthCanvas" style="width: 100%; height: 100%; display: block;"></canvas>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 12px; justify-content: center; flex-wrap: wrap;">
+              <button class="spark-btn btn-sm btn-primary" onclick="triggerHarmonicBurst(432)"><i class="fa-solid fa-play"></i> Harmonic 432Hz</button>
+              <button class="spark-btn btn-sm btn-ghost" onclick="triggerHarmonicBurst(528)"><i class="fa-solid fa-bolt"></i> Solfeggio 528Hz</button>
+              <button class="spark-btn btn-sm btn-red" onclick="triggerHarmonicBurst(852)"><i class="fa-solid fa-fire"></i> Sub-Bass 852Hz</button>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- PAGE 3: ARCADE ARENA (SINGLE PLAYER VS MULTIPLAYER) -->
+    <!-- PAGE 3: ARCADE ARENA -->
     <section id="gameView" class="page-view">
       <div class="section-title">
         <h2>SPARK ARCADE NEXUS</h2>
         <p>Switch between Solo Quests and Multiplayer Battlegrounds</p>
       </div>
 
-      <!-- MAIN DUAL-TIER SELECTOR -->
+      <!-- MAIN TIER SELECTOR: SINGLE PLAYER VS MULTIPLAYER -->
       <div class="mode-select-cards" style="grid-template-columns: 1fr 1fr;">
         <button class="tier-card active" id="tierBtn1P" onclick="switchMainTier('1P')">
           <i class="fa-solid fa-user"></i>
-          <div><h3>SINGLE PLAYER</h3><p>5 Action & Logic Quests</p></div>
+          <div><h3>SINGLE PLAYER</h3><p>5 Quests with Audio FX</p></div>
         </button>
         <button class="tier-card" id="tierBtnMulti" onclick="switchMainTier('MULTI')">
           <i class="fa-solid fa-user-group"></i>
@@ -159,7 +177,7 @@
         </button>
       </div>
 
-      <!-- ================= SINGLE PLAYER TIER ================= -->
+      <!-- SINGLE PLAYER TIER -->
       <div class="tier-container active" id="tierSingle">
         <div class="game-select-bar">
           <button class="game-selector-btn active" data-game="space"><i class="fa-solid fa-jet-fighter"></i> Space Striker</button>
@@ -183,7 +201,7 @@
                 <canvas id="spaceCanvas"></canvas>
                 <div class="arcade-overlay" id="spaceOverlay">
                   <h3>SPACE STRIKER</h3>
-                  <p>Touch & drag to steer ship! Shoot yellow/green orbs for Dual-Lasers and Speed Surges!</p>
+                  <p>Touch & drag to steer! Auto-lasers with sound fx. Shoot orbs for laser upgrades!</p>
                   <button class="spark-btn btn-primary btn-launch" onclick="startSpaceGame()">LAUNCH SHIP</button>
                 </div>
               </div>
@@ -193,30 +211,30 @@
             <div class="arcade-view" id="flappyView">
               <div class="arcade-topbar">
                 <div class="topbar-stat">SCORE: <span id="flappyScore">0</span></div>
-                <div class="topbar-stat">ENVIRONMENT: <span class="mono-cyan">CYBER CITY 🌆</span></div>
+                <div class="topbar-stat">SKYLINE: <span class="mono-cyan">CYBER CITY 🌆</span></div>
                 <button class="spark-btn btn-sm btn-primary" onclick="flapWing()">Flap (Space/Tap)</button>
               </div>
               <div class="canvas-stage big-stage">
                 <canvas id="flappyCanvas"></canvas>
                 <div class="arcade-overlay" id="flappyOverlay">
                   <h3>FLAPPY PHOENIX</h3>
-                  <p>Fly over the blueprint cyber city skyline and dodge 3D glowing energy pillars!</p>
+                  <p>Fly over blueprint cyber skyscrapers & dodge 3D glowing energy pillars!</p>
                   <button class="spark-btn btn-primary btn-launch" onclick="startFlappyGame()">FLY NOW</button>
                 </div>
               </div>
             </div>
 
-            <!-- 3. CHROME DINO WITH BLUEPRINT CLOUDS & CACTI -->
+            <!-- 3. CHROME DINO (100% FIXED JUMP & BLUEPRINT CLOUDS) -->
             <div class="arcade-view" id="dinoView">
               <div class="arcade-topbar">
-                <div class="topbar-stat">DISTANCE: <span id="dinoScore">00000</span></div>
+                <div class="topbar-stat">SCORE: <span id="dinoScore">00000</span></div>
                 <button class="spark-btn btn-sm btn-primary" onclick="jumpDinoAction()">Jump (Space/Tap)</button>
               </div>
               <div class="canvas-stage big-stage dino-stage-bg">
                 <canvas id="dinoCanvas"></canvas>
                 <div class="arcade-overlay" id="dinoOverlay">
                   <h3>CHROME DINO RUNNER</h3>
-                  <p>Jump over cacti with blueprint cloud skies! Tap screen or hit Space to jump.</p>
+                  <p>Jump over cacti with blueprint cloud skies! Tap screen or hit Space to leap.</p>
                   <button class="spark-btn btn-primary btn-launch" onclick="startDinoGame()">START RUNNER</button>
                 </div>
               </div>
@@ -243,7 +261,7 @@
                 <div class="mq-answers-grid" id="mqAnswersGrid"></div>
                 <div class="arcade-overlay active" id="mqOverlay">
                   <h3>CYBER MATH QUIZ</h3>
-                  <p>Answer mental calculations as fast as possible to build streak multipliers!</p>
+                  <p>Fast calculations with synth audio feedback!</p>
                   <button class="spark-btn btn-primary btn-launch" onclick="startMathQuizGame()">START QUIZ</button>
                 </div>
               </div>
@@ -253,7 +271,7 @@
         </div>
       </div>
 
-      <!-- ================= MULTIPLAYER TIER ================= -->
+      <!-- MULTIPLAYER TIER -->
       <div class="tier-container" id="tierMulti">
         <div class="sub-mode-bar">
           <div class="sub-mode-toggle">
@@ -308,7 +326,7 @@
               </div>
             </div>
 
-            <!-- 2. CYBER TANK WAR -->
+            <!-- 2. UPGRADED CYBER TANK WAR (WALLS, RICOCHET & POWER-UPS) -->
             <div class="arcade-view" id="tankwarView">
               <div class="arcade-topbar">
                 <div class="topbar-stat">P1 BLUE HP: <span class="mono-cyan" id="p1TankHp">100</span></div>
@@ -318,8 +336,8 @@
               <div class="canvas-stage big-stage">
                 <canvas id="tankCanvas"></canvas>
                 <div class="arcade-overlay active" id="tankOverlay">
-                  <h3>CYBER TANK WAR</h3>
-                  <p>Player 1: W A S D to drive, Space to fire | Player 2: Arrow keys to drive, Enter to fire.</p>
+                  <h3>CYBER TANK WAR ULTRA</h3>
+                  <p>Bouncing laser bullets, reflective wall bunkers & shield power-ups!<br>P1: W A S D + Space | P2: Arrows + Enter</p>
                   <button class="spark-btn btn-primary btn-launch" onclick="startTankWar()">BATTLE COMMENCE</button>
                 </div>
               </div>
@@ -335,7 +353,7 @@
 
                 <div class="sb-deploy-stage" id="sbDeployStage">
                   <h3 id="sbDeployHeadline">Deploy your ships</h3>
-                  <p class="sb-sub">Tap ship in dock, then tap grid cell to position. Tap placed ship to rotate.</p>
+                  <p class="sb-sub">Tap ship in dock, then tap grid cell to position.</p>
                   <div class="sb-dock-row" id="sbShipDock"></div>
                   <div class="sb-grid-pro" id="sbDeployGrid"></div>
                   <div class="sb-actions-row">

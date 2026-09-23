@@ -1,5 +1,45 @@
 /* ==========================================================
-   GLOBAL SESSION & AUTH SYSTEM (UNIQUE NAME & PASSWORD)
+   AUDIO SYNTHESIZER ENGINE (PROCEDURAL SOUNDS & FX)
+========================================================== */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioEngine = null;
+
+function playProceduralSound(freq = 440, type = "sine", duration = 0.1, gainVal = 0.08) {
+  try {
+    if (!audioEngine) audioEngine = new AudioCtx();
+    if (audioEngine.state === "suspended") audioEngine.resume();
+
+    const osc = audioEngine.createOscillator();
+    const gain = audioEngine.createGain();
+
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioEngine.currentTime);
+
+    gain.gain.setValueAtTime(gainVal, audioEngine.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioEngine.currentTime + duration);
+
+    osc.connect(gain);
+    gain.connect(audioEngine.destination);
+
+    osc.start();
+    osc.stop(audioEngine.currentTime + duration);
+  } catch (e) {
+    // Ignore audio lock
+  }
+}
+
+// Sound Presets
+const FX = {
+  jump: () => playProceduralSound(620, "triangle", 0.12, 0.09),
+  laser: () => playProceduralSound(880, "sawtooth", 0.08, 0.05),
+  boom: () => playProceduralSound(130, "square", 0.25, 0.1),
+  hit: () => playProceduralSound(320, "square", 0.1, 0.07),
+  powerup: () => playProceduralSound(950, "sine", 0.25, 0.08),
+  chessMove: () => playProceduralSound(540, "sine", 0.08, 0.06)
+};
+
+/* ==========================================================
+   GLOBAL SESSION & AUTH SYSTEM (NAME & PASSWORD)
 ========================================================== */
 let currentAgent = localStorage.getItem("spark_agent_name") || "";
 
@@ -37,6 +77,7 @@ function registerAndEnterArcade() {
 
   document.getElementById("authModal").style.display = "none";
   document.getElementById("headerAgentTag").innerText = name.toUpperCase();
+  FX.powerup();
 }
 
 window.addEventListener("DOMContentLoaded", checkAuthStatus);
@@ -107,7 +148,7 @@ let multiplayerMode = "offline";
 let peer = null;
 let netConn = null;
 let myPlayerIndex = 1;
-const QUEUE_ROOM_BASE = "spark_auto_queue_v3_";
+const QUEUE_ROOM_BASE = "spark_auto_queue_v4_";
 
 function setMultiplayerMode(mode) {
   multiplayerMode = mode;
@@ -146,6 +187,7 @@ function tryConnectToQueue(slotIndex) {
     netConn = conn;
     status.innerText = "MATCH FOUND! YOU ARE P2";
     setupNetListeners();
+    FX.powerup();
   });
   conn.on('error', () => {
     clearTimeout(timeout);
@@ -167,11 +209,12 @@ function hostQueueMatch() {
     status.innerText = "OPPONENT JOINED! YOU ARE P1";
     setupNetListeners();
     sendNetData({ type: "SYNC_START", agent: currentAgent });
+    FX.powerup();
   });
   peer.on('error', () => {
     peer = new Peer(QUEUE_ROOM_BASE + "2");
     peer.on('open', () => { status.innerText = "LOBBY 2 ACTIVE..."; myPlayerIndex = 1; });
-    peer.on('connection', (conn) => { netConn = conn; status.innerText = "OPPONENT JOINED!"; setupNetListeners(); });
+    peer.on('connection', (conn) => { netConn = conn; status.innerText = "OPPONENT JOINED!"; setupNetListeners(); FX.powerup(); });
   });
 }
 
@@ -189,15 +232,13 @@ function setupNetListeners() {
       executeStrictChessMove(data.from, data.to, false);
     } else if (data.type === "TTT_MOVE") {
       handleTTT2PMove(data.index, false);
-    } else if (data.type === "TANK_UPDATE") {
-      syncOpponentTank(data);
     }
   });
 }
 function sendNetData(data) { if (netConn && netConn.open) netConn.send(data); }
 
 /* ==========================================================
-   1. SINGLE PLAYER: SPACE STRIKER (FIXED TOUCH & DRAG)
+   1. SINGLE PLAYER: SPACE STRIKER (TOUCH DRAG & SOUND FX)
 ========================================================== */
 let spaceActive = false, sShipX = 400, sBullets = [], sMeteors = [], sPowerBalls = [];
 let sScore = 0, sAnimId = null, sLaserTier = 1, sSpeedBoost = 1, sLastShot = 0, sTimeTicks = 0;
@@ -248,7 +289,8 @@ function drawBlueprintFighter(ctx, x, y) {
   ctx.closePath();
   ctx.stroke(); ctx.fill();
 
-  ctx.fillStyle = "#ff003c"; ctx.fillRect(-5, 24, 10, 8 + Math.random()*5);
+  ctx.fillStyle = "#ff003c";
+  ctx.fillRect(-5, 24, 10, 8 + Math.random()*5);
   ctx.restore();
 }
 
@@ -264,6 +306,7 @@ function loopSpace() {
   const now = Date.now();
   if (now - sLastShot > (220 / sSpeedBoost)) {
     sLastShot = now;
+    FX.laser();
     if (sLaserTier === 1) {
       sBullets.push({ x: sShipX, y: sCanvas.height - 40, vx: 0 });
     } else if (sLaserTier === 2) {
@@ -300,6 +343,7 @@ function loopSpace() {
 
     sBullets.forEach((b, bIdx) => {
       if (Math.hypot(b.x - p.x, b.y - p.y) < p.r + 5) {
+        FX.powerup();
         if (p.type === "LASER") {
           sLaserTier = Math.min(sLaserTier + 1, 3);
           document.getElementById("laserBuff").innerText = sLaserTier === 2 ? "DUAL LASER" : "QUAD SPREAD";
@@ -320,11 +364,13 @@ function loopSpace() {
   for (let mIdx = sMeteors.length - 1; mIdx >= 0; mIdx--) {
     let m = sMeteors[mIdx];
     m.y += meteorSpeed;
+
     ctx.strokeStyle = "#ff003c"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI*2); ctx.stroke();
 
     sBullets.forEach((b, bIdx) => {
       if (Math.hypot(b.x - m.x, b.y - m.y) < m.r + 5) {
+        FX.hit();
         sMeteors.splice(mIdx, 1); sBullets.splice(bIdx, 1);
         sScore += 10; document.getElementById("spaceScore").innerText = sScore;
       }
@@ -332,6 +378,7 @@ function loopSpace() {
 
     if (m.y > sCanvas.height + 20) {
       spaceActive = false;
+      FX.boom();
       showOverlay("spaceOverlay", "SHIELD CRITICAL", `Score: <strong>${sScore}</strong>`, "Relaunch", "startSpaceGame()");
       return;
     }
@@ -359,7 +406,14 @@ function startFlappyGame() {
   loopFlappy();
 }
 
-function flapWing() { if (flappyActive) fBirdV = -6.5; else startFlappyGame(); }
+function flapWing() {
+  if (flappyActive) {
+    fBirdV = -6.5;
+    FX.jump();
+  } else {
+    startFlappyGame();
+  }
+}
 fCanvas?.addEventListener("pointerdown", flapWing);
 window.addEventListener("keydown", (e) => { if (e.code==="Space" && document.getElementById("flappyView")?.classList.contains("active")) flapWing(); });
 
@@ -375,7 +429,6 @@ function drawBlueprintCity(ctx, scrollX) {
     const h = heights[i % heights.length];
     const y = fCanvas.height - h;
     ctx.strokeRect(x, y, buildingWidth - 6, h);
-    // Draw matrix window grids
     for (let r = y + 10; r < fCanvas.height - 10; r += 18) {
       for (let c = x + 8; c < x + buildingWidth - 14; c += 14) {
         ctx.strokeRect(c, r, 6, 8);
@@ -386,7 +439,6 @@ function drawBlueprintCity(ctx, scrollX) {
 }
 
 function draw3DGlowingPillar(ctx, x, topH, bottomY) {
-  // Top 3D Pillar
   let gradTop = ctx.createLinearGradient(x, 0, x + 50, 0);
   gradTop.addColorStop(0, "#ff003c");
   gradTop.addColorStop(0.5, "#ff597b");
@@ -396,7 +448,6 @@ function draw3DGlowingPillar(ctx, x, topH, bottomY) {
   ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2;
   ctx.strokeRect(x, 0, 50, topH);
 
-  // Bottom 3D Pillar
   let gradBot = ctx.createLinearGradient(x, bottomY, x + 50, bottomY);
   gradBot.addColorStop(0, "#00d4ff");
   gradBot.addColorStop(0.5, "#7ae7ff");
@@ -417,7 +468,6 @@ function loopFlappy() {
 
   fBirdV += 0.35; fBirdY += fBirdV; wingCycle += 0.24;
 
-  // Draw Blueprint Bird
   ctx.save();
   ctx.translate(80, fBirdY);
   ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2.2;
@@ -439,15 +489,22 @@ function loopFlappy() {
     if (80 + 14 > p.x && 80 - 14 < p.x + 50) {
       if (fBirdY - 10 < p.top || fBirdY + 10 > p.bottom) {
         flappyActive = false;
+        FX.boom();
         showOverlay("flappyOverlay", "GATEWAY LOST", `Score: <strong>${fScore}</strong>`, "Fly Again", "startFlappyGame()");
         return;
       }
     }
-    if (!p.passed && p.x < 80) { p.passed = true; fScore++; document.getElementById("flappyScore").innerText = fScore; }
+    if (!p.passed && p.x < 80) {
+      p.passed = true;
+      fScore++;
+      document.getElementById("flappyScore").innerText = fScore;
+      FX.hit();
+    }
   }
 
   if (fBirdY > fCanvas.height - 15 || fBirdY < 15) {
     flappyActive = false;
+    FX.boom();
     showOverlay("flappyOverlay", "CRASHED", `Score: <strong>${fScore}</strong>`, "Fly Again", "startFlappyGame()");
     return;
   }
@@ -456,7 +513,7 @@ function loopFlappy() {
 }
 
 /* ==========================================================
-   3. SINGLE PLAYER: CHROME DINO (BLUEPRINT CLOUDS & CACTI)
+   3. SINGLE PLAYER: CHROME DINO (FIXED JUMP + AUDIO)
 ========================================================== */
 let dinoActive = false, dY = 0, dV = 0, dScore = 0, dCacti = [], dClouds = [], dAnimId = null;
 let dLegCycle = 0;
@@ -473,12 +530,25 @@ function startDinoGame() {
 }
 
 function jumpDinoAction() {
-  if (!dinoActive) return startDinoGame();
-  if (dY === 0) dV = 13.5; // High responsive jump
+  if (!dinoActive) {
+    startDinoGame();
+    return;
+  }
+  // 100% Reliable Jump Execution
+  if (dY <= 2) {
+    dV = 13.5;
+    FX.jump();
+  }
 }
-dCanvas?.addEventListener("pointerdown", jumpDinoAction);
+
+// Bounded touch & pointer listeners directly on canvas + window
+dCanvas?.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  jumpDinoAction();
+});
+
 window.addEventListener("keydown", (e) => {
-  if (e.code === "Space" && document.getElementById("dinoView")?.classList.contains("active")) {
+  if ((e.code === "Space" || e.code === "ArrowUp") && document.getElementById("dinoView")?.classList.contains("active")) {
     e.preventDefault();
     jumpDinoAction();
   }
@@ -562,6 +632,7 @@ function loopDino() {
 
     if (70 + 12 > c.x && 70 - 4 < c.x + c.w && dY < c.h) {
       dinoActive = false;
+      FX.boom();
       showOverlay("dinoOverlay", "GAME OVER", `Score: <strong>${Math.floor(dScore)}</strong>`, "Run Again", "startDinoGame()");
       return;
     }
@@ -577,14 +648,12 @@ function loopDino() {
    4. SINGLE PLAYER: BOLT COLOR SORT PUZZLE
 ========================================================== */
 const TUBE_CAPACITY = 4;
-const BOLT_COLORS = ["#00d4ff", "#ff003c", "#ffbe0b", "#00ff88"];
 let csTubes = [];
 let csSelectedTube = null;
 
 function initColorSortGame() {
   csSelectedTube = null;
   document.getElementById("csStatus").innerText = "SORT COLORS TO MATCH TUBES";
-  // Generate random solvable color arrays
   let pool = [
     "#00d4ff","#00d4ff","#00d4ff","#00d4ff",
     "#ff003c","#ff003c","#ff003c","#ff003c",
@@ -595,7 +664,7 @@ function initColorSortGame() {
     pool.slice(0, 4),
     pool.slice(4, 8),
     pool.slice(8, 12),
-    [], [] // 2 Empty tubes
+    [], []
   ];
   renderColorSort();
 }
@@ -610,7 +679,6 @@ function renderColorSort() {
     tubeEl.className = `cs-tube ${csSelectedTube === tIdx ? "selected" : ""}`;
     tubeEl.onclick = () => onTubeClick(tIdx);
 
-    // Render bolts from top to bottom
     for (let i = TUBE_CAPACITY - 1; i >= 0; i--) {
       const bolt = document.createElement("div");
       bolt.className = "cs-bolt";
@@ -630,6 +698,7 @@ function onTubeClick(tIdx) {
   if (csSelectedTube === null) {
     if (csTubes[tIdx].length > 0) {
       csSelectedTube = tIdx;
+      FX.chessMove();
       renderColorSort();
     }
   } else {
@@ -639,10 +708,10 @@ function onTubeClick(tIdx) {
     } else {
       const src = csTubes[csSelectedTube];
       const dest = csTubes[tIdx];
-      // Pour rule: dest not full AND (dest empty OR top matches)
       if (dest.length < TUBE_CAPACITY && (dest.length === 0 || dest[dest.length - 1] === src[src.length - 1])) {
         dest.push(src.pop());
         csSelectedTube = null;
+        FX.hit();
         renderColorSort();
         checkColorSortWin();
       } else {
@@ -657,6 +726,7 @@ function checkColorSortWin() {
   const complete = csTubes.every(t => t.length === 0 || (t.length === TUBE_CAPACITY && t.every(c => c === t[0])));
   if (complete) {
     document.getElementById("csStatus").innerText = "PUZZLE SOLVED! VICTORY!";
+    FX.powerup();
     setTimeout(() => { alert("PUZZLE SOLVED!"); initColorSortGame(); }, 400);
   }
 }
@@ -683,12 +753,11 @@ function generateNextMathQuestion() {
   let a = Math.floor(Math.random() * 12) + 2;
   let b = Math.floor(Math.random() * 12) + 2;
   if (op === "+") currentAnswer = a + b;
-  else if (op === "-") { currentAnswer = a; a = a + b; } // Avoid negative
+  else if (op === "-") { currentAnswer = a; a = a + b; }
   else currentAnswer = a * b;
 
   document.getElementById("mqEquation").innerText = `${a} ${op} ${b} = ?`;
 
-  // Options
   let opts = [currentAnswer, currentAnswer + 2, currentAnswer - 3, currentAnswer + 5].sort(() => Math.random() - 0.5);
   const grid = document.getElementById("mqAnswersGrid");
   grid.innerHTML = "";
@@ -705,6 +774,7 @@ function generateNextMathQuestion() {
     document.getElementById("mqTimer").innerText = `${mqTimer}s`;
     if (mqTimer <= 0) {
       clearInterval(mqInterval);
+      FX.boom();
       showOverlay("mqOverlay", "TIME'S UP", `Final Score: <strong>${mqScore}</strong>`, "Play Again", "startMathQuizGame()");
     }
   }, 1000);
@@ -712,17 +782,19 @@ function generateNextMathQuestion() {
 
 function onMathAnswerClick(selected) {
   if (selected === currentAnswer) {
+    FX.hit();
     mqScore += 10 * (mqStreak + 1);
     mqStreak++;
     generateNextMathQuestion();
   } else {
     clearInterval(mqInterval);
+    FX.boom();
     showOverlay("mqOverlay", "WRONG EQUATION", `Final Score: <strong>${mqScore}</strong>`, "Retry", "startMathQuizGame()");
   }
 }
 
 /* ==========================================================
-   2-PLAYER GAME 1: STRICT CHESS (PROMOTION & GHOST MOVES)
+   2-PLAYER GAME 1: STRICT CHESS (PROMOTION & CHECK RULES)
 ========================================================== */
 const INITIAL_CHESS_ARRAY = [
   "r","n","b","q","k","b","n","r",
@@ -830,6 +902,7 @@ function renderStrictChess() {
     c.className = `chess-cell ${isLight ? "light" : "dark"}`;
 
     if (cSelected === i) c.classList.add("selected");
+
     if (cLegalMoves.includes(i)) {
       const dot = document.createElement("span");
       dot.className = "ghost-move-dot";
@@ -862,6 +935,7 @@ function onChessClick(idx) {
     if (isOwn) {
       cSelected = idx;
       cLegalMoves = computeStrictMoves(idx);
+      FX.chessMove();
       renderStrictChess();
     }
   } else {
@@ -871,6 +945,7 @@ function onChessClick(idx) {
     } else if (isOwn) {
       cSelected = idx;
       cLegalMoves = computeStrictMoves(idx);
+      FX.chessMove();
       renderStrictChess();
     } else if (cLegalMoves.includes(idx)) {
       const pieceType = cBoard[cSelected].toLowerCase();
@@ -900,10 +975,12 @@ function executeStrictChessMove(from, to, shouldBroadcast) {
   cBoard[from] = "";
   cSelected = null;
   cLegalMoves = [];
+  FX.hit();
 
   // King or Queen captured ends match immediately
   if (captured.toLowerCase() === "k" || captured.toLowerCase() === "q") {
     const winner = cTurn === "W" ? "PLAYER 1 (WHITE)" : "PLAYER 2 (BLACK)";
+    FX.powerup();
     alert(`CHECKMATE // GAME OVER! ${winner} captured the Royal and won the match!`);
     resetChessBoard();
     return;
@@ -919,22 +996,35 @@ function executeStrictChessMove(from, to, shouldBroadcast) {
 }
 
 /* ==========================================================
-   2-PLAYER GAME 2: CYBER TANK WAR
+   2-PLAYER GAME 2: CYBER TANK WAR (WALLS, RICOCHET & POWER-UPS)
 ========================================================== */
 let tankActive = false, tankAnimId = null;
 const tankCanvas = document.getElementById("tankCanvas");
-let p1Tank = { x: 80, y: 200, angle: 0, hp: 100, color: "#00d4ff" };
-let p2Tank = { x: 720, y: 200, angle: Math.PI, hp: 100, color: "#ff003c" };
+let p1Tank = { x: 80, y: 200, angle: 0, hp: 100, shield: false, color: "#00d4ff" };
+let p2Tank = { x: 720, y: 200, angle: Math.PI, hp: 100, shield: false, color: "#ff003c" };
 let tankBullets = [];
 let tankKeys = {};
+let tankBunkers = [];
+let tankAuraBall = null;
 
 function startTankWar() {
   if (!tankCanvas) return;
   setupCanvas(tankCanvas);
-  p1Tank = { x: 80, y: tankCanvas.height/2, angle: 0, hp: 100, color: "#00d4ff" };
-  p2Tank = { x: tankCanvas.width - 80, y: tankCanvas.height/2, angle: Math.PI, hp: 100, color: "#ff003c" };
+  p1Tank = { x: 80, y: tankCanvas.height/2, angle: 0, hp: 100, shield: false, color: "#00d4ff" };
+  p2Tank = { x: tankCanvas.width - 80, y: tankCanvas.height/2, angle: Math.PI, hp: 100, shield: false, color: "#ff003c" };
   tankBullets = [];
   tankActive = true;
+
+  // 3 Reflective bunker walls
+  const cx = tankCanvas.width / 2;
+  const cy = tankCanvas.height / 2;
+  tankBunkers = [
+    { x: cx - 15, y: cy - 90, w: 30, h: 60 },
+    { x: cx - 15, y: cy + 30, w: 30, h: 60 },
+    { x: cx - 60, y: cy - 10, w: 120, h: 20 }
+  ];
+
+  tankAuraBall = { x: cx, y: cy - 120, r: 14 };
 
   document.getElementById("p1TankHp").innerText = "100";
   document.getElementById("p2TankHp").innerText = "100";
@@ -945,13 +1035,13 @@ function startTankWar() {
 
 window.addEventListener("keydown", (e) => {
   tankKeys[e.key] = true;
-  // Fire P1
   if (e.key === " " && tankActive) {
-    tankBullets.push({ x: p1Tank.x, y: p1Tank.y, vx: Math.cos(p1Tank.angle)*7, vy: Math.sin(p1Tank.angle)*7, owner: 1 });
+    FX.laser();
+    tankBullets.push({ x: p1Tank.x, y: p1Tank.y, vx: Math.cos(p1Tank.angle)*6.5, vy: Math.sin(p1Tank.angle)*6.5, owner: 1, bounces: 2 });
   }
-  // Fire P2
   if (e.key === "Enter" && tankActive) {
-    tankBullets.push({ x: p2Tank.x, y: p2Tank.y, vx: Math.cos(p2Tank.angle)*7, vy: Math.sin(p2Tank.angle)*7, owner: 2 });
+    FX.laser();
+    tankBullets.push({ x: p2Tank.x, y: p2Tank.y, vx: Math.cos(p2Tank.angle)*6.5, vy: Math.sin(p2Tank.angle)*6.5, owner: 2, bounces: 2 });
   }
 });
 window.addEventListener("keyup", (e) => { tankKeys[e.key] = false; });
@@ -973,37 +1063,72 @@ function loopTankWar() {
   if (tankKeys["ArrowLeft"]) { p2Tank.angle -= 0.05; }
   if (tankKeys["ArrowRight"]) { p2Tank.angle += 0.05; }
 
+  // Draw Bunker Walls
+  ctx.fillStyle = "rgba(0, 212, 255, 0.2)";
+  ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2;
+  tankBunkers.forEach(w => {
+    ctx.fillRect(w.x, w.y, w.w, w.h);
+    ctx.strokeRect(w.x, w.y, w.w, w.h);
+  });
+
+  // Power Up Shield Ball
+  if (tankAuraBall) {
+    ctx.fillStyle = "#ffbe0b";
+    ctx.beginPath(); ctx.arc(tankAuraBall.x, tankAuraBall.y, tankAuraBall.r, 0, Math.PI * 2); ctx.fill();
+    if (Math.hypot(p1Tank.x - tankAuraBall.x, p1Tank.y - tankAuraBall.y) < 30) {
+      p1Tank.shield = true; tankAuraBall = null; FX.powerup();
+    } else if (tankAuraBall && Math.hypot(p2Tank.x - tankAuraBall.x, p2Tank.y - tankAuraBall.y) < 30) {
+      p2Tank.shield = true; tankAuraBall = null; FX.powerup();
+    }
+  }
+
   // Draw Tanks
   drawTank(ctx, p1Tank);
   drawTank(ctx, p2Tank);
 
-  // Bullets
+  // Bullets with Wall Bounce Ricochet
   for (let i = tankBullets.length - 1; i >= 0; i--) {
     let b = tankBullets[i];
     b.x += b.vx; b.y += b.vy;
     ctx.fillStyle = b.owner === 1 ? "#00d4ff" : "#ff003c";
     ctx.fillRect(b.x - 3, b.y - 3, 6, 6);
 
-    // Collision with P2
+    // Wall Ricochet
+    tankBunkers.forEach(w => {
+      if (b.x > w.x && b.x < w.x + w.w && b.y > w.y && b.y < w.y + w.h) {
+        if (b.bounces > 0) {
+          b.vx *= -1; b.bounces--; FX.hit();
+        } else {
+          tankBullets.splice(i, 1);
+        }
+      }
+    });
+
+    // P2 Hit
     if (b.owner === 1 && Math.hypot(b.x - p2Tank.x, b.y - p2Tank.y) < 22) {
-      p2Tank.hp -= 20;
-      document.getElementById("p2TankHp").innerText = p2Tank.hp;
+      if (p2Tank.shield) { p2Tank.shield = false; FX.hit(); }
+      else { p2Tank.hp -= 20; FX.boom(); }
+      document.getElementById("p2TankHp").innerText = Math.max(0, p2Tank.hp);
       tankBullets.splice(i, 1);
       if (p2Tank.hp <= 0) {
         tankActive = false;
-        showOverlay("tankOverlay", "PLAYER 1 WINS", "Player 2's Cyber Tank was vaporized!", "Battle Again", "startTankWar()");
+        FX.powerup();
+        showOverlay("tankOverlay", "PLAYER 1 WINS", "Player 2's Cyber Tank was destroyed!", "Battle Again", "startTankWar()");
         return;
       }
       continue;
     }
-    // Collision with P1
+
+    // P1 Hit
     if (b.owner === 2 && Math.hypot(b.x - p1Tank.x, b.y - p1Tank.y) < 22) {
-      p1Tank.hp -= 20;
-      document.getElementById("p1TankHp").innerText = p1Tank.hp;
+      if (p1Tank.shield) { p1Tank.shield = false; FX.hit(); }
+      else { p1Tank.hp -= 20; FX.boom(); }
+      document.getElementById("p1TankHp").innerText = Math.max(0, p1Tank.hp);
       tankBullets.splice(i, 1);
       if (p1Tank.hp <= 0) {
         tankActive = false;
-        showOverlay("tankOverlay", "PLAYER 2 WINS", "Player 1's Cyber Tank was vaporized!", "Battle Again", "startTankWar()");
+        FX.powerup();
+        showOverlay("tankOverlay", "PLAYER 2 WINS", "Player 1's Cyber Tank was destroyed!", "Battle Again", "startTankWar()");
         return;
       }
       continue;
@@ -1025,7 +1150,11 @@ function drawTank(ctx, t) {
   ctx.strokeRect(-16, -14, 32, 28);
   ctx.fillStyle = t.color;
   ctx.fillRect(-8, -8, 16, 16);
-  ctx.fillRect(8, -3, 16, 6); // Barrel
+  ctx.fillRect(8, -3, 16, 6);
+  if (t.shield) {
+    ctx.strokeStyle = "#ffbe0b"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI * 2); ctx.stroke();
+  }
   ctx.restore();
 }
 
@@ -1082,6 +1211,7 @@ function initDeployStage(player) {
       document.querySelectorAll(".sb-dock-ship").forEach(d => d.classList.remove("active"));
       sEl.classList.add("active");
       selectedDockShip = ship;
+      FX.chessMove();
     };
     dock.appendChild(sEl);
   });
@@ -1114,6 +1244,7 @@ function onDeployCellClick(idx) {
 
   currentDeployPlacements.push(...toOccupy);
   selectedDockShip = null;
+  FX.hit();
   document.querySelectorAll(".sb-dock-ship.active").forEach(el => el.classList.add("placed"));
   renderDeployGrid();
 }
@@ -1134,6 +1265,7 @@ function randomDeployShips() {
       }
     }
   });
+  FX.powerup();
   renderDeployGrid();
 }
 
@@ -1202,10 +1334,14 @@ function fireRadarCannon(idx) {
 
   const targetPlayer = sbActiveTurn === 1 ? 2 : 1;
   const targetFleet = sbFleetData[targetPlayer] || [];
+  const isHit = targetFleet.includes(idx);
+  if (isHit) FX.boom(); else FX.laser();
+
   const totalHits = currentShots.filter(cell => targetFleet.includes(cell)).length;
   document.getElementById("sbSinkCounter").innerText = `HITS: ${totalHits} / 17`;
 
   if (totalHits >= 17) {
+    FX.powerup();
     alert(`VICTORY! Player ${sbActiveTurn} annihilated the enemy fleet!`);
     resetSeaBattle();
     return;
@@ -1265,6 +1401,7 @@ function onTTT2PClick(idx) {
 
 function handleTTT2PMove(idx, shouldBroadcast) {
   ttt2PBoard[idx] = ttt2PTurn;
+  FX.hit();
   if (shouldBroadcast && multiplayerMode === "online") {
     sendNetData({ type: "TTT_MOVE", index: idx });
   }
@@ -1283,6 +1420,7 @@ function handleTTT2PMove(idx, shouldBroadcast) {
       slash.style.display = "block";
       slash.className = `ttt-slash-line strike-${win[3]}`;
     }
+    FX.powerup();
     renderTTT2P();
     setTimeout(() => {
       alert(`PLAYER (${ttt2PTurn}) WON!`);
@@ -1291,12 +1429,12 @@ function handleTTT2PMove(idx, shouldBroadcast) {
     return;
   }
 
-  // DRAW CHECK FIX: Auto resets when all 9 filled with no winner
+  // Draw Check & Auto-Refresh
   if (ttt2PBoard.every(v => v !== "")) {
     document.getElementById("tttStatus").innerText = "MATCH TIED! AUTO RESETTING...";
     renderTTT2P();
     setTimeout(() => {
-      alert("MATCH TIED! Resetting board.");
+      alert("MATCH TIED! Refreshing board.");
       resetTTT2P();
     }, 500);
     return;

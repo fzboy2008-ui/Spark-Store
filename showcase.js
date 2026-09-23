@@ -1,5 +1,5 @@
 /* ==========================================================
-   SHOWCASE: 5 ADVANCED 3D BLUEPRINT HOLOGRAMS
+   SHOWCASE: 4 ADVANCED BLUEPRINT HOLOGRAMS + AUDIO SYNTH
 ========================================================== */
 const holoCanvas = document.getElementById("aiHologramCanvas");
 let hCtx = null;
@@ -40,7 +40,7 @@ if (holoCanvas) {
   });
   window.addEventListener("pointerup", () => { isDraggingCad = false; });
 
-  setCADModel('jet');
+  setCADModel('galaxy');
 
   function renderCADCore() {
     hCtx.clearRect(0, 0, holoCanvas.width, holoCanvas.height);
@@ -87,7 +87,7 @@ if (holoCanvas) {
     for (let p of projected) {
       hCtx.fillStyle = p.color;
       hCtx.beginPath();
-      hCtx.arc(p.x, p.y, Math.max(1, p.scale * 2.5), 0, Math.PI * 2);
+      hCtx.arc(p.x, p.y, Math.max(1, p.scale * 2.4), 0, Math.PI * 2);
       hCtx.fill();
     }
 
@@ -96,6 +96,7 @@ if (holoCanvas) {
   renderCADCore();
 }
 
+// 4 Specific Holograms: Galaxy, Vortex, Black Hole, Spark
 function setCADModel(type) {
   document.querySelectorAll(".shape-btn").forEach(b => b.classList.remove("active"));
   event?.currentTarget?.classList.add("active");
@@ -105,77 +106,87 @@ function setCADModel(type) {
   cadVerts = [];
   cadEdges = [];
 
-  if (type === 'jet') {
-    if (meshTypeEl) meshTypeEl.innerText = "STARFIGHTER JET";
-    if (coordsEl) coordsEl.innerText = "AERODYNAMIC BLUEPRINT (12 VERTS)";
-    const jetPts = [
-      {x: 0, y: -90, z: 0},
-      {x: 20, y: -15, z: 10}, {x: -20, y: -15, z: 10},
-      {x: 85, y: 35, z: 0}, {x: -85, y: 35, z: 0},
-      {x: 22, y: 65, z: -5}, {x: -22, y: 65, z: -5},
-      {x: 0, y: 35, z: 40}
-    ];
-    jetPts.forEach(p => cadVerts.push({ x: p.x, y: p.y, z: p.z, color: "#00d4ff" }));
-    cadEdges = [[0,1],[0,2],[1,2],[1,3],[2,4],[3,5],[4,6],[5,6],[1,7],[2,7],[5,7],[6,7],[0,7]];
-  } else if (type === 'tesseract') {
-    if (meshTypeEl) meshTypeEl.innerText = "QUANTUM TESSERACT";
-    if (coordsEl) coordsEl.innerText = "4D DUAL ISOMETRIC CUBE";
-    const S = 65;
-    const corners = [
-      [-S,-S,-S],[S,-S,-S],[S,S,-S],[-S,S,-S],
-      [-S,-S,S],[S,-S,S],[S,S,S],[-S,S,S]
-    ];
-    corners.forEach(c => cadVerts.push({ x: c[0], y: c[1], z: c[2], color: "#00d4ff" }));
-    const e = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
-    cadEdges = [...e];
-    corners.forEach(c => cadVerts.push({ x: c[0]*0.5, y: c[1]*0.5, z: c[2]*0.5, color: "#ff003c" }));
-    for (let i = 0; i < 8; i++) cadEdges.push([i, i + 8]);
-  } else if (type === 'helix') {
-    if (meshTypeEl) meshTypeEl.innerText = "DNA DOUBLE HELIX";
-    if (coordsEl) coordsEl.innerText = "GENETIC POLYNOMIAL LATTICE";
-    const strands = 60;
-    for (let i = 0; i < strands; i++) {
-      const t = (i / strands) * Math.PI * 6;
-      const y = (i - strands / 2) * 4;
-      cadVerts.push({ x: Math.cos(t) * 50, y: y, z: Math.sin(t) * 50, color: "#00d4ff" });
-      cadVerts.push({ x: Math.cos(t + Math.PI) * 50, y: y, z: Math.sin(t + Math.PI) * 50, color: "#ff003c" });
-      if (i % 3 === 0) cadEdges.push([i * 2, i * 2 + 1]);
+  if (type === 'galaxy') {
+    if (meshTypeEl) meshTypeEl.innerText = "GALAXY SPIRAL";
+    if (coordsEl) coordsEl.innerText = "SPIRAL ARMS (340 VERTS)";
+    const count = 340;
+    for (let i = 0; i < count; i++) {
+      const arm = i % 3;
+      const angle = (i / count) * Math.PI * 4 + (arm * (Math.PI * 2 / 3));
+      const r = (i / count) * 130 + (Math.random() * 12);
+      cadVerts.push({
+        x: Math.cos(angle) * r,
+        y: (Math.random() - 0.5) * 18,
+        z: Math.sin(angle) * r,
+        color: arm === 0 ? "#00d4ff" : (arm === 1 ? "#ff003c" : "#ffbe0b")
+      });
+      if (i > 3 && i % 3 === 0) cadEdges.push([i, i - 3]);
     }
-  } else if (type === 'drone') {
-    if (meshTypeEl) meshTypeEl.innerText = "CYBER DRONE QUAD";
-    if (coordsEl) coordsEl.innerText = "AUTONOMOUS ROTOR MATRIX";
-    const R = 70;
-    cadVerts.push({ x: 0, y: 0, z: 0, color: "#ffffff" });
-    const rotors = [[-R, -R, 0], [R, -R, 0], [R, R, 0], [-R, R, 0]];
-    rotors.forEach((r, idx) => {
-      cadVerts.push({ x: r[0], y: r[1], z: r[2], color: "#00d4ff" });
-      cadEdges.push([0, idx + 1]);
-      for (let a = 0; a < 6; a++) {
-        const ang = (a / 6) * Math.PI * 2;
-        cadVerts.push({ x: r[0] + Math.cos(ang) * 22, y: r[1] + Math.sin(ang) * 22, z: 0, color: "#ff003c" });
-      }
-    });
-  } else if (type === 'torus') {
-    if (meshTypeEl) meshTypeEl.innerText = "TORUS WORMHOLE";
-    if (coordsEl) coordsEl.innerText = "SPATIAL SINGULARITY MESH";
-    const R1 = 90, R2 = 35;
-    for (let u = 0; u < 20; u++) {
-      const theta = (u / 20) * Math.PI * 2;
-      for (let v = 0; v < 10; v++) {
-        const phi = (v / 10) * Math.PI * 2;
+  } else if (type === 'vortex') {
+    if (meshTypeEl) meshTypeEl.innerText = "WARP VORTEX";
+    if (coordsEl) coordsEl.innerText = "HYPERBOLIC FUNNEL (280 VERTS)";
+    const rings = 14;
+    for (let r = 0; r < rings; r++) {
+      const radius = 120 - (r * 7.5);
+      const depth = (r - rings / 2) * 16;
+      for (let s = 0; s < 20; s++) {
+        const theta = (s / 20) * Math.PI * 2 + (r * 0.25);
         cadVerts.push({
-          x: (R1 + R2 * Math.cos(phi)) * Math.cos(theta),
-          y: (R1 + R2 * Math.cos(phi)) * Math.sin(theta),
-          z: R2 * Math.sin(phi),
-          color: v % 2 === 0 ? "#00d4ff" : "#ff003c"
+          x: Math.cos(theta) * radius,
+          y: depth,
+          z: Math.sin(theta) * radius,
+          color: r % 2 === 0 ? "#00d4ff" : "#ff003c"
         });
+        const curIdx = cadVerts.length - 1;
+        if (s > 0) cadEdges.push([curIdx, curIdx - 1]);
       }
+    }
+  } else if (type === 'blackhole') {
+    if (meshTypeEl) meshTypeEl.innerText = "BLACK HOLE CORE";
+    if (coordsEl) coordsEl.innerText = "EVENT HORIZON & ACCRETION DISK";
+    // Accretion disk rings
+    for (let i = 0; i < 220; i++) {
+      const rad = 45 + Math.random() * 85;
+      const ang = Math.random() * Math.PI * 2;
+      cadVerts.push({
+        x: Math.cos(ang) * rad,
+        y: (Math.random() - 0.5) * 8,
+        z: Math.sin(ang) * rad,
+        color: rad < 65 ? "#ff003c" : "#ffbe0b"
+      });
+    }
+    // Event horizon dark sphere nodes
+    for (let i = 0; i < 40; i++) {
+      const ang = (i / 40) * Math.PI * 2;
+      cadVerts.push({
+        x: Math.cos(ang) * 35,
+        y: 0,
+        z: Math.sin(ang) * 35,
+        color: "#ffffff"
+      });
+    }
+  } else if (type === 'spark') {
+    if (meshTypeEl) meshTypeEl.innerText = "SPARK CORE STAR";
+    if (coordsEl) coordsEl.innerText = "HYPER-CHARGED PLASMA STELLA";
+    const rays = 32;
+    cadVerts.push({ x: 0, y: 0, z: 0, color: "#ffffff" });
+    for (let i = 0; i < rays; i++) {
+      const theta = (i / rays) * Math.PI * 2;
+      const phi = (Math.random() - 0.5) * Math.PI;
+      const len = 90 + Math.random() * 35;
+      cadVerts.push({
+        x: len * Math.cos(theta) * Math.cos(phi),
+        y: len * Math.sin(phi),
+        z: len * Math.sin(theta) * Math.cos(phi),
+        color: i % 2 === 0 ? "#00d4ff" : "#ff003c"
+      });
+      cadEdges.push([0, i + 1]);
     }
   }
 }
 
 /* ==========================================================
-   USER DESIGN STUDIO (HOLOGRAM MATRIX CREATOR)
+   2. USER HOLOGRAM CREATOR STUDIO
 ========================================================== */
 const uCanvas = document.getElementById("userCanvas");
 let userParticles = [];
@@ -224,9 +235,7 @@ if (uCanvas) {
     uCtx.clearRect(0, 0, uCanvas.width, uCanvas.height);
     for (let a = 0; a < userParticles.length; a++) {
       let p = userParticles[a];
-      p.x += p.vx;
-      p.y += p.vy;
-
+      p.x += p.vx; p.y += p.vy;
       if (p.x < 0 || p.x > uCanvas.width) p.vx *= -1;
       if (p.y < 0 || p.y > uCanvas.height) p.vy *= -1;
 
@@ -263,3 +272,59 @@ function setDrawColor(col) {
 }
 function clearUserDesign() { userParticles = []; }
 function toggleConnectors() { showConnectors = !showConnectors; }
+
+/* ==========================================================
+   3. OPTION 3: QUANTUM HARMONIC AUDIO SYNTHESIZER
+========================================================== */
+const synthCanvas = document.getElementById("synthCanvas");
+let synthCtx = synthCanvas ? synthCanvas.getContext("2d") : null;
+let synthPhase = 0;
+let currentSynthFreq = 432;
+
+function fitSynthCanvas() {
+  if (!synthCanvas) return;
+  synthCanvas.width = synthCanvas.parentElement.clientWidth;
+  synthCanvas.height = synthCanvas.parentElement.clientHeight;
+}
+window.addEventListener("resize", fitSynthCanvas);
+setTimeout(fitSynthCanvas, 100);
+
+function triggerHarmonicBurst(freq) {
+  currentSynthFreq = freq;
+  if (typeof playProceduralSound === "function") {
+    playProceduralSound(freq, "triangle", 0.4, 0.1);
+  }
+  const status = document.getElementById("synthStatus");
+  if (status) status.innerText = `TUNED TO ${freq}Hz HARMONIC`;
+}
+
+function renderSynthWaveform() {
+  if (!synthCanvas || !synthCtx) return;
+  synthCtx.clearRect(0, 0, synthCanvas.width, synthCanvas.height);
+
+  synthPhase += 0.05;
+  const cy = synthCanvas.height / 2;
+
+  synthCtx.lineWidth = 2.5;
+  synthCtx.strokeStyle = "#00d4ff";
+  synthCtx.beginPath();
+  for (let x = 0; x < synthCanvas.width; x++) {
+    const y = cy + Math.sin(x * 0.02 + synthPhase) * 35 * Math.sin(x * 0.005);
+    if (x === 0) synthCtx.moveTo(x, y);
+    else synthCtx.lineTo(x, y);
+  }
+  synthCtx.stroke();
+
+  // Red secondary harmonic wave
+  synthCtx.strokeStyle = "#ff003c";
+  synthCtx.beginPath();
+  for (let x = 0; x < synthCanvas.width; x++) {
+    const y = cy + Math.cos(x * 0.03 - synthPhase) * 22;
+    if (x === 0) synthCtx.moveTo(x, y);
+    else synthCtx.lineTo(x, y);
+  }
+  synthCtx.stroke();
+
+  requestAnimationFrame(renderSynthWaveform);
+}
+renderSynthWaveform();

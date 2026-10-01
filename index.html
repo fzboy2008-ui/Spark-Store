@@ -6,22 +6,24 @@
   <title>SPARK // Quantum Neural Matrix & Pro Arcade Hub</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <!-- PeerJS for 2-Player WebRTC Online Auto-Queue -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
+  <!-- Cyber Space Background Canvas -->
   <canvas id="sparkCanvas"></canvas>
 
-  <!-- Player Identity Modal -->
+  <!-- Player Identity / Auth Modal -->
   <div class="auth-modal-backdrop" id="authModal">
     <div class="glow-border-wrap auth-box">
       <div class="glow-inner auth-inner">
-        <div class="brand" style="justify-content: center; margin-bottom: 15px;">
+        <div class="brand" style="justify-content: center; margin-bottom: 12px;">
           <i class="fa-solid fa-bolt-lightning bolt-glow"></i>
           <span>SPARK IDENTITY</span>
         </div>
-        <p class="auth-sub">Register unique agent handle & passcode to enter arcade.</p>
+        <p class="auth-sub">Register unique agent handle & passcode to access matrix.</p>
         <div class="auth-inputs">
           <input type="text" id="regAgentName" placeholder="Unique Agent Name" maxlength="15" autocomplete="off" />
           <input type="password" id="regAgentPass" placeholder="Access Password" maxlength="20" />
@@ -30,6 +32,90 @@
           </button>
           <div class="auth-error" id="authErrorMsg"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paytm VIP Pass & AutoPay Modal -->
+  <div class="auth-modal-backdrop" id="membershipModal" style="display: none;">
+    <div class="glow-border-wrap auth-box" style="max-width: 440px;">
+      <div class="glow-inner auth-inner">
+        <div class="brand" style="justify-content: center; margin-bottom: 8px;">
+          <i class="fa-solid fa-crown bolt-glow" style="color: #ffd700;"></i>
+          <span>SPARK VIP ACCESS</span>
+        </div>
+
+        <p class="auth-sub" style="margin-bottom: 12px;">Pehle ₹2 Setup Fee pay karein. 30 Days Pass Activated.</p>
+
+        <!-- Step 1: Breakdown Card -->
+        <div id="paytmStep1">
+          <div class="membership-price-card">
+            <div class="price-header">
+              <span class="plan-tag">30-DAY PASS</span>
+              <span class="billing-cycle">Paytm / UPI Powered</span>
+            </div>
+            
+            <div class="price-row main-price">
+              <span>Pass Value</span>
+              <span class="amount">₹398 <small>/ 30 days</small></span>
+            </div>
+
+            <div class="price-divider"></div>
+
+            <div class="price-row setup-fee">
+              <span><i class="fa-solid fa-bolt"></i> Activation Charge (Now)</span>
+              <span class="amount highlight-pay">₹2</span>
+            </div>
+            
+            <p class="autopay-notice">
+              <i class="fa-solid fa-shield-halved"></i> 
+              Abhi sirf <strong>₹2</strong> debit honge setup ke liye. Baaki payment 30 days baad schedule hogi.
+            </p>
+          </div>
+
+          <div class="auth-inputs" style="margin-top: 14px;">
+            <button class="spark-btn btn-primary btn-block" onclick="openPaytmCheckout()">
+              <i class="fa-solid fa-wallet"></i> <span>PAY ₹2 VIA PAYTM / UPI</span>
+            </button>
+            <button class="spark-btn btn-ghost btn-sm" onclick="closeMembershipModal()" style="margin-top: 5px;">
+              Cancel
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Live Paytm QR & Deep-Link Section -->
+        <div id="paytmStep2" style="display: none;">
+          <div class="paytm-qr-card">
+            <div class="paytm-logo-row">
+              <span class="paytm-badge">Paytm <span>UPI</span></span>
+              <span class="pay-amount-badge">Amount: ₹2</span>
+            </div>
+            
+            <!-- Dynamic QR Image targeting your UPI VPA -->
+            <div class="qr-container">
+              <img id="dynamicPaytmQr" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=6006283334@ptyes&pn=Fouzan%20Tariq&am=2&cu=INR&tn=Spark%20VIP%20Activation" alt="Paytm QR Code" />
+            </div>
+            
+            <p class="paytm-vpa-text">UPI ID: <strong>6006283334@ptyes</strong></p>
+
+            <!-- Mobile Quick Launch Deep-Link Button -->
+            <a id="paytmIntentBtn" href="upi://pay?pa=6006283334@ptyes&pn=Fouzan%20Tariq&am=2&cu=INR&tn=Spark%20VIP%20Activation" class="spark-btn btn-sm btn-primary" style="margin: 8px 0; width: 100%;">
+              <i class="fa-solid fa-mobile-screen"></i> <span>Open in Paytm / GPay / PhonePe</span>
+            </a>
+          </div>
+
+          <div class="auth-inputs" style="margin-top: 10px;">
+            <input type="text" id="paytmUtrInput" placeholder="Enter 12-Digit UTR / Ref No." maxlength="12" />
+            <button class="spark-btn btn-primary btn-block" onclick="verifyPaytmPayment()">
+              <i class="fa-solid fa-circle-check"></i> <span>CONFIRM & ACTIVATE VIP</span>
+            </button>
+            <button class="spark-btn btn-ghost btn-sm" onclick="backToStep1()" style="margin-top: 4px;">
+              Back
+            </button>
+          </div>
+          <div id="paytmStatusMsg" style="margin-top: 8px; font-size: 0.8rem; font-family: var(--font-mono);"></div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -45,9 +131,14 @@
       <button class="nav-tab" data-target="showcaseView"><i class="fa-solid fa-wand-magic-sparkles"></i> <span>Showcase</span></button>
       <button class="nav-tab" data-target="gameView"><i class="fa-solid fa-gamepad"></i> <span>Arcade</span></button>
     </nav>
-    <div class="nav-tag">
-      <span class="live-dot"></span>
-      <span class="tag-text" id="headerAgentTag">SYS ONLINE</span>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button class="spark-btn btn-sm btn-gold" onclick="openMembershipModal()">
+        <i class="fa-solid fa-crown"></i> <span>VIP</span>
+      </button>
+      <div class="nav-tag">
+        <span class="live-dot"></span>
+        <span class="tag-text" id="headerAgentTag">SYS ONLINE</span>
+      </div>
     </div>
   </header>
 
@@ -66,27 +157,30 @@
           <h1 class="owner-name">SPARK FOUNDER</h1>
           <p class="owner-role">Lead Architect & Systems Engineer</p>
           <p class="owner-bio">
-            Welcome to the central node of <strong>SPARK</strong>. Engineered with 3D astrophysics holograms, real-time procedural Web Audio, and arcade battlegrounds.
+            Welcome to the central node of <strong>SPARK</strong>. Engineered with single-player blueprint universes, 2-player multiplayer duels, and 3D holographic CAD studios.
           </p>
 
           <div class="owner-actions" style="margin-top: 15px;">
             <button class="spark-btn btn-primary" onclick="switchPage('gameView')">
               <i class="fa-solid fa-play"></i> <span>Enter Arcade Arena</span>
             </button>
+            <button class="spark-btn btn-ghost" onclick="switchPage('showcaseView')">
+              <span>Open Quantum Lab</span> <i class="fa-solid fa-arrow-right"></i>
+            </button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- PAGE 2: SHOWCASE (3 MODES: VIEWER, CREATOR, HARMONIC SYNTH) -->
+    <!-- PAGE 2: SHOWCASE (4 HOLOGRAMS + CREATOR + AUDIO HARMONIC SYNTH) -->
     <section id="showcaseView" class="page-view">
       <div class="section-title">
-        <h2>3D QUANTUM LAB & CREATOR</h2>
-        <p>Hologram Viewer, Live 3D Mesh Creator, and Quantum Harmonic Synthesizer</p>
+        <h2>QUANTUM LAB & HOLOGRAM CREATOR</h2>
+        <p>4 Dynamic 3D Astrophysics Holograms, Live CAD Builder & Harmonic Waveform Synthesizer</p>
       </div>
 
       <div class="showcase-layout">
-        <!-- 1. Hologram Viewer (Galaxy, Vortex, Black Hole, Spark) -->
+        <!-- 1. Hologram Viewer -->
         <div class="glow-border-wrap hologram-card">
           <div class="glow-inner hologram-inner">
             <div class="panel-header">
@@ -98,12 +192,11 @@
               <canvas id="aiHologramCanvas" width="500" height="330"></canvas>
               <div class="holo-hud">
                 <div>STRUCTURE: <strong class="mono-red" id="cadCoords">SPIRAL ARMS (340 VERTS)</strong></div>
-                <div>RENDER MODE: <span class="mono-cyan">ASTROPHYSICS BLUEPRINT</span></div>
-                <div>CONTROL: <span class="mono-green">DRAG / TOUCH ROTATE</span></div>
+                <div>RENDER: <span class="mono-cyan">ASTROPHYSICS BLUEPRINT</span></div>
+                <div>CONTROL: <span class="mono-green">TOUCH / MOUSE ROTATE</span></div>
               </div>
             </div>
 
-            <!-- 4 Specific Hologram Buttons -->
             <div class="shape-switch-row" style="grid-template-columns: repeat(4, 1fr);">
               <button class="shape-btn active" onclick="setCADModel('galaxy')"><i class="fa-solid fa-sun"></i> Galaxy</button>
               <button class="shape-btn" onclick="setCADModel('vortex')"><i class="fa-solid fa-tornado"></i> Vortex</button>
@@ -120,7 +213,7 @@
               <span><i class="fa-solid fa-wand-magic-sparkles"></i> 2. HOLOGRAM CREATOR</span>
               <span class="mono-red">CREATIVE BUILDER</span>
             </div>
-            <p class="sandbox-tip">Drag across the canvas to weave custom 3D geometric nodes.</p>
+            <p class="sandbox-tip">Drag across the canvas to weave custom 3D geometric nodes & energy lattices.</p>
             <div class="user-sandbox-box">
               <canvas id="userCanvas" width="400" height="290"></canvas>
               <div class="canvas-controls-bar">
@@ -137,7 +230,7 @@
           </div>
         </div>
 
-        <!-- 3. New 3rd Option: Quantum Audio Harmonic Visualizer -->
+        <!-- 3. Quantum Audio Harmonic Visualizer -->
         <div class="glow-border-wrap" style="grid-column: 1 / -1;">
           <div class="glow-inner">
             <div class="panel-header">
@@ -158,7 +251,7 @@
       </div>
     </section>
 
-    <!-- PAGE 3: ARCADE ARENA -->
+    <!-- PAGE 3: ARCADE ARENA (SINGLE PLAYER VS MULTIPLAYER) -->
     <section id="gameView" class="page-view">
       <div class="section-title">
         <h2>SPARK ARCADE NEXUS</h2>
@@ -177,7 +270,7 @@
         </button>
       </div>
 
-      <!-- SINGLE PLAYER TIER -->
+      <!-- ================= SINGLE PLAYER TIER ================= -->
       <div class="tier-container active" id="tierSingle">
         <div class="game-select-bar">
           <button class="game-selector-btn active" data-game="space"><i class="fa-solid fa-jet-fighter"></i> Space Striker</button>
@@ -201,13 +294,13 @@
                 <canvas id="spaceCanvas"></canvas>
                 <div class="arcade-overlay" id="spaceOverlay">
                   <h3>SPACE STRIKER</h3>
-                  <p>Touch & drag to steer! Auto-lasers with sound fx. Shoot orbs for laser upgrades!</p>
+                  <p>Touch & drag to steer! Auto-lasers with sound fx. Shoot orbs for upgrades!</p>
                   <button class="spark-btn btn-primary btn-launch" onclick="startSpaceGame()">LAUNCH SHIP</button>
                 </div>
               </div>
             </div>
 
-            <!-- 2. FLAPPY PHOENIX WITH BLUEPRINT CITY & 3D GLOW PILLARS -->
+            <!-- 2. FLAPPY PHOENIX (BLUEPRINT CITY & 3D PILLARS) -->
             <div class="arcade-view" id="flappyView">
               <div class="arcade-topbar">
                 <div class="topbar-stat">SCORE: <span id="flappyScore">0</span></div>
@@ -224,7 +317,7 @@
               </div>
             </div>
 
-            <!-- 3. CHROME DINO (100% FIXED JUMP & BLUEPRINT CLOUDS) -->
+            <!-- 3. CHROME DINO (100% RELIABLE JUMP & CLOUDS) -->
             <div class="arcade-view" id="dinoView">
               <div class="arcade-topbar">
                 <div class="topbar-stat">SCORE: <span id="dinoScore">00000</span></div>
@@ -271,7 +364,7 @@
         </div>
       </div>
 
-      <!-- MULTIPLAYER TIER -->
+      <!-- ================= MULTIPLAYER TIER ================= -->
       <div class="tier-container" id="tierMulti">
         <div class="sub-mode-bar">
           <div class="sub-mode-toggle">
@@ -326,7 +419,7 @@
               </div>
             </div>
 
-            <!-- 2. UPGRADED CYBER TANK WAR (WALLS, RICOCHET & POWER-UPS) -->
+            <!-- 2. CYBER TANK WAR ULTRA -->
             <div class="arcade-view" id="tankwarView">
               <div class="arcade-topbar">
                 <div class="topbar-stat">P1 BLUE HP: <span class="mono-cyan" id="p1TankHp">100</span></div>
@@ -337,13 +430,13 @@
                 <canvas id="tankCanvas"></canvas>
                 <div class="arcade-overlay active" id="tankOverlay">
                   <h3>CYBER TANK WAR ULTRA</h3>
-                  <p>Bouncing laser bullets, reflective wall bunkers & shield power-ups!<br>P1: W A S D + Space | P2: Arrows + Enter</p>
+                  <p>Bouncing laser bullets, reflective bunker walls & shield power-ups!<br>P1: W A S D + Space | P2: Arrows + Enter</p>
                   <button class="spark-btn btn-primary btn-launch" onclick="startTankWar()">BATTLE COMMENCE</button>
                 </div>
               </div>
             </div>
 
-            <!-- 3. SEA BATTLE -->
+            <!-- 3. SEA BATTLE EXACT TO SCREENSHOTS -->
             <div class="arcade-view" id="seabattleView">
               <div class="sb-container-pro" id="sbContainer">
                 <div class="sb-pass-screen" id="sbPassScreen" style="display: none;">
@@ -373,90 +466,7 @@
                 </div>
               </div>
             </div>
-            
-<!-- Paytm VIP Pass Modal -->
-<div class="auth-modal-backdrop" id="membershipModal" style="display: none;">
-  <div class="glow-border-wrap auth-box" style="max-width: 440px;">
-    <div class="glow-inner auth-inner">
-      <div class="brand" style="justify-content: center; margin-bottom: 8px;">
-        <i class="fa-solid fa-crown bolt-glow" style="color: #ffd700;"></i>
-        <span>SPARK VIP ACCESS</span>
-      </div>
 
-      <p class="auth-sub" style="margin-bottom: 12px;">Pehle ₹2 Setup Fee pay karein. 30 Days Pass Activated.</p>
-
-      <!-- Step 1: Breakdown Card -->
-      <div id="paytmStep1">
-        <div class="membership-price-card">
-          <div class="price-header">
-            <span class="plan-tag">30-DAY PASS</span>
-            <span class="billing-cycle">Paytm / UPI Powered</span>
-          </div>
-          
-          <div class="price-row main-price">
-            <span>Pass Value</span>
-            <span class="amount">₹398 <small>/ 30 days</small></span>
-          </div>
-
-          <div class="price-divider"></div>
-
-          <div class="price-row setup-fee">
-            <span><i class="fa-solid fa-bolt"></i> Activation Charge (Now)</span>
-            <span class="amount highlight-pay">₹2</span>
-          </div>
-          
-          <p class="autopay-notice">
-            <i class="fa-solid fa-shield-halved"></i> 
-            Abhi sirf <strong>₹2</strong> debit honge setup ke liye. Baaki payment account approval ke baad schedule hogi.
-          </p>
-        </div>
-
-        <div class="auth-inputs" style="margin-top: 14px;">
-          <button class="spark-btn btn-primary btn-block" onclick="openPaytmCheckout()">
-            <i class="fa-solid fa-wallet"></i> <span>PAY ₹2 VIA PAYTM / UPI</span>
-          </button>
-          <button class="spark-btn btn-ghost btn-sm" onclick="closeMembershipModal()" style="margin-top: 5px;">
-            Cancel
-          </button>
-        </div>
-      </div>
-
-      <!-- Step 2: Live Paytm QR & Deep-Link Section -->
-      <div id="paytmStep2" style="display: none;">
-        <div class="paytm-qr-card">
-          <div class="paytm-logo-row">
-            <span class="paytm-badge">Paytm <span>UPI</span></span>
-            <span class="pay-amount-badge">Amount: ₹2</span>
-          </div>
-          
-          <!-- Dynamic QR Image targeting your UPI VPA -->
-          <div class="qr-container">
-            <img id="dynamicPaytmQr" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=6006283334@ptyes&pn=Fouzan%20Tariq&am=2&cu=INR&tn=Spark%20VIP%20Activation" alt="Paytm QR Code" />
-          </div>
-          
-          <p class="paytm-vpa-text">UPI ID: <strong>6006283334@ptyes</strong></p>
-
-          <!-- Mobile Quick Launch Deep-Link Button -->
-          <a id="paytmIntentBtn" href="upi://pay?pa=6006283334@ptyes&pn=Fouzan%20Tariq&am=2&cu=INR&tn=Spark%20VIP%20Activation" class="spark-btn btn-sm btn-primary" style="margin: 8px 0; width: 100%;">
-            <i class="fa-solid fa-mobile-screen"></i> <span>Open in Paytm / GPay / PhonePe</span>
-          </a>
-        </div>
-
-        <div class="auth-inputs" style="margin-top: 10px;">
-          <input type="text" id="paytmUtrInput" placeholder="Enter 12-Digit UTR / Ref No." maxlength="12" />
-          <button class="spark-btn btn-primary btn-block" onclick="verifyPaytmPayment()">
-            <i class="fa-solid fa-circle-check"></i> <span>CONFIRM & ACTIVATE VIP</span>
-          </button>
-          <button class="spark-btn btn-ghost btn-sm" onclick="backToStep1()" style="margin-top: 4px;">
-            Back
-          </button>
-        </div>
-        <div id="paytmStatusMsg" style="margin-top: 8px; font-size: 0.8rem; font-family: var(--font-mono);"></div>
-      </div>
-
-    </div>
-  </div>
-</div>
             <!-- 4. TIC TAC TOE WITH AUTO-RESET ON DRAW -->
             <div class="arcade-view" id="tictacView">
               <div class="arcade-topbar">

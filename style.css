@@ -1008,7 +1008,77 @@ html, body {
 
 /* Chrome Dino Pixel Art Stage Background */
 .dino-stage-bg { background: #f7f7f7 !important; border-color: #d1d5db !important; }
-            
+
+/* ==========================================================
+   PAYTM CHECKOUT MODAL STYLING
+========================================================== */
+.paytm-qr-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.paytm-logo-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+
+.paytm-badge {
+  font-family: var(--font-orbitron);
+  font-weight: 900;
+  color: #00b9f5;
+  font-size: 0.95rem;
+}
+
+.paytm-badge span {
+  color: #002e6e;
+  background: #fff;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.pay-amount-badge {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  background: rgba(0, 255, 136, 0.15);
+  color: var(--neon-green);
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.qr-container {
+  background: #ffffff;
+  padding: 8px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+  margin: 4px 0;
+}
+
+.qr-container img {
+  display: block;
+  width: 160px;
+  height: 160px;
+}
+
+.paytm-vpa-text {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.paytm-vpa-text strong {
+  color: var(--neon-cyan);
+}
+
 /* ==========================================================
    MOBILE RESPONSIVENESS OVERRIDES
 ========================================================== */

@@ -1,5 +1,5 @@
 /* ==========================================================
-   NAVIGATION ROUTER & DYNAMIC RESIZE TRIGGERS
+   NAVIGATION ROUTER & AUTO-RESIZE HANDLERS
 ========================================================== */
 const navTabs = document.querySelectorAll('.nav-tab');
 const pageViews = document.querySelectorAll('.page-view');
@@ -13,10 +13,11 @@ function switchPage(targetId) {
     view.classList.toggle('active', view.id === targetId);
   });
 
-  // Re-fit canvas elements when tabs open
+  // Re-adjust active canvas resolutions
   if (targetId === 'showcaseView') {
     if (typeof fitHoloCanvas === 'function') setTimeout(fitHoloCanvas, 60);
     if (typeof fitUserCanvas === 'function') setTimeout(fitUserCanvas, 60);
+    if (typeof fitSynthCanvas === 'function') setTimeout(fitSynthCanvas, 60);
   } else if (targetId === 'gameView') {
     if (typeof fitActiveGameCanvas === 'function') setTimeout(fitActiveGameCanvas, 60);
   }
@@ -27,71 +28,6 @@ navTabs.forEach(tab => {
     switchPage(tab.getAttribute('data-target'));
   });
 });
-
-/* ==========================================================
-   PAYTM CHECKOUT MODAL HANDLERS
-========================================================== */
-function openMembershipModal() {
-  const modal = document.getElementById("membershipModal");
-  if (modal) {
-    modal.style.display = "flex";
-    backToStep1();
-  }
-}
-
-function closeMembershipModal() {
-  const modal = document.getElementById("membershipModal");
-  if (modal) modal.style.display = "none";
-}
-
-function openPaytmCheckout() {
-  document.getElementById("paytmStep1").style.display = "none";
-  document.getElementById("paytmStep2").style.display = "block";
-}
-
-function backToStep1() {
-  document.getElementById("paytmStep1").style.display = "block";
-  document.getElementById("paytmStep2").style.display = "none";
-  const status = document.getElementById("paytmStatusMsg");
-  if (status) status.innerText = "";
-}
-
-function verifyPaytmPayment() {
-  const utr = document.getElementById("paytmUtrInput").value.trim();
-  const status = document.getElementById("paytmStatusMsg");
-
-  if (!utr || utr.length < 8) {
-    status.style.color = "var(--neon-red)";
-    status.innerText = "Please enter valid 12-digit UPI reference / UTR number!";
-    return;
-  }
-
-  status.style.color = "var(--neon-cyan)";
-  status.innerText = "VERIFYING TRANSACTION TOKEN...";
-
-  setTimeout(() => {
-    status.style.color = "var(--neon-green)";
-    status.innerHTML = "✓ ₹2 SETUP APPROVED! 30-DAY VIP PASS ACTIVATED.";
-    
-    // Set VIP Perks in localStorage
-    localStorage.setItem("spark_vip_active", "true");
-    localStorage.setItem("spark_vip_expiry", Date.now() + (30 * 24 * 60 * 60 * 1000)); // 30 Days
-
-    // Update Header Tag
-    const headerTag = document.getElementById("headerAgentTag");
-    if (headerTag) {
-      headerTag.innerHTML = "VIP • " + (localStorage.getItem("spark_agent_name") || "FOUNDER").toUpperCase();
-      headerTag.style.color = "#ffd700";
-    }
-
-    if (typeof FX !== "undefined" && FX.powerup) FX.powerup();
-
-    setTimeout(() => {
-      closeMembershipModal();
-      status.innerText = "";
-    }, 2500);
-  }, 1200);
-}
 
 /* ==========================================================
    BLUE & RED DUAL-POLE CYBER MATRIX BACKGROUND
@@ -176,4 +112,69 @@ if (bgCanvas) {
     requestAnimationFrame(renderCyberBg);
   }
   renderCyberBg();
+}
+
+/* ==========================================================
+   PAYTM CHECKOUT MODAL HANDLERS
+========================================================== */
+function openMembershipModal() {
+  const modal = document.getElementById("membershipModal");
+  if (modal) {
+    modal.style.display = "flex";
+    backToStep1();
+  }
+}
+
+function closeMembershipModal() {
+  const modal = document.getElementById("membershipModal");
+  if (modal) modal.style.display = "none";
+}
+
+function openPaytmCheckout() {
+  document.getElementById("paytmStep1").style.display = "none";
+  document.getElementById("paytmStep2").style.display = "block";
+}
+
+function backToStep1() {
+  document.getElementById("paytmStep1").style.display = "block";
+  document.getElementById("paytmStep2").style.display = "none";
+  const status = document.getElementById("paytmStatusMsg");
+  if (status) status.innerText = "";
+}
+
+function verifyPaytmPayment() {
+  const utr = document.getElementById("paytmUtrInput").value.trim();
+  const status = document.getElementById("paytmStatusMsg");
+
+  if (!utr || utr.length < 8) {
+    status.style.color = "var(--neon-red)";
+    status.innerText = "Please enter valid 12-digit UPI reference / UTR number!";
+    return;
+  }
+
+  status.style.color = "var(--neon-cyan)";
+  status.innerText = "VERIFYING TRANSACTION TOKEN...";
+
+  setTimeout(() => {
+    status.style.color = "var(--neon-green)";
+    status.innerHTML = "✓ ₹2 SETUP APPROVED! 30-DAY VIP PASS ACTIVATED.";
+    
+    // Set VIP status in local storage
+    localStorage.setItem("spark_vip_active", "true");
+    localStorage.setItem("spark_vip_expiry", Date.now() + (30 * 24 * 60 * 60 * 1000));
+
+    // Update Header Tag
+    const headerTag = document.getElementById("headerAgentTag");
+    if (headerTag) {
+      headerTag.innerHTML = "VIP • " + (localStorage.getItem("spark_agent_name") || "FOUNDER").toUpperCase();
+      headerTag.style.color = "#ffd700";
+    }
+
+    if (typeof FX !== "undefined" && FX.powerup) FX.powerup();
+
+    setTimeout(() => {
+      closeMembershipModal();
+      status.innerText = "";
+    }, 2500);
+  }, 1200);
 }

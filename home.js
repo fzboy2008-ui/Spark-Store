@@ -29,6 +29,71 @@ navTabs.forEach(tab => {
 });
 
 /* ==========================================================
+   PAYTM CHECKOUT MODAL HANDLERS
+========================================================== */
+function openMembershipModal() {
+  const modal = document.getElementById("membershipModal");
+  if (modal) {
+    modal.style.display = "flex";
+    backToStep1();
+  }
+}
+
+function closeMembershipModal() {
+  const modal = document.getElementById("membershipModal");
+  if (modal) modal.style.display = "none";
+}
+
+function openPaytmCheckout() {
+  document.getElementById("paytmStep1").style.display = "none";
+  document.getElementById("paytmStep2").style.display = "block";
+}
+
+function backToStep1() {
+  document.getElementById("paytmStep1").style.display = "block";
+  document.getElementById("paytmStep2").style.display = "none";
+  const status = document.getElementById("paytmStatusMsg");
+  if (status) status.innerText = "";
+}
+
+function verifyPaytmPayment() {
+  const utr = document.getElementById("paytmUtrInput").value.trim();
+  const status = document.getElementById("paytmStatusMsg");
+
+  if (!utr || utr.length < 8) {
+    status.style.color = "var(--neon-red)";
+    status.innerText = "Please enter valid 12-digit UPI reference / UTR number!";
+    return;
+  }
+
+  status.style.color = "var(--neon-cyan)";
+  status.innerText = "VERIFYING TRANSACTION TOKEN...";
+
+  setTimeout(() => {
+    status.style.color = "var(--neon-green)";
+    status.innerHTML = "✓ ₹2 SETUP APPROVED! 30-DAY VIP PASS ACTIVATED.";
+    
+    // Set VIP Perks in localStorage
+    localStorage.setItem("spark_vip_active", "true");
+    localStorage.setItem("spark_vip_expiry", Date.now() + (30 * 24 * 60 * 60 * 1000)); // 30 Days
+
+    // Update Header Tag
+    const headerTag = document.getElementById("headerAgentTag");
+    if (headerTag) {
+      headerTag.innerHTML = "VIP • " + (localStorage.getItem("spark_agent_name") || "FOUNDER").toUpperCase();
+      headerTag.style.color = "#ffd700";
+    }
+
+    if (typeof FX !== "undefined" && FX.powerup) FX.powerup();
+
+    setTimeout(() => {
+      closeMembershipModal();
+      status.innerText = "";
+    }, 2500);
+  }, 1200);
+}
+
+/* ==========================================================
    BLUE & RED DUAL-POLE CYBER MATRIX BACKGROUND
 ========================================================== */
 const bgCanvas = document.getElementById("sparkCanvas");

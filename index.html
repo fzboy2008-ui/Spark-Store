@@ -373,7 +373,90 @@
                 </div>
               </div>
             </div>
+            
+<!-- Paytm VIP Pass Modal -->
+<div class="auth-modal-backdrop" id="membershipModal" style="display: none;">
+  <div class="glow-border-wrap auth-box" style="max-width: 440px;">
+    <div class="glow-inner auth-inner">
+      <div class="brand" style="justify-content: center; margin-bottom: 8px;">
+        <i class="fa-solid fa-crown bolt-glow" style="color: #ffd700;"></i>
+        <span>SPARK VIP ACCESS</span>
+      </div>
 
+      <p class="auth-sub" style="margin-bottom: 12px;">Pehle ₹2 Setup Fee pay karein. 30 Days Pass Activated.</p>
+
+      <!-- Step 1: Breakdown Card -->
+      <div id="paytmStep1">
+        <div class="membership-price-card">
+          <div class="price-header">
+            <span class="plan-tag">30-DAY PASS</span>
+            <span class="billing-cycle">Paytm / UPI Powered</span>
+          </div>
+          
+          <div class="price-row main-price">
+            <span>Pass Value</span>
+            <span class="amount">₹398 <small>/ 30 days</small></span>
+          </div>
+
+          <div class="price-divider"></div>
+
+          <div class="price-row setup-fee">
+            <span><i class="fa-solid fa-bolt"></i> Activation Charge (Now)</span>
+            <span class="amount highlight-pay">₹2</span>
+          </div>
+          
+          <p class="autopay-notice">
+            <i class="fa-solid fa-shield-halved"></i> 
+            Abhi sirf <strong>₹2</strong> debit honge setup ke liye. Baaki payment account approval ke baad schedule hogi.
+          </p>
+        </div>
+
+        <div class="auth-inputs" style="margin-top: 14px;">
+          <button class="spark-btn btn-primary btn-block" onclick="openPaytmCheckout()">
+            <i class="fa-solid fa-wallet"></i> <span>PAY ₹2 VIA PAYTM / UPI</span>
+          </button>
+          <button class="spark-btn btn-ghost btn-sm" onclick="closeMembershipModal()" style="margin-top: 5px;">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Live Paytm QR & Deep-Link Section -->
+      <div id="paytmStep2" style="display: none;">
+        <div class="paytm-qr-card">
+          <div class="paytm-logo-row">
+            <span class="paytm-badge">Paytm <span>UPI</span></span>
+            <span class="pay-amount-badge">Amount: ₹2</span>
+          </div>
+          
+          <!-- Dynamic QR Image targeting your UPI VPA -->
+          <div class="qr-container">
+            <img id="dynamicPaytmQr" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=6006283334@ptyes&pn=Fouzan%20Tariq&am=2&cu=INR&tn=Spark%20VIP%20Activation" alt="Paytm QR Code" />
+          </div>
+          
+          <p class="paytm-vpa-text">UPI ID: <strong>6006283334@ptyes</strong></p>
+
+          <!-- Mobile Quick Launch Deep-Link Button -->
+          <a id="paytmIntentBtn" href="upi://pay?pa=6006283334@ptyes&pn=Fouzan%20Tariq&am=2&cu=INR&tn=Spark%20VIP%20Activation" class="spark-btn btn-sm btn-primary" style="margin: 8px 0; width: 100%;">
+            <i class="fa-solid fa-mobile-screen"></i> <span>Open in Paytm / GPay / PhonePe</span>
+          </a>
+        </div>
+
+        <div class="auth-inputs" style="margin-top: 10px;">
+          <input type="text" id="paytmUtrInput" placeholder="Enter 12-Digit UTR / Ref No." maxlength="12" />
+          <button class="spark-btn btn-primary btn-block" onclick="verifyPaytmPayment()">
+            <i class="fa-solid fa-circle-check"></i> <span>CONFIRM & ACTIVATE VIP</span>
+          </button>
+          <button class="spark-btn btn-ghost btn-sm" onclick="backToStep1()" style="margin-top: 4px;">
+            Back
+          </button>
+        </div>
+        <div id="paytmStatusMsg" style="margin-top: 8px; font-size: 0.8rem; font-family: var(--font-mono);"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
             <!-- 4. TIC TAC TOE WITH AUTO-RESET ON DRAW -->
             <div class="arcade-view" id="tictacView">
               <div class="arcade-topbar">
